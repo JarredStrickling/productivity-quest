@@ -4,4 +4,4 @@ const isDevelopment = window.location.hostname === 'localhost' || window.locatio
 
 export const API_URL = isDevelopment
   ? 'http://localhost:3001'
-  : import.meta.env.VITE_API_URL || 'https://your-backend.onrender.com';
+  : import.meta.env.VITE_API_URL || 'https://scrolls-of-doom.onrender.com';
