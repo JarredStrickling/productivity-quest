@@ -21,9 +21,13 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    // Set world bounds
-    this.cameras.main.setBounds(0, 0, 800, 600);
-    this.physics.world.setBounds(0, 0, 800, 600);
+    // Get responsive dimensions
+    const width = this.scale.width;
+    const height = this.scale.height;
+
+    // Set world bounds to match canvas size
+    this.cameras.main.setBounds(0, 0, width, height);
+    this.physics.world.setBounds(0, 0, width, height);
 
     // Create town background
     this.createTown();
@@ -76,30 +80,37 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createTown() {
-    // Grass background
-    const grass = this.add.rectangle(400, 300, 800, 600, 0x4ade80);
+    // Use responsive dimensions
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2;
+
+    // Grass background - fill entire canvas
+    const grass = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x4ade80);
 
     // Town buildings (simple rectangles for now)
-    // House 1
-    this.add.rectangle(150, 150, 120, 100, 0x8b4513);
-    this.add.rectangle(150, 120, 120, 40, 0x991b1b); // roof
+    // House 1 - position relative to canvas size
+    const house1X = this.scale.width * 0.2;
+    this.add.rectangle(house1X, 150, 120, 100, 0x8b4513);
+    this.add.rectangle(house1X, 120, 120, 40, 0x991b1b); // roof
 
-    // House 2
-    this.add.rectangle(650, 150, 120, 100, 0x8b4513);
-    this.add.rectangle(650, 120, 120, 40, 0x991b1b);
+    // House 2 - position relative to canvas size
+    const house2X = this.scale.width * 0.8;
+    this.add.rectangle(house2X, 150, 120, 100, 0x8b4513);
+    this.add.rectangle(house2X, 120, 120, 40, 0x991b1b);
 
-    // Town center building (where NPC will be)
-    this.add.rectangle(400, 450, 200, 150, 0x6366f1);
-    this.add.rectangle(400, 400, 200, 50, 0x4338ca); // roof
+    // Town center building (where NPC will be) - use center position
+    const townCenterY = this.scale.height * 0.75;
+    this.add.rectangle(centerX, townCenterY, 200, 150, 0x6366f1);
+    this.add.rectangle(centerX, townCenterY - 50, 200, 50, 0x4338ca); // roof
 
-    // Add some decorative trees
-    this.createTree(100, 400);
-    this.createTree(700, 400);
-    this.createTree(250, 500);
-    this.createTree(550, 500);
+    // Add some decorative trees - position relative to canvas
+    this.createTree(this.scale.width * 0.15, this.scale.height * 0.67);
+    this.createTree(this.scale.width * 0.85, this.scale.height * 0.67);
+    this.createTree(this.scale.width * 0.3, this.scale.height * 0.83);
+    this.createTree(this.scale.width * 0.7, this.scale.height * 0.83);
 
-    // Path
-    this.add.rectangle(400, 300, 60, 400, 0xd4a574);
+    // Path - center path with responsive sizing
+    this.add.rectangle(centerX, centerY, 60, this.scale.height, 0xd4a574);
   }
 
   createTree(x, y) {
@@ -108,8 +119,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createPlayer() {
-    // Create player sprite (simple colored square for now)
-    this.player = this.physics.add.sprite(400, 250, null);
+    // Create player sprite at center of screen
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height * 0.4;
+    this.player = this.physics.add.sprite(centerX, centerY, null);
 
     // Draw player as a simple character
     const graphics = this.add.graphics();
@@ -143,7 +156,9 @@ export default class MainScene extends Phaser.Scene {
 
   createNPC() {
     // Create NPC near the town center building
-    this.npc = this.physics.add.sprite(400, 380, null);
+    const centerX = this.scale.width / 2;
+    const npcY = this.scale.height * 0.63;
+    this.npc = this.physics.add.sprite(centerX, npcY, null);
 
     // Draw NPC as a different colored character
     const graphics = this.add.graphics();
@@ -180,8 +195,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createUI() {
-    // Instructions at top
-    this.add.text(400, 20, 'Use WASD or Arrow Keys to move | Press E to interact', {
+    // Instructions at top - centered
+    const centerX = this.scale.width / 2;
+    this.add.text(centerX, 20, 'Use WASD or Arrow Keys to move | Press E to interact', {
       fontSize: '14px',
       fill: '#fff',
       backgroundColor: '#000',
@@ -374,7 +390,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   showLevelUpAnimation(newLevel) {
-    const levelUpText = this.add.text(400, 300, `LEVEL UP!\nLevel ${newLevel}`, {
+    // Position at center of screen
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2;
+    const levelUpText = this.add.text(centerX, centerY, `LEVEL UP!\nLevel ${newLevel}`, {
       fontSize: '48px',
       fill: '#fbbf24',
       fontStyle: 'bold',

@@ -15,11 +15,11 @@ function App() {
   })
 
   useEffect(() => {
-    // Phaser game configuration
+    // Phaser game configuration - responsive for mobile
     const config = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: window.innerWidth,
+      height: window.innerHeight,
       parent: gameRef.current,
       backgroundColor: '#2d3748',
       physics: {
@@ -31,7 +31,7 @@ function App() {
       },
       scene: [MainScene],
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH
       }
     }
