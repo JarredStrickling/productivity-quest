@@ -69,7 +69,7 @@ app.post('/api/generate-verification', async (req, res) => {
 
     // Call Claude API to generate random verification request
     const message = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 150,
       messages: [{
         role: 'user',
@@ -183,9 +183,9 @@ Respond ONLY with: "TIER: explanation"
 Be strict on verification - if the pose is wrong or missing, always fail.`
     });
 
-    // Call Claude API - using Claude 3 Opus (most capable, available to all)
+    // Call Claude API - using Claude 3 Haiku (fast, affordable, widely available)
     const message = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 200,
       messages: [{
         role: 'user',
