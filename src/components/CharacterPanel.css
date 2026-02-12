@@ -134,6 +134,84 @@
   box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
 }
 
+/* Tab Navigation */
+.tab-navigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #475569;
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #475569;
+  border-radius: 8px 8px 0 0;
+  padding: 10px 16px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #cbd5e1;
+}
+
+.tab-btn.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+  color: white;
+  border-bottom-color: transparent;
+}
+
+/* Mana Section */
+.mana-section {
+  margin-bottom: 15px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+}
+
+.mana-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mana-label {
+  color: #93c5fd;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mana-text {
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.mana-bar-container {
+  height: 18px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #3b82f6;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.mana-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
 /* Stats Section */
 .stats-section {
   margin-bottom: 25px;
@@ -348,6 +426,121 @@
   font-size: 11px;
   color: #cbd5e1;
   font-weight: 600;
+}
+
+/* Abilities Section */
+.abilities-section {
+  margin-bottom: 25px;
+}
+
+.abilities-section h3 {
+  color: white;
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-bottom: 2px solid #475569;
+  padding-bottom: 8px;
+}
+
+.abilities-description {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.abilities-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.ability-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #475569;
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.ability-card.unlocked {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.ability-card.unlocked:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.ability-card.locked {
+  opacity: 0.6;
+}
+
+.ability-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ability-icon {
+  font-size: 36px;
+}
+
+.ability-info {
+  flex: 1;
+}
+
+.ability-info h4 {
+  color: white;
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.ability-slot {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ability-description {
+  color: #cbd5e1;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.ability-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ability-cost {
+  color: #3b82f6;
+}
+
+.ability-cooldown {
+  color: #f59e0b;
+}
+
+.ability-locked-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #475569;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fbbf24;
+  text-align: center;
 }
 
 /* Mobile responsiveness */

@@ -26,6 +26,8 @@ function App() {
     stats: {
       hp: 0,
       maxHp: 0,
+      mana: 0,
+      maxMana: 0,
       strength: 0,
       agility: 0,
       mindPower: 0
@@ -37,7 +39,10 @@ function App() {
       weapon: null,
       armor: null,
       accessory: null
-    }
+    },
+
+    // Combat
+    equippedAbilities: []
   })
 
   useEffect(() => {
@@ -123,6 +128,7 @@ function App() {
   }
 
   const handleCharacterCreation = ({ username, characterClass, stats }) => {
+    const maxMana = stats.mindPower * 10
     const newStats = {
       username,
       characterClass,
@@ -132,12 +138,15 @@ function App() {
       stats: {
         hp: stats.maxHp,
         maxHp: stats.maxHp,
+        mana: maxMana,
+        maxMana: maxMana,
         strength: stats.strength,
         agility: stats.agility,
         mindPower: stats.mindPower
       },
       inventory: [],
-      equipment: { weapon: null, armor: null, accessory: null }
+      equipment: { weapon: null, armor: null, accessory: null },
+      equippedAbilities: [] // Track which abilities are equipped
     }
 
     setPlayerStats(newStats)

@@ -5,7 +5,9 @@ export default class MainScene extends Phaser.Scene {
     super('MainScene');
     this.player = null;
     this.npc = null;
+    this.dungeonNPC = null;
     this.canInteract = false;
+    this.canInteractDungeon = false;
     this.playerLevel = 1;
     this.playerClass = null;
     this.isModalOpen = false;
@@ -35,6 +37,9 @@ export default class MainScene extends Phaser.Scene {
 
     // Create NPC
     this.createNPC();
+
+    // Create Dungeon NPC
+    this.createDungeonNPC();
 
     // Create UI elements
     this.createUI();
@@ -193,6 +198,43 @@ export default class MainScene extends Phaser.Scene {
     this.interactPrompt.setDepth(11);
   }
 
+  createDungeonNPC() {
+    // Create Dungeon entrance near bottom of map
+    const dungeonX = this.scale.width / 2;
+    const dungeonY = this.scale.height * 0.9;
+    this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, null);
+
+    // Draw dungeon entrance as a dark portal
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x4338ca, 1);
+    graphics.fillRect(0, 0, 40, 40);
+    graphics.generateTexture('dungeon', 40, 40);
+    graphics.destroy();
+
+    this.dungeonNPC.setTexture('dungeon');
+    this.dungeonNPC.setImmovable(true);
+    this.dungeonNPC.setDepth(10);
+
+    // Add dungeon name tag
+    const dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 30, 'Dungeon', {
+      fontSize: '14px',
+      fill: '#fff',
+      backgroundColor: '#4338ca',
+      padding: { x: 6, y: 3 }
+    }).setOrigin(0.5);
+    dungeonNameTag.setDepth(11);
+
+    // Add interaction prompt
+    this.dungeonInteractPrompt = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y + 35, 'Tap to enter', {
+      fontSize: '14px',
+      fill: '#fff',
+      backgroundColor: '#000',
+      padding: { x: 6, y: 4 }
+    }).setOrigin(0.5);
+    this.dungeonInteractPrompt.setVisible(false);
+    this.dungeonInteractPrompt.setDepth(11);
+  }
+
   createUI() {
     // UI is now handled by React overlay for mobile
     // No in-game instructions needed
@@ -231,6 +273,22 @@ export default class MainScene extends Phaser.Scene {
     } else {
       this.canInteract = false;
       this.interactPrompt.setVisible(false);
+    }
+
+    // Check distance to Dungeon NPC for interaction
+    const dungeonDistance = Phaser.Math.Distance.Between(
+      this.player.x,
+      this.player.y,
+      this.dungeonNPC.x,
+      this.dungeonNPC.y
+    );
+
+    if (dungeonDistance < 70) {
+      this.canInteractDungeon = true;
+      this.dungeonInteractPrompt.setVisible(true);
+    } else {
+      this.canInteractDungeon = false;
+      this.dungeonInteractPrompt.setVisible(false);
     }
   }
 
@@ -294,6 +352,22 @@ export default class MainScene extends Phaser.Scene {
       if (tappedOnNPC && distance < 60) {
         this.openTaskModal();
       }
+
+      // Check if tapped on Dungeon NPC
+      const dungeonBounds = this.dungeonNPC.getBounds();
+      const tappedOnDungeon = dungeonBounds.contains(pointer.worldX, pointer.worldY);
+
+      // Check if player is within interaction range
+      const dungeonDistance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        this.dungeonNPC.x,
+        this.dungeonNPC.y
+      );
+
+      if (tappedOnDungeon && dungeonDistance < 70) {
+        this.openBattle();
+      }
     }
 
     // Reset drag state
@@ -305,6 +379,11 @@ export default class MainScene extends Phaser.Scene {
   openTaskModal() {
     // Emit event to React to open the modal
     this.game.events.emit('open-task-modal');
+  }
+
+  openBattle() {
+    // Emit event to React to open the battle modal
+    this.game.events.emit('open-battle');
   }
 
   showXPGainFeedback(data) {
