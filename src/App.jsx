@@ -4,6 +4,7 @@ import MainScene from './scenes/MainScene'
 import TaskSubmissionModal from './components/TaskSubmissionModal'
 import CharacterCreationModal from './components/CharacterCreationModal'
 import CharacterPanel from './components/CharacterPanel'
+import BattleModal from './components/BattleModal'
 import './App.css'
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showCharacterCreation, setShowCharacterCreation] = useState(false)
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
+  const [showBattle, setShowBattle] = useState(false)
   const [playerStats, setPlayerStats] = useState({
     // Identity
     username: '',
@@ -79,6 +81,10 @@ function App() {
 
       game.events.on('close-task-modal', () => {
         setIsModalOpen(false)
+      })
+
+      game.events.on('open-battle', () => {
+        setShowBattle(true)
       })
     }
 
@@ -256,6 +262,12 @@ function App() {
       <CharacterPanel
         isOpen={showCharacterPanel}
         onClose={() => setShowCharacterPanel(false)}
+        playerStats={playerStats}
+      />
+
+      <BattleModal
+        isOpen={showBattle}
+        onClose={() => setShowBattle(false)}
         playerStats={playerStats}
       />
     </div>
