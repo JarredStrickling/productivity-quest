@@ -4,10 +4,7 @@ export default class MainScene extends Phaser.Scene {
   constructor() {
     super('MainScene');
     this.player = null;
-    this.cursors = null;
-    this.wasd = null;
     this.npc = null;
-    this.interactKey = null;
     this.canInteract = false;
     this.playerLevel = 1;
     this.playerClass = null;
@@ -41,16 +38,6 @@ export default class MainScene extends Phaser.Scene {
 
     // Create UI elements
     this.createUI();
-
-    // Set up controls
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.wasd = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D
-    });
-    this.interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
     // Camera follows player
     this.cameras.main.startFollow(this.player);
@@ -195,11 +182,8 @@ export default class MainScene extends Phaser.Scene {
     }).setOrigin(0.5);
     npcNameTag.setDepth(11);
 
-    // Add interaction prompt (detect mobile vs desktop)
-    const isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
-    const promptText = isMobile ? 'Tap to talk' : 'Press E to talk';
-
-    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 30, promptText, {
+    // Add interaction prompt
+    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 30, 'Tap to talk', {
       fontSize: '14px',
       fill: '#fff',
       backgroundColor: '#000',
@@ -227,27 +211,12 @@ export default class MainScene extends Phaser.Scene {
       return;
     }
 
-    // Player movement - prioritize touch over keyboard
-    const speed = 160;
+    // Player movement - touch only
     this.player.setVelocity(0);
 
     // Check if touch/drag input is active
     if (this.isDragging && (this.moveVector.x !== 0 || this.moveVector.y !== 0)) {
-      // Use touch-based movement
       this.player.setVelocity(this.moveVector.x, this.moveVector.y);
-    } else {
-      // Fall back to keyboard controls
-      if (this.cursors.left.isDown || this.wasd.left.isDown) {
-        this.player.setVelocityX(-speed);
-      } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-        this.player.setVelocityX(speed);
-      }
-
-      if (this.cursors.up.isDown || this.wasd.up.isDown) {
-        this.player.setVelocityY(-speed);
-      } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-        this.player.setVelocityY(speed);
-      }
     }
 
     // Check distance to NPC for interaction
@@ -259,11 +228,6 @@ export default class MainScene extends Phaser.Scene {
     if (distance < 60) {
       this.canInteract = true;
       this.interactPrompt.setVisible(true);
-
-      // Handle E key press for interaction
-      if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
-        this.openTaskModal();
-      }
     } else {
       this.canInteract = false;
       this.interactPrompt.setVisible(false);
