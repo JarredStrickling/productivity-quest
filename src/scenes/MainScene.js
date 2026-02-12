@@ -195,14 +195,8 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createUI() {
-    // Instructions at top - centered
-    const centerX = this.scale.width / 2;
-    this.add.text(centerX, 20, 'Use WASD or Arrow Keys to move | Press E to interact', {
-      fontSize: '14px',
-      fill: '#fff',
-      backgroundColor: '#000',
-      padding: { x: 8, y: 4 }
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(100);
+    // UI is now handled by React overlay for mobile
+    // No in-game instructions needed
   }
 
   update() {

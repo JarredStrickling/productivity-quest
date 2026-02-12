@@ -140,7 +140,7 @@ function App() {
 
       <div className="game-info">
         <p>
-          💡 <strong>How to play:</strong> Drag to move (or WASD). Tap Task Master NPC (or press E) to submit tasks!
+          💡 <strong>How to play:</strong> Drag to move. Tap the Task Master NPC to submit tasks and earn XP!
         </p>
       </div>
 

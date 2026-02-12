@@ -140,23 +140,81 @@ body {
 
 /* Mobile responsiveness */
 @media (max-width: 850px) {
+  body {
+    overflow: hidden;
+  }
+
   .app-container {
-    padding: 10px;
+    padding: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+
+  .game-header {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0;
+    z-index: 10;
+    pointer-events: none;
   }
 
   .game-header h1 {
-    font-size: 24px;
+    font-size: 20px;
+    margin-bottom: 4px;
   }
 
   .game-header p {
-    font-size: 14px;
+    display: none;
+  }
+
+  .player-stats-bar {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0;
+    padding: 8px 12px;
+    gap: 12px;
+    z-index: 10;
+    width: calc(100% - 20px);
+    max-width: 400px;
+  }
+
+  .stat-item {
+    padding: 4px 8px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .xp-text {
+    font-size: 11px;
+  }
+
+  .xp-bar-container {
+    height: 18px;
+  }
+
+  .game-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    border-radius: 0;
+    margin: 0;
   }
 
   .game-info {
-    padding: 10px 20px;
-  }
-
-  .game-info p {
-    font-size: 12px;
+    display: none;
   }
 }
