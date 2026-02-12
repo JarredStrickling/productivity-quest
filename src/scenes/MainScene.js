@@ -10,6 +10,7 @@ export default class MainScene extends Phaser.Scene {
     this.interactKey = null;
     this.canInteract = false;
     this.playerLevel = 1;
+    this.playerClass = null;
     this.isModalOpen = false;
 
     // Touch/pointer input state
@@ -62,6 +63,7 @@ export default class MainScene extends Phaser.Scene {
     // Listen for events from React
     this.game.events.on('update-stats', (stats) => {
       this.playerLevel = stats.level;
+      this.playerClass = stats.characterClass;
       this.levelText.setText(`Lv ${stats.level}`);
     });
 
@@ -124,9 +126,22 @@ export default class MainScene extends Phaser.Scene {
     const centerY = this.scale.height * 0.4;
     this.player = this.physics.add.sprite(centerX, centerY, null);
 
+    // Class-based colors
+    const classColors = {
+      paladin: 0xf59e0b,   // Gold
+      warrior: 0xdc2626,   // Red
+      mage: 0x3b82f6,      // Blue
+      archer: 0x10b981,    // Green
+      cleric: 0x8b5cf6     // Purple
+    };
+
+    const playerColor = this.playerClass
+      ? classColors[this.playerClass]
+      : 0x3b82f6;
+
     // Draw player as a simple character
     const graphics = this.add.graphics();
-    graphics.fillStyle(0x3b82f6, 1);
+    graphics.fillStyle(playerColor, 1);
     graphics.fillRect(0, 0, 32, 32);
     graphics.generateTexture('player', 32, 32);
     graphics.destroy();

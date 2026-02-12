@@ -2,16 +2,42 @@ import { useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
 import MainScene from './scenes/MainScene'
 import TaskSubmissionModal from './components/TaskSubmissionModal'
+import CharacterCreationModal from './components/CharacterCreationModal'
+import CharacterPanel from './components/CharacterPanel'
 import './App.css'
 
 function App() {
   const gameRef = useRef(null)
   const gameInstanceRef = useRef(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showCharacterCreation, setShowCharacterCreation] = useState(false)
+  const [showCharacterPanel, setShowCharacterPanel] = useState(false)
   const [playerStats, setPlayerStats] = useState({
+    // Identity
+    username: '',
+    characterClass: '', // 'paladin', 'warrior', 'mage', 'archer', 'cleric'
+
+    // Progression
     level: 1,
     xp: 0,
-    xpToNextLevel: 100
+    xpToNextLevel: 100,
+
+    // Core Stats
+    stats: {
+      hp: 0,
+      maxHp: 0,
+      strength: 0,
+      agility: 0,
+      mindPower: 0
+    },
+
+    // Inventory (for future use)
+    inventory: [],
+    equipment: {
+      weapon: null,
+      armor: null,
+      accessory: null
+    }
   })
 
   useEffect(() => {
@@ -74,7 +100,9 @@ function App() {
       xpNeeded = newLevel * 100 // Each level needs more XP
     }
 
+    // Preserve all existing stats and only update level/xp
     const newStats = {
+      ...playerStats,
       level: newLevel,
       xp: remainingXp,
       xpToNextLevel: newLevel * 100
@@ -94,11 +122,56 @@ function App() {
     localStorage.setItem('playerStats', JSON.stringify(newStats))
   }
 
+  const handleCharacterCreation = ({ username, characterClass, stats }) => {
+    const newStats = {
+      username,
+      characterClass,
+      level: 1,
+      xp: 0,
+      xpToNextLevel: 100,
+      stats: {
+        hp: stats.maxHp,
+        maxHp: stats.maxHp,
+        strength: stats.strength,
+        agility: stats.agility,
+        mindPower: stats.mindPower
+      },
+      inventory: [],
+      equipment: { weapon: null, armor: null, accessory: null }
+    }
+
+    setPlayerStats(newStats)
+    localStorage.setItem('playerStats', JSON.stringify(newStats))
+    setShowCharacterCreation(false)
+
+    if (gameInstanceRef.current) {
+      gameInstanceRef.current.events.emit('update-stats', newStats)
+    }
+  }
+
   // Load player stats from localStorage on mount
   useEffect(() => {
     const savedStats = localStorage.getItem('playerStats')
     if (savedStats) {
-      setPlayerStats(JSON.parse(savedStats))
+      try {
+        const parsed = JSON.parse(savedStats)
+        if (parsed.username && parsed.characterClass) {
+          // Has complete character data
+          setPlayerStats(parsed)
+        } else {
+          // Old or incomplete data, clear and show creation
+          localStorage.removeItem('playerStats')
+          setShowCharacterCreation(true)
+        }
+      } catch (error) {
+        // Corrupted data, clear and show creation
+        console.error('Failed to parse saved stats:', error)
+        localStorage.removeItem('playerStats')
+        setShowCharacterCreation(true)
+      }
+    } else {
+      // First time, show creation
+      setShowCharacterCreation(true)
     }
   }, [])
 
@@ -114,7 +187,18 @@ function App() {
   return (
     <div className="app-container">
       <div className="game-header">
-        <h1>⚔️ Productivity Quest</h1>
+        <div className="header-flex">
+          <h1>⚔️ Productivity Quest</h1>
+          {playerStats.username && (
+            <button
+              className="character-btn"
+              onClick={() => setShowCharacterPanel(true)}
+              aria-label="Open character panel"
+            >
+              👤
+            </button>
+          )}
+        </div>
         <p>A 2D MMO RPG where real-life achievements power your adventure!</p>
       </div>
 
@@ -153,6 +237,17 @@ function App() {
           }
         }}
         onSubmit={handleTaskSubmit}
+      />
+
+      <CharacterCreationModal
+        isOpen={showCharacterCreation}
+        onComplete={handleCharacterCreation}
+      />
+
+      <CharacterPanel
+        isOpen={showCharacterPanel}
+        onClose={() => setShowCharacterPanel(false)}
+        playerStats={playerStats}
       />
     </div>
   )
