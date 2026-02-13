@@ -82,17 +82,29 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
   const [currentTurn, setCurrentTurn] = useState(0);
   const [battleLog, setBattleLog] = useState([]);
   const [animating, setAnimating] = useState(false);
+  const [showAbilityMenu, setShowAbilityMenu] = useState(false);
 
   // Initialize battle
   useEffect(() => {
     if (isOpen && party.length === 0) {
+      // Ensure mana is set correctly (fix for 0 mana bug)
+      const playerMana = playerStats.stats.mana !== undefined
+        ? playerStats.stats.mana
+        : playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
+
+      const playerMaxMana = playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
+
       // Create party: player + 3 AI teammates
       const playerCombat = {
         id: 'player',
         name: playerStats.username,
         characterClass: playerStats.characterClass,
         isAI: false,
-        stats: { ...playerStats.stats },
+        stats: {
+          ...playerStats.stats,
+          mana: playerMana,
+          maxMana: playerMaxMana
+        },
         alive: true
       };
 
@@ -119,6 +131,40 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
         .sort((a, b) => a.slot - b.slot)
     : [];
 
+  // Handle basic attack (raw damage based on stats)
+  const handleAttack = () => {
+    if (animating || !currentCharacter) return;
+
+    setAnimating(true);
+    setShowAbilityMenu(false);
+
+    // Calculate raw damage: strength + (agility * 0.5)
+    const baseDamage = Math.floor(
+      currentCharacter.stats.strength + (currentCharacter.stats.agility * 0.5)
+    );
+
+    // Apply damage to boss
+    const newBoss = { ...boss };
+    newBoss.hp = Math.max(0, newBoss.hp - baseDamage);
+    setBoss(newBoss);
+
+    addLog(`${currentCharacter.name} attacked! Dealt ${baseDamage} damage!`);
+
+    // Check victory
+    if (newBoss.hp <= 0) {
+      setTimeout(() => {
+        setBattleState('victory');
+        addLog('🎉 Victory! The Doom-Scroll Hydra has been defeated!');
+      }, 1000);
+    }
+
+    // Next turn after animation
+    setTimeout(() => {
+      setAnimating(false);
+      nextTurn();
+    }, 1500);
+  };
+
   // Handle ability use
   const useAbility = (ability) => {
     if (animating || !currentCharacter || currentCharacter.stats.mana < ability.manaCost) {
@@ -126,6 +172,7 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
     }
 
     setAnimating(true);
+    setShowAbilityMenu(false);
 
     // Deduct mana
     const newParty = [...party];
@@ -174,7 +221,7 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
   // AI turn logic
   useEffect(() => {
     if (battleState === 'active' && currentCharacter && currentCharacter.isAI && !animating) {
-      // Simple AI: use first available ability
+      // Simple AI: try to use ability, otherwise attack
       setTimeout(() => {
         const availableAbility = currentAbilities.find(
           ab => currentCharacter.stats.mana >= ab.manaCost
@@ -182,9 +229,8 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
         if (availableAbility) {
           useAbility(availableAbility);
         } else {
-          // Skip turn if no mana
-          addLog(`${currentCharacter.name} is out of mana!`);
-          nextTurn();
+          // Use basic attack if no mana
+          handleAttack();
         }
       }, 1000);
     }
@@ -216,58 +262,70 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
   return (
     <div className="modal-overlay battle-overlay" onClick={handleClose}>
       <div className="modal-content battle-modal" onClick={e => e.stopPropagation()}>
-        {/* Boss Section */}
-        <div className="boss-section">
-          <h2 className="boss-name">{boss.icon} {boss.name}</h2>
-          <div className="boss-hp-container">
-            <span className="boss-hp-text">{boss.hp} / {boss.maxHp}</span>
-            <div className="boss-hp-bar">
-              <div
-                className="boss-hp-fill"
-                style={{ width: `${bossHpPercent}%` }}
-              />
-            </div>
-          </div>
-        </div>
+        {/* Battle Arena - Side View Layout */}
+        <div className="battle-arena">
+          {/* Party Side (Left) */}
+          <div className="party-side">
+            {party.map((member, index) => {
+              const classData = CLASS_CONFIG[member.characterClass];
+              const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
+              const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
+              const isCurrentTurn = index === currentTurn;
 
-        {/* Party Section */}
-        <div className="party-section">
-          {party.map((member, index) => {
-            const classData = CLASS_CONFIG[member.characterClass];
-            const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
-            const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
-            const isCurrentTurn = index === currentTurn;
+              return (
+                <div
+                  key={member.id}
+                  className={`battle-sprite party-sprite ${isCurrentTurn ? 'active-turn' : ''}`}
+                >
+                  {/* Character Sprite */}
+                  <div className="sprite-icon" style={{ color: classData.color }}>
+                    {classData.icon}
+                  </div>
 
-            return (
-              <div
-                key={member.id}
-                className={`party-member ${isCurrentTurn ? 'active-turn' : ''}`}
-              >
-                <div className="member-icon" style={{ color: classData.color }}>
-                  {classData.icon}
-                </div>
-                <div className="member-info">
-                  <div className="member-name">{member.name}</div>
-                  <div className="member-bars">
-                    <div className="mini-bar hp-mini">
+                  {/* Floating Bars Above Sprite */}
+                  <div className="floating-bars">
+                    <div className="sprite-name">{member.name}</div>
+                    <div className="sprite-bar hp-bar">
                       <div
-                        className="mini-bar-fill hp-fill"
+                        className="sprite-bar-fill hp-bar-fill"
                         style={{ width: `${hpPercent}%` }}
                       />
-                      <span className="mini-bar-text">{member.stats.hp}</span>
+                      <span className="sprite-bar-text">{member.stats.hp}</span>
                     </div>
-                    <div className="mini-bar mana-mini">
+                    <div className="sprite-bar mana-bar">
                       <div
-                        className="mini-bar-fill mana-fill"
+                        className="sprite-bar-fill mana-bar-fill"
                         style={{ width: `${manaPercent}%` }}
                       />
-                      <span className="mini-bar-text">{member.stats.mana}</span>
+                      <span className="sprite-bar-text">{member.stats.mana}</span>
                     </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+
+          {/* Boss Side (Right) */}
+          <div className="boss-side">
+            <div className="battle-sprite boss-sprite">
+              {/* Boss Sprite */}
+              <div className="sprite-icon boss-icon">
+                {boss.icon}
               </div>
-            );
-          })}
+
+              {/* Floating Bars Above Boss */}
+              <div className="floating-bars">
+                <div className="sprite-name boss-name-tag">{boss.name}</div>
+                <div className="sprite-bar hp-bar boss-hp">
+                  <div
+                    className="sprite-bar-fill hp-bar-fill"
+                    style={{ width: `${bossHpPercent}%` }}
+                  />
+                  <span className="sprite-bar-text">{boss.hp} / {boss.maxHp}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Battle Log */}
@@ -277,26 +335,63 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
           ))}
         </div>
 
-        {/* Ability Buttons */}
-        {battleState === 'active' && isPlayerTurn && (
-          <div className="ability-buttons">
-            {currentAbilities.map(ability => {
-              const canUse = currentCharacter.stats.mana >= ability.manaCost && !animating;
-              return (
-                <button
-                  key={ability.id}
-                  className={`ability-btn ${!canUse ? 'disabled' : ''}`}
-                  onClick={() => canUse && useAbility(ability)}
-                  disabled={!canUse}
-                >
-                  <span className="ability-btn-icon">{ability.icon}</span>
-                  <span className="ability-btn-name">{ability.name}</span>
-                  {ability.manaCost > 0 && (
-                    <span className="ability-btn-cost">💧 {ability.manaCost}</span>
-                  )}
-                </button>
-              );
-            })}
+        {/* Action Menu */}
+        {battleState === 'active' && isPlayerTurn && !showAbilityMenu && (
+          <div className="action-menu">
+            <button
+              className="menu-btn attack-btn"
+              onClick={handleAttack}
+              disabled={animating}
+            >
+              ⚔️ Attack
+            </button>
+            <button
+              className="menu-btn ability-btn"
+              onClick={() => setShowAbilityMenu(true)}
+              disabled={animating}
+            >
+              ✨ Ability
+            </button>
+            <button
+              className="menu-btn item-btn"
+              disabled={true}
+            >
+              🎒 Item
+            </button>
+          </div>
+        )}
+
+        {/* Ability Submenu */}
+        {battleState === 'active' && isPlayerTurn && showAbilityMenu && (
+          <div className="ability-submenu">
+            <div className="submenu-header">
+              <span>Select Ability</span>
+              <button
+                className="back-btn"
+                onClick={() => setShowAbilityMenu(false)}
+              >
+                ← Back
+              </button>
+            </div>
+            <div className="ability-grid">
+              {currentAbilities.map(ability => {
+                const canUse = currentCharacter.stats.mana >= ability.manaCost && !animating;
+                return (
+                  <button
+                    key={ability.id}
+                    className={`ability-option ${!canUse ? 'disabled' : ''}`}
+                    onClick={() => canUse && useAbility(ability)}
+                    disabled={!canUse}
+                  >
+                    <span className="ability-icon">{ability.icon}</span>
+                    <span className="ability-name">{ability.name}</span>
+                    {ability.manaCost > 0 && (
+                      <span className="ability-cost">💧 {ability.manaCost}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
