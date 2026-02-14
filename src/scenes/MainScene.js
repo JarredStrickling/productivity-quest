@@ -68,6 +68,13 @@ export default class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
+    // Set camera zoom to fit the world on screen
+    // Calculate zoom to show most of the map on mobile
+    const zoomX = this.scale.width / WORLD_WIDTH;
+    const zoomY = this.scale.height / WORLD_HEIGHT;
+    const zoom = Math.min(zoomX, zoomY) * 0.8; // 0.8 to show a bit beyond edges
+    this.cameras.main.setZoom(zoom);
+
     // Create town background
     this.createTown();
 
@@ -83,8 +90,8 @@ export default class MainScene extends Phaser.Scene {
     // Create UI elements
     this.createUI();
 
-    // Camera follows player
-    this.cameras.main.startFollow(this.player);
+    // Camera follows player smoothly
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
     // Enable pointer/touch input
     this.input.on('pointerdown', this.onPointerDown, this);
@@ -120,14 +127,14 @@ export default class MainScene extends Phaser.Scene {
     // Add Productivity Board in center
     this.productivityBoard = this.add.image(512, 512, 'taskboard');
     this.productivityBoard.setDepth(5);
-    this.productivityBoard.setScale(1.5); // Make it larger and more visible
+    this.productivityBoard.setScale(0.3); // Scaled down for proper sizing
 
     // Add board name tag
-    const boardNameTag = this.add.text(512, 440, 'Productivity Board', {
-      fontSize: '14px',
+    const boardNameTag = this.add.text(512, 420, 'Productivity Board', {
+      fontSize: '12px',
       fill: '#fff',
       backgroundColor: '#10b981',
-      padding: { x: 6, y: 3 }
+      padding: { x: 4, y: 2 }
     }).setOrigin(0.5);
     boardNameTag.setDepth(11);
   }
@@ -235,23 +242,23 @@ export default class MainScene extends Phaser.Scene {
 
     this.npc.setImmovable(true);
     this.npc.setDepth(10);
-    this.npc.setScale(1.2); // Make NPC slightly larger
+    this.npc.setScale(0.25); // Scaled down for proper sizing
 
     // Add NPC name tag
-    this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 40, 'Task Master', {
-      fontSize: '14px',
+    this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 30, 'Task Master', {
+      fontSize: '11px',
       fill: '#fff',
       backgroundColor: '#f59e0b',
-      padding: { x: 6, y: 3 }
+      padding: { x: 4, y: 2 }
     }).setOrigin(0.5);
     this.npcNameTag.setDepth(11);
 
     // Add interaction prompt
-    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 45, 'Tap to talk', {
-      fontSize: '14px',
+    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 30, 'Tap to talk', {
+      fontSize: '11px',
       fill: '#fff',
       backgroundColor: '#000',
-      padding: { x: 6, y: 4 }
+      padding: { x: 4, y: 2 }
     }).setOrigin(0.5);
     this.interactPrompt.setVisible(false);
     this.interactPrompt.setDepth(11);
@@ -265,23 +272,23 @@ export default class MainScene extends Phaser.Scene {
 
     this.dungeonNPC.setImmovable(true);
     this.dungeonNPC.setDepth(10);
-    this.dungeonNPC.setScale(1.5); // Make dungeon entrance larger
+    this.dungeonNPC.setScale(0.35); // Scaled down for proper sizing
 
     // Add dungeon name tag
-    this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 50, 'Dungeon', {
-      fontSize: '16px',
+    this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 35, 'Dungeon', {
+      fontSize: '12px',
       fill: '#fff',
       backgroundColor: '#4338ca',
-      padding: { x: 8, y: 4 }
+      padding: { x: 6, y: 3 }
     }).setOrigin(0.5);
     this.dungeonNameTag.setDepth(11);
 
     // Add interaction prompt
-    this.dungeonInteractPrompt = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y + 50, 'Tap to enter', {
-      fontSize: '14px',
+    this.dungeonInteractPrompt = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y + 35, 'Tap to enter', {
+      fontSize: '11px',
       fill: '#fff',
       backgroundColor: '#000',
-      padding: { x: 6, y: 4 }
+      padding: { x: 4, y: 2 }
     }).setOrigin(0.5);
     this.dungeonInteractPrompt.setVisible(false);
     this.dungeonInteractPrompt.setDepth(11);
