@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=6`; // Zoom out 20%, conservative transparency, player depth fix
+    const cacheBust = `?v=7`; // Zoom out 30%, double player size
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -80,7 +80,7 @@ export default class MainScene extends Phaser.Scene {
     const TILE_SIZE = 32;
     const TILES_ACROSS = 14;
     let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
-    zoom = zoom * 0.8; // Zoom out 20% to show more of the town
+    zoom = zoom * 0.7; // Zoom out 30% to show more of the town
 
     // Clamp zoom to prevent too zoomed in/out on different devices
     zoom = Phaser.Math.Clamp(zoom, 1.0, 2.0);
@@ -91,7 +91,7 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = newZoom * 0.8; // Zoom out 20%
+      newZoom = newZoom * 0.7; // Zoom out 30%
       newZoom = Phaser.Math.Clamp(newZoom, 1.0, 2.0);
       this.cameras.main.setZoom(newZoom);
     });
@@ -172,7 +172,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(50); // Increased depth to ensure above everything
-    this.player.setScale(0.15); // Scale for 256x384 sprite frames
+    this.player.setScale(0.3); // Scale for 256x384 sprite frames (doubled from 0.15)
     console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
 
     // Create walking animations for each direction
