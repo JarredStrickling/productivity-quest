@@ -12,7 +12,7 @@ except ImportError:
     print("ERROR: PIL (Pillow) not installed. Install with: pip install Pillow")
     sys.exit(1)
 
-def make_transparent(input_path, output_path, threshold=30):
+def make_transparent(input_path, output_path, threshold=50):
     """
     Convert fake transparency to real alpha channel.
 
@@ -38,7 +38,11 @@ def make_transparent(input_path, output_path, threshold=30):
 
             # If pixel is white or very light gray (checkerboard pattern)
             # Make it transparent
-            if r > (255 - threshold) and g > (255 - threshold) and b > (255 - threshold):
+            # Also handle light gray checkerboard (192, 192, 192)
+            is_white = r > (255 - threshold) and g > (255 - threshold) and b > (255 - threshold)
+            is_light_gray = abs(r - 192) < threshold and abs(g - 192) < threshold and abs(b - 192) < threshold
+
+            if is_white or is_light_gray:
                 pixels[x, y] = (r, g, b, 0)  # Set alpha to 0 (transparent)
 
     # Save with transparency
@@ -58,7 +62,8 @@ def main():
         "cleric.png",
         "dungeon.png",
         "taskboard.png",
-        "taskmaster.png"
+        "taskmaster.png",
+        "character-menu-xp-bars.png"
     ]
 
     print("=" * 60)

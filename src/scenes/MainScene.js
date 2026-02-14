@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=4`; // Bumped for zoom/scale improvements
+    const cacheBust = `?v=5`; // Fixed sprite dimensions & transparency
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -41,27 +41,27 @@ export default class MainScene extends Phaser.Scene {
     this.load.image('dungeonSprite', `/assets/sprites/dungeon.png${cacheBust}`);
 
     // Load sprite sheets for each class
-    // Each sprite sheet should be 128x128 (4 frames x 32px wide, 4 directions x 32px tall)
-    // Row 1: Walking DOWN, Row 2: Walking LEFT, Row 3: Walking RIGHT, Row 4: Walking UP
+    // Sprites are 1024x1536 (4 frames x 256px wide, 4 rows x 384px tall)
+    // Row 0: Walking DOWN, Row 1: Walking LEFT, Row 2: Walking RIGHT, Row 3: Walking UP
     this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
-      frameWidth: 32,
-      frameHeight: 32
+      frameWidth: 256,
+      frameHeight: 384
     });
     this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
-      frameWidth: 32,
-      frameHeight: 32
+      frameWidth: 256,
+      frameHeight: 384
     });
     this.load.spritesheet('mage', `/assets/sprites/mage.png${cacheBust}`, {
-      frameWidth: 32,
-      frameHeight: 32
+      frameWidth: 256,
+      frameHeight: 384
     });
     this.load.spritesheet('archer', `/assets/sprites/archer.png${cacheBust}`, {
-      frameWidth: 32,
-      frameHeight: 32
+      frameWidth: 256,
+      frameHeight: 384
     });
     this.load.spritesheet('cleric', `/assets/sprites/cleric.png${cacheBust}`, {
-      frameWidth: 32,
-      frameHeight: 32
+      frameWidth: 256,
+      frameHeight: 384
     });
   }
 
@@ -169,7 +169,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(10);
-    this.player.setScale(1.5); // Scale up player to be visible
+    this.player.setScale(0.15); // Scale for 256x384 sprite frames
 
     // Create walking animations for each direction
     // Assuming sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Right, Row 3=Up
@@ -262,7 +262,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.npc.setImmovable(true);
     this.npc.setDepth(10);
-    this.npc.setScale(0.15); // Scaled down for proper sizing
+    this.npc.setScale(0.1); // Scaled down for proper sizing
 
     // Add NPC name tag
     this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 20, 'Task Master', {
@@ -292,7 +292,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.dungeonNPC.setImmovable(true);
     this.dungeonNPC.setDepth(10);
-    this.dungeonNPC.setScale(0.2); // Scaled down for proper sizing
+    this.dungeonNPC.setScale(0.12); // Scaled down for proper sizing
 
     // Add dungeon name tag
     this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 22, 'Dungeon', {
