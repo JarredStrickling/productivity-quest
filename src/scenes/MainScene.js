@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=7`; // Zoom out 30%, double player size
+    const cacheBust = `?v=8`; // Fixed animations, zoom 44%, sprite fixes
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -83,7 +83,7 @@ export default class MainScene extends Phaser.Scene {
     const TILE_SIZE = 32;
     const TILES_ACROSS = 14;
     let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
-    zoom = zoom * 0.7; // Zoom out 30% to show more of the town
+    zoom = zoom * 0.56; // Zoom out 44% to show more of the town
 
     // Clamp zoom to prevent too zoomed in/out on different devices
     zoom = Phaser.Math.Clamp(zoom, 1.0, 2.0);
@@ -94,7 +94,7 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = newZoom * 0.7; // Zoom out 30%
+      newZoom = newZoom * 0.56; // Zoom out 44%
       newZoom = Phaser.Math.Clamp(newZoom, 1.0, 2.0);
       this.cameras.main.setZoom(newZoom);
     });
@@ -127,9 +127,51 @@ export default class MainScene extends Phaser.Scene {
 
     // Listen for events from React
     this.game.events.on('update-stats', (stats) => {
+      const classChanged = this.playerClass !== stats.characterClass;
       this.playerLevel = stats.level;
       this.playerClass = stats.characterClass;
       this.levelText.setText(`Lv ${stats.level}`);
+
+      // Recreate player if class changed
+      if (classChanged && this.player) {
+        const oldX = this.player.x;
+        const oldY = this.player.y;
+        this.player.destroy();
+        this.playerNameTag.destroy();
+        this.levelText.destroy();
+
+        // Recreate player at same position
+        const centerX = oldX;
+        const centerY = oldY;
+        const spriteKey = this.playerClass;
+        this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
+        this.player.setCollideWorldBounds(true);
+        this.player.setDepth(50);
+        this.player.setScale(0.3);
+
+        // Recreate animations for new class
+        this.createPlayerAnimations(spriteKey);
+
+        // Recreate name tag and level text
+        this.playerNameTag = this.add.text(0, 0, 'You', {
+          fontSize: '12px',
+          fill: '#fff',
+          backgroundColor: '#000',
+          padding: { x: 4, y: 2 }
+        }).setOrigin(0.5);
+        this.playerNameTag.setDepth(11);
+
+        this.levelText = this.add.text(0, 0, `Lv ${stats.level}`, {
+          fontSize: '11px',
+          fill: '#fbbf24',
+          backgroundColor: '#000',
+          padding: { x: 3, y: 1 }
+        }).setOrigin(0.5);
+        this.levelText.setDepth(11);
+
+        // Restart camera follow
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+      }
     });
 
     this.game.events.on('xp-gained', (data) => {
@@ -166,23 +208,9 @@ export default class MainScene extends Phaser.Scene {
     boardNameTag.setDepth(11);
   }
 
-  createPlayer() {
-    // Create player sprite near center of world map
-    const centerX = 512;
-    const centerY = 600; // Slightly below center
-
-    // Use class sprite or default to paladin
-    const spriteKey = this.playerClass || 'paladin';
-    console.log('Creating player with sprite:', spriteKey);
-    this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
-
-    this.player.setCollideWorldBounds(true);
-    this.player.setDepth(50); // Increased depth to ensure above everything
-    this.player.setScale(0.3); // Scale for 256x384 sprite frames (doubled from 0.15)
-    console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
-
+  createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
-    // Assuming sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Right, Row 3=Up
+    // Sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Up, Row 3=Right
     // Each row has 4 frames (idle + 3 walking frames)
 
     // Walking DOWN (row 0, frames 0-3)
@@ -201,17 +229,17 @@ export default class MainScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Walking RIGHT (row 2, frames 8-11)
+    // Walking UP (row 2, frames 8-11) - FIXED
     this.anims.create({
-      key: `${spriteKey}_walk_right`,
+      key: `${spriteKey}_walk_up`,
       frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
       frameRate: 8,
       repeat: -1
     });
 
-    // Walking UP (row 3, frames 12-15)
+    // Walking RIGHT (row 3, frames 12-15) - FIXED
     this.anims.create({
-      key: `${spriteKey}_walk_up`,
+      key: `${spriteKey}_walk_right`,
       frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 15 }),
       frameRate: 8,
       repeat: -1
@@ -231,19 +259,38 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: `${spriteKey}_idle_right`,
-      frames: [{ key: spriteKey, frame: 8 }],
+      key: `${spriteKey}_idle_up`,
+      frames: [{ key: spriteKey, frame: 8 }], // FIXED
       frameRate: 1
     });
 
     this.anims.create({
-      key: `${spriteKey}_idle_up`,
-      frames: [{ key: spriteKey, frame: 12 }],
+      key: `${spriteKey}_idle_right`,
+      frames: [{ key: spriteKey, frame: 12 }], // FIXED
       frameRate: 1
     });
 
     // Start with idle down animation
     this.player.play(`${spriteKey}_idle_down`);
+  }
+
+  createPlayer() {
+    // Create player sprite near center of world map
+    const centerX = 512;
+    const centerY = 600; // Slightly below center
+
+    // Use class sprite or default to paladin
+    const spriteKey = this.playerClass || 'paladin';
+    console.log('Creating player with sprite:', spriteKey);
+    this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
+
+    this.player.setCollideWorldBounds(true);
+    this.player.setDepth(50); // Increased depth to ensure above everything
+    this.player.setScale(0.3); // Scale for 256x384 sprite frames (doubled from 0.15)
+    console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
+
+    // Create animations
+    this.createPlayerAnimations(spriteKey);
 
     // Add player name tag
     this.playerNameTag = this.add.text(0, 0, 'You', {
