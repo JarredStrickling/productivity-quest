@@ -24,16 +24,21 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    // Add cache-busting timestamp to force reload
-    const cacheBust = `?v=${Date.now()}`;
+    // Add load error logging for debugging
+    this.load.on('loaderror', (file) => {
+      console.error('ASSET FAILED TO LOAD:', file.key, file.src);
+    });
+
+    // Use static cache bust instead of Date.now() for production stability
+    const cacheBust = `?v=4`; // Bumped for zoom/scale improvements
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
 
     // Load NPC sprites
-    this.load.image('taskmaster', `/assets/sprites/Taskmaster.png${cacheBust}`);
-    this.load.image('taskboard', `/assets/sprites/Taskboard.png${cacheBust}`);
-    this.load.image('dungeonSprite', `/assets/sprites/Dungeon.png${cacheBust}`);
+    this.load.image('taskmaster', `/assets/sprites/taskmaster.png${cacheBust}`);
+    this.load.image('taskboard', `/assets/sprites/taskboard.png${cacheBust}`);
+    this.load.image('dungeonSprite', `/assets/sprites/dungeon.png${cacheBust}`);
 
     // Load sprite sheets for each class
     // Each sprite sheet should be 128x128 (4 frames x 32px wide, 4 directions x 32px tall)
@@ -68,12 +73,26 @@ export default class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-    // Set camera zoom to fit the world on screen
-    // Calculate zoom to show most of the map on mobile
-    const zoomX = this.scale.width / WORLD_WIDTH;
-    const zoomY = this.scale.height / WORLD_HEIGHT;
-    const zoom = Math.min(zoomX, zoomY) * 0.8; // 0.8 to show a bit beyond edges
+    // Enable pixel-perfect rendering for crisp sprites
+    this.cameras.main.setRoundPixels(true);
+
+    // Tile-based zoom: show ~14 tiles across screen for readable sprites
+    const TILE_SIZE = 32;
+    const TILES_ACROSS = 14;
+    let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
+
+    // Clamp zoom to prevent too zoomed in/out on different devices
+    zoom = Phaser.Math.Clamp(zoom, 1.2, 2.4);
     this.cameras.main.setZoom(zoom);
+
+    // Handle screen rotation and resize
+    this.scale.on('resize', (gameSize) => {
+      const TILE_SIZE = 32;
+      const TILES_ACROSS = 14;
+      let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
+      newZoom = Phaser.Math.Clamp(newZoom, 1.2, 2.4);
+      this.cameras.main.setZoom(newZoom);
+    });
 
     // Create town background
     this.createTown();
@@ -127,7 +146,7 @@ export default class MainScene extends Phaser.Scene {
     // Add Productivity Board in center
     this.productivityBoard = this.add.image(512, 512, 'taskboard');
     this.productivityBoard.setDepth(5);
-    this.productivityBoard.setScale(0.3); // Scaled down for proper sizing
+    this.productivityBoard.setScale(0.18); // Scaled down for proper sizing
 
     // Add board name tag
     const boardNameTag = this.add.text(512, 420, 'Productivity Board', {
@@ -150,6 +169,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(10);
+    this.player.setScale(1.5); // Scale up player to be visible
 
     // Create walking animations for each direction
     // Assuming sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Right, Row 3=Up
@@ -242,10 +262,10 @@ export default class MainScene extends Phaser.Scene {
 
     this.npc.setImmovable(true);
     this.npc.setDepth(10);
-    this.npc.setScale(0.25); // Scaled down for proper sizing
+    this.npc.setScale(0.15); // Scaled down for proper sizing
 
     // Add NPC name tag
-    this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 30, 'Task Master', {
+    this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 20, 'Task Master', {
       fontSize: '11px',
       fill: '#fff',
       backgroundColor: '#f59e0b',
@@ -254,7 +274,7 @@ export default class MainScene extends Phaser.Scene {
     this.npcNameTag.setDepth(11);
 
     // Add interaction prompt
-    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 30, 'Tap to talk', {
+    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 20, 'Tap to talk', {
       fontSize: '11px',
       fill: '#fff',
       backgroundColor: '#000',
@@ -272,10 +292,10 @@ export default class MainScene extends Phaser.Scene {
 
     this.dungeonNPC.setImmovable(true);
     this.dungeonNPC.setDepth(10);
-    this.dungeonNPC.setScale(0.35); // Scaled down for proper sizing
+    this.dungeonNPC.setScale(0.2); // Scaled down for proper sizing
 
     // Add dungeon name tag
-    this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 35, 'Dungeon', {
+    this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 22, 'Dungeon', {
       fontSize: '12px',
       fill: '#fff',
       backgroundColor: '#4338ca',
@@ -284,7 +304,7 @@ export default class MainScene extends Phaser.Scene {
     this.dungeonNameTag.setDepth(11);
 
     // Add interaction prompt
-    this.dungeonInteractPrompt = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y + 35, 'Tap to enter', {
+    this.dungeonInteractPrompt = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y + 22, 'Tap to enter', {
       fontSize: '11px',
       fill: '#fff',
       backgroundColor: '#000',
@@ -389,8 +409,8 @@ export default class MainScene extends Phaser.Scene {
     if (this.isModalOpen) return;
 
     this.isDragging = true;
-    this.dragStartX = pointer.x;
-    this.dragStartY = pointer.y;
+    this.dragStartX = pointer.worldX; // Use world coordinates
+    this.dragStartY = pointer.worldY; // Use world coordinates
     this.dragStartTime = Date.now();
   }
 
@@ -420,8 +440,8 @@ export default class MainScene extends Phaser.Scene {
     const dragDistance = Phaser.Math.Distance.Between(
       this.dragStartX,
       this.dragStartY,
-      pointer.x,
-      pointer.y
+      pointer.worldX,
+      pointer.worldY
     );
     const dragDuration = Date.now() - this.dragStartTime;
 

@@ -54,10 +54,15 @@ function App() {
     // Phaser game configuration - responsive for mobile
     const config = {
       type: Phaser.AUTO,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: 390,  // Base iPhone width
+      height: 844, // Base iPhone height
       parent: gameRef.current,
-      backgroundColor: '#2d3748',
+      transparent: true,
+      pixelArt: true, // Enable pixel-perfect rendering
+      render: {
+        antialias: false,
+        roundPixels: true
+      },
       physics: {
         default: 'arcade',
         arcade: {
@@ -67,7 +72,7 @@ function App() {
       },
       scene: [MainScene],
       scale: {
-        mode: Phaser.Scale.RESIZE,
+        mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
       }
     }
