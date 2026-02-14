@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=8`; // Fixed animations, zoom 44%, sprite fixes
+    const cacheBust = `?v=9`; // Fixed animations (RIGHT/UP corrected), zoom working, NPC visibility
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -86,7 +86,7 @@ export default class MainScene extends Phaser.Scene {
     zoom = zoom * 0.56; // Zoom out 44% to show more of the town
 
     // Clamp zoom to prevent too zoomed in/out on different devices
-    zoom = Phaser.Math.Clamp(zoom, 1.0, 2.0);
+    zoom = Phaser.Math.Clamp(zoom, 0.4, 2.0); // Lowered min from 1.0 to 0.4
     this.cameras.main.setZoom(zoom);
 
     // Handle screen rotation and resize
@@ -95,15 +95,17 @@ export default class MainScene extends Phaser.Scene {
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
       newZoom = newZoom * 0.56; // Zoom out 44%
-      newZoom = Phaser.Math.Clamp(newZoom, 1.0, 2.0);
+      newZoom = Phaser.Math.Clamp(newZoom, 0.4, 2.0); // Lowered min from 1.0 to 0.4
       this.cameras.main.setZoom(newZoom);
     });
 
-    // Show title screen
-    this.showTitleScreen();
-
-    // Create town background
+    // Create town background FIRST
     this.createTown();
+
+    // Show title screen after a frame (so map renders first)
+    this.time.delayedCall(100, () => {
+      this.showTitleScreen();
+    });
 
     // Create player
     this.createPlayer();
@@ -196,7 +198,7 @@ export default class MainScene extends Phaser.Scene {
     // Add Productivity Board in center
     this.productivityBoard = this.add.image(512, 512, 'taskboard');
     this.productivityBoard.setDepth(5);
-    this.productivityBoard.setScale(0.18); // Scaled down for proper sizing
+    this.productivityBoard.setScale(0.35); // Increased for visibility with zoom out
 
     // Add board name tag
     const boardNameTag = this.add.text(512, 420, 'Productivity Board', {
@@ -210,7 +212,7 @@ export default class MainScene extends Phaser.Scene {
 
   createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
-    // Sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Up, Row 3=Right
+    // Sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Right, Row 3=Up
     // Each row has 4 frames (idle + 3 walking frames)
 
     // Walking DOWN (row 0, frames 0-3)
@@ -229,17 +231,17 @@ export default class MainScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Walking UP (row 2, frames 8-11) - FIXED
+    // Walking RIGHT (row 2, frames 8-11)
     this.anims.create({
-      key: `${spriteKey}_walk_up`,
+      key: `${spriteKey}_walk_right`,
       frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
       frameRate: 8,
       repeat: -1
     });
 
-    // Walking RIGHT (row 3, frames 12-15) - FIXED
+    // Walking UP (row 3, frames 12-15)
     this.anims.create({
-      key: `${spriteKey}_walk_right`,
+      key: `${spriteKey}_walk_up`,
       frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 15 }),
       frameRate: 8,
       repeat: -1
@@ -259,14 +261,14 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: `${spriteKey}_idle_up`,
-      frames: [{ key: spriteKey, frame: 8 }], // FIXED
+      key: `${spriteKey}_idle_right`,
+      frames: [{ key: spriteKey, frame: 8 }],
       frameRate: 1
     });
 
     this.anims.create({
-      key: `${spriteKey}_idle_right`,
-      frames: [{ key: spriteKey, frame: 12 }], // FIXED
+      key: `${spriteKey}_idle_up`,
+      frames: [{ key: spriteKey, frame: 12 }],
       frameRate: 1
     });
 
@@ -319,7 +321,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.npc.setImmovable(true);
     this.npc.setDepth(10);
-    this.npc.setScale(0.1); // Scaled down for proper sizing
+    this.npc.setScale(0.2); // Increased for visibility with zoom out
 
     // Add NPC name tag
     this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 20, 'Task Master', {
@@ -349,7 +351,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.dungeonNPC.setImmovable(true);
     this.dungeonNPC.setDepth(10);
-    this.dungeonNPC.setScale(0.12); // Scaled down for proper sizing
+    this.dungeonNPC.setScale(0.25); // Increased for visibility with zoom out
 
     // Add dungeon name tag
     this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 22, 'Dungeon', {
