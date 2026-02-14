@@ -18,6 +18,39 @@ export default class MainScene extends Phaser.Scene {
     this.dragStartY = 0;
     this.dragStartTime = 0;
     this.moveVector = { x: 0, y: 0 };
+
+    // Animation state
+    this.lastDirection = 'down';
+  }
+
+  preload() {
+    // Load sprite sheets for each class
+    // Each sprite sheet should be 128x128 (4 frames x 32px wide, 4 directions x 32px tall)
+    // Row 1: Walking DOWN, Row 2: Walking LEFT, Row 3: Walking RIGHT, Row 4: Walking UP
+
+    // Add cache-busting timestamp to force reload
+    const cacheBust = `?v=${Date.now()}`;
+
+    this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    this.load.spritesheet('mage', `/assets/sprites/mage.png${cacheBust}`, {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    this.load.spritesheet('archer', `/assets/sprites/archer.png${cacheBust}`, {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    this.load.spritesheet('cleric', `/assets/sprites/cleric.png${cacheBust}`, {
+      frameWidth: 32,
+      frameHeight: 32
+    });
   }
 
   create() {
@@ -116,31 +149,77 @@ export default class MainScene extends Phaser.Scene {
     // Create player sprite at center of screen
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height * 0.4;
-    this.player = this.physics.add.sprite(centerX, centerY, null);
 
-    // Class-based colors
-    const classColors = {
-      paladin: 0xf59e0b,   // Gold
-      warrior: 0xdc2626,   // Red
-      mage: 0x3b82f6,      // Blue
-      archer: 0x10b981,    // Green
-      cleric: 0x8b5cf6     // Purple
-    };
+    // Use class sprite or default to paladin
+    const spriteKey = this.playerClass || 'paladin';
+    this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
 
-    const playerColor = this.playerClass
-      ? classColors[this.playerClass]
-      : 0x3b82f6;
-
-    // Draw player as a simple character
-    const graphics = this.add.graphics();
-    graphics.fillStyle(playerColor, 1);
-    graphics.fillRect(0, 0, 32, 32);
-    graphics.generateTexture('player', 32, 32);
-    graphics.destroy();
-
-    this.player.setTexture('player');
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(10);
+
+    // Create walking animations for each direction
+    // Assuming sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Right, Row 3=Up
+    // Each row has 4 frames (idle + 3 walking frames)
+
+    // Walking DOWN (row 0, frames 0-3)
+    this.anims.create({
+      key: `${spriteKey}_walk_down`,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 3 }),
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // Walking LEFT (row 1, frames 4-7)
+    this.anims.create({
+      key: `${spriteKey}_walk_left`,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 4, end: 7 }),
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // Walking RIGHT (row 2, frames 8-11)
+    this.anims.create({
+      key: `${spriteKey}_walk_right`,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // Walking UP (row 3, frames 12-15)
+    this.anims.create({
+      key: `${spriteKey}_walk_up`,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 15 }),
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // Idle poses (first frame of each direction)
+    this.anims.create({
+      key: `${spriteKey}_idle_down`,
+      frames: [{ key: spriteKey, frame: 0 }],
+      frameRate: 1
+    });
+
+    this.anims.create({
+      key: `${spriteKey}_idle_left`,
+      frames: [{ key: spriteKey, frame: 4 }],
+      frameRate: 1
+    });
+
+    this.anims.create({
+      key: `${spriteKey}_idle_right`,
+      frames: [{ key: spriteKey, frame: 8 }],
+      frameRate: 1
+    });
+
+    this.anims.create({
+      key: `${spriteKey}_idle_up`,
+      frames: [{ key: spriteKey, frame: 12 }],
+      frameRate: 1
+    });
+
+    // Start with idle down animation
+    this.player.play(`${spriteKey}_idle_down`);
 
     // Add player name tag
     this.playerNameTag = this.add.text(0, 0, 'You', {
@@ -256,9 +335,42 @@ export default class MainScene extends Phaser.Scene {
     // Player movement - touch only
     this.player.setVelocity(0);
 
+    // Get sprite key for animations
+    const spriteKey = this.playerClass || 'paladin';
+    let isMoving = false;
+    let newDirection = this.lastDirection;
+
     // Check if touch/drag input is active
     if (this.isDragging && (this.moveVector.x !== 0 || this.moveVector.y !== 0)) {
       this.player.setVelocity(this.moveVector.x, this.moveVector.y);
+      isMoving = true;
+
+      // Determine animation direction based on movement vector
+      const absX = Math.abs(this.moveVector.x);
+      const absY = Math.abs(this.moveVector.y);
+
+      if (absX > absY) {
+        // Moving more horizontally
+        newDirection = this.moveVector.x > 0 ? 'right' : 'left';
+      } else {
+        // Moving more vertically
+        newDirection = this.moveVector.y > 0 ? 'down' : 'up';
+      }
+    }
+
+    // Update animation based on movement
+    if (isMoving) {
+      const animKey = `${spriteKey}_walk_${newDirection}`;
+      if (this.player.anims.currentAnim?.key !== animKey) {
+        this.player.play(animKey, true);
+      }
+      this.lastDirection = newDirection;
+    } else {
+      // Play idle animation
+      const idleKey = `${spriteKey}_idle_${this.lastDirection}`;
+      if (this.player.anims.currentAnim?.key !== idleKey) {
+        this.player.play(idleKey, true);
+      }
     }
 
     // Check distance to NPC for interaction
