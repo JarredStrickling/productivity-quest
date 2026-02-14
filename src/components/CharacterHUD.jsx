@@ -9,53 +9,32 @@ export default function CharacterHUD({ playerStats, onClick }) {
   const classData = CLASS_CONFIG[playerStats.characterClass];
   const xpPercent = (playerStats.xp / playerStats.xpToNextLevel) * 100;
 
-  // Map class to row index in sprite sheet (1024x1536, 5 rows)
-  // Assuming order: paladin, warrior, mage, archer, cleric
-  const classToRow = {
-    paladin: 0,
-    warrior: 1,
-    mage: 2,
-    archer: 3,
-    cleric: 4
-  };
-
-  const rowIndex = classToRow[playerStats.characterClass] || 0;
-
-  // Sprite sheet is 1024x1536 with 5 rows (each row is 1024x307.2)
-  // Calculate scaling to fit container width while maintaining aspect
-  const spriteSheetHeight = 1536;
-  const rowHeight = spriteSheetHeight / 5; // 307.2px
-
-  // Scale the sprite sheet so each row fits the container
-  const containerHeight = 120; // matches CSS
-  const scale = containerHeight / rowHeight; // ~0.39
-  const scaledSheetHeight = spriteSheetHeight * scale; // ~600px
-
-  const backgroundY = -(rowIndex * containerHeight);
-
   return (
     <div className="character-hud" onClick={onClick}>
-      {/* Character Menu Background Sprite */}
-      <div
-        className="hud-background"
-        style={{
-          backgroundImage: 'url(/assets/sprites/character-menu-xp-bars.png)',
-          backgroundPosition: `center ${backgroundY}px`,
-          backgroundSize: `auto ${scaledSheetHeight}px`,
-        }}
-      />
-
-      {/* XP Progress Bar Overlay */}
-      <div className="hud-xp-bar">
-        <div
-          className="hud-xp-fill"
-          style={{ width: `${xpPercent}%` }}
-        />
+      {/* Class Icon & Info */}
+      <div className="hud-header" style={{ borderColor: classData.color }}>
+        <div className="class-icon" style={{ color: classData.color }}>
+          {classData.icon}
+        </div>
+        <div className="hud-info">
+          <div className="username">{playerStats.username}</div>
+          <div className="level-badge" style={{ backgroundColor: classData.color }}>
+            Lv {playerStats.level}
+          </div>
+        </div>
       </div>
 
-      {/* Level Text */}
-      <div className="hud-level-text">
-        Lv {playerStats.level}
+      {/* XP Progress Bar */}
+      <div className="hud-xp-section">
+        <div className="xp-label">
+          {playerStats.xp} / {playerStats.xpToNextLevel} XP
+        </div>
+        <div className="hud-xp-bar">
+          <div
+            className="hud-xp-fill"
+            style={{ width: `${xpPercent}%` }}
+          />
+        </div>
       </div>
     </div>
   );
