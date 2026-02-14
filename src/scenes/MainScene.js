@@ -40,6 +40,9 @@ export default class MainScene extends Phaser.Scene {
     this.load.image('taskboard', `/assets/sprites/taskboard.png${cacheBust}`);
     this.load.image('dungeonSprite', `/assets/sprites/dungeon.png${cacheBust}`);
 
+    // Load title logo
+    this.load.image('scrollsLogo', `/assets/sprites/scrolls-of-doom-logo.png${cacheBust}`);
+
     // Load sprite sheets for each class
     // Sprites are 1024x1536 (4 frames x 256px wide, 4 rows x 384px tall)
     // Row 0: Walking DOWN, Row 1: Walking LEFT, Row 2: Walking RIGHT, Row 3: Walking UP
@@ -95,6 +98,9 @@ export default class MainScene extends Phaser.Scene {
       newZoom = Phaser.Math.Clamp(newZoom, 1.0, 2.0);
       this.cameras.main.setZoom(newZoom);
     });
+
+    // Show title screen
+    this.showTitleScreen();
 
     // Create town background
     this.createTown();
@@ -321,6 +327,40 @@ export default class MainScene extends Phaser.Scene {
   createUI() {
     // UI is now handled by React overlay for mobile
     // No in-game instructions needed
+  }
+
+  showTitleScreen() {
+    // Create title logo centered on screen
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2;
+
+    const logo = this.add.image(centerX, centerY, 'scrollsLogo');
+    logo.setScrollFactor(0); // Keep it fixed on screen
+    logo.setDepth(1000); // Above everything
+    logo.setAlpha(0); // Start invisible
+    logo.setScale(0.4); // Scale down for better fit
+
+    // Fade in animation
+    this.tweens.add({
+      targets: logo,
+      alpha: 1,
+      duration: 1000,
+      ease: 'Power2',
+      onComplete: () => {
+        // Hold for 2 seconds, then fade out
+        this.time.delayedCall(2000, () => {
+          this.tweens.add({
+            targets: logo,
+            alpha: 0,
+            duration: 1000,
+            ease: 'Power2',
+            onComplete: () => {
+              logo.destroy();
+            }
+          });
+        });
+      }
+    });
   }
 
   update() {
