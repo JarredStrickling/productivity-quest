@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=5`; // Fixed sprite dimensions & transparency
+    const cacheBust = `?v=6`; // Zoom out 20%, conservative transparency, player depth fix
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -80,9 +80,10 @@ export default class MainScene extends Phaser.Scene {
     const TILE_SIZE = 32;
     const TILES_ACROSS = 14;
     let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
+    zoom = zoom * 0.8; // Zoom out 20% to show more of the town
 
     // Clamp zoom to prevent too zoomed in/out on different devices
-    zoom = Phaser.Math.Clamp(zoom, 1.2, 2.4);
+    zoom = Phaser.Math.Clamp(zoom, 1.0, 2.0);
     this.cameras.main.setZoom(zoom);
 
     // Handle screen rotation and resize
@@ -90,7 +91,8 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = Phaser.Math.Clamp(newZoom, 1.2, 2.4);
+      newZoom = newZoom * 0.8; // Zoom out 20%
+      newZoom = Phaser.Math.Clamp(newZoom, 1.0, 2.0);
       this.cameras.main.setZoom(newZoom);
     });
 
@@ -165,11 +167,13 @@ export default class MainScene extends Phaser.Scene {
 
     // Use class sprite or default to paladin
     const spriteKey = this.playerClass || 'paladin';
+    console.log('Creating player with sprite:', spriteKey);
     this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
 
     this.player.setCollideWorldBounds(true);
-    this.player.setDepth(10);
+    this.player.setDepth(50); // Increased depth to ensure above everything
     this.player.setScale(0.15); // Scale for 256x384 sprite frames
+    console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
 
     // Create walking animations for each direction
     // Assuming sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Right, Row 3=Up

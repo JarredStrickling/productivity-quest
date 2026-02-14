@@ -12,7 +12,7 @@ except ImportError:
     print("ERROR: PIL (Pillow) not installed. Install with: pip install Pillow")
     sys.exit(1)
 
-def make_transparent(input_path, output_path, threshold=50):
+def make_transparent(input_path, output_path, threshold=35):
     """
     Convert fake transparency to real alpha channel.
 
@@ -86,7 +86,7 @@ def main():
             print(f"  Backed up to {backup_path}")
 
         # Convert to transparent
-        make_transparent(input_path, input_path, threshold=30)
+        make_transparent(input_path, input_path, threshold=35)
         converted += 1
 
     print("=" * 60)
