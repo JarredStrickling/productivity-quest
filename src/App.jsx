@@ -5,6 +5,8 @@ import TaskSubmissionModal from './components/TaskSubmissionModal'
 import CharacterCreationModal from './components/CharacterCreationModal'
 import CharacterPanel from './components/CharacterPanel'
 import BattleModal from './components/BattleModal'
+import TitleScreen from './components/TitleScreen'
+import CharacterHUD from './components/CharacterHUD'
 import './App.css'
 
 function App() {
@@ -14,6 +16,7 @@ function App() {
   const [showCharacterCreation, setShowCharacterCreation] = useState(false)
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
   const [showBattle, setShowBattle] = useState(false)
+  const [showTitleScreen, setShowTitleScreen] = useState(true)
   const [playerStats, setPlayerStats] = useState({
     // Identity
     username: '',
@@ -197,43 +200,20 @@ function App() {
     }
   }, [playerStats])
 
-  const xpPercentage = (playerStats.xp / playerStats.xpToNextLevel) * 100
-
   return (
     <div className="app-container">
       <div className="game-header">
-        <div className="header-flex">
-          <h1>⚔️ Productivity Quest</h1>
-          {playerStats.username && (
-            <button
-              className="character-btn"
-              onClick={() => setShowCharacterPanel(true)}
-              aria-label="Open character panel"
-            >
-              👤
-            </button>
-          )}
-        </div>
+        <h1>⚔️ Productivity Quest</h1>
         <p>A 2D MMO RPG where real-life achievements power your adventure!</p>
       </div>
 
-      <div className="player-stats-bar">
-        <div className="stat-item">
-          <span className="stat-label">Level</span>
-          <span className="stat-value">{playerStats.level}</span>
-        </div>
-        <div className="xp-display">
-          <span className="xp-text">
-            {playerStats.xp} / {playerStats.xpToNextLevel} XP
-          </span>
-          <div className="xp-bar-container">
-            <div
-              className="xp-bar-fill"
-              style={{ width: `${xpPercentage}%` }}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Character HUD - replaces old stats bar and character button */}
+      {playerStats.username && !showTitleScreen && !showCharacterCreation && (
+        <CharacterHUD
+          playerStats={playerStats}
+          onClick={() => setShowCharacterPanel(true)}
+        />
+      )}
 
       <div ref={gameRef} className="game-canvas" />
 
@@ -270,6 +250,11 @@ function App() {
         onClose={() => setShowBattle(false)}
         playerStats={playerStats}
       />
+
+      {/* Title Screen - shows on first load */}
+      {showTitleScreen && (
+        <TitleScreen onComplete={() => setShowTitleScreen(false)} />
+      )}
     </div>
   )
 }
