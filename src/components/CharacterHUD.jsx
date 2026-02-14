@@ -13,8 +13,12 @@ export default function CharacterHUD({ playerStats, onClick }) {
     <div className="character-hud" onClick={onClick}>
       {/* Class Icon & Info */}
       <div className="hud-header" style={{ borderColor: classData.color }}>
-        <div className="class-icon" style={{ color: classData.color }}>
-          {classData.icon}
+        <div className="class-icon-sprite">
+          <img
+            src={`/assets/sprites/${playerStats.characterClass}-hud.png?v=7`}
+            alt={classData.name}
+            className="class-sprite-img"
+          />
         </div>
         <div className="hud-info">
           <div className="username">{playerStats.username}</div>
