@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=9`; // Fixed animations (RIGHT/UP corrected), zoom working, NPC visibility
+    const cacheBust = `?v=10`; // Frame height 512px, world extended to 1536, black bg
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -44,34 +44,34 @@ export default class MainScene extends Phaser.Scene {
     this.load.image('scrollsLogo', `/assets/sprites/scrolls-of-doom-logo.png${cacheBust}`);
 
     // Load sprite sheets for each class
-    // Sprites are 1024x1536 (4 frames x 256px wide, 4 rows x 384px tall)
-    // Row 0: Walking DOWN, Row 1: Walking LEFT, Row 2: Walking RIGHT, Row 3: Walking UP
+    // Sprites are 1024x1536 - trying 512px height to capture full character including head
+    // Row 0: Walking DOWN, Row 1: Walking LEFT, Row 2: Walking RIGHT
     this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
       frameWidth: 256,
-      frameHeight: 384
+      frameHeight: 512
     });
     this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
       frameWidth: 256,
-      frameHeight: 384
+      frameHeight: 512
     });
     this.load.spritesheet('mage', `/assets/sprites/mage.png${cacheBust}`, {
       frameWidth: 256,
-      frameHeight: 384
+      frameHeight: 512
     });
     this.load.spritesheet('archer', `/assets/sprites/archer.png${cacheBust}`, {
       frameWidth: 256,
-      frameHeight: 384
+      frameHeight: 512
     });
     this.load.spritesheet('cleric', `/assets/sprites/cleric.png${cacheBust}`, {
       frameWidth: 256,
-      frameHeight: 384
+      frameHeight: 512
     });
   }
 
   create() {
-    // Map is 1024x1024 - set world bounds to match
+    // Extend world bounds vertically to fill tall phone screens
     const WORLD_WIDTH = 1024;
-    const WORLD_HEIGHT = 1024;
+    const WORLD_HEIGHT = 1536; // Extended from 1024 to fill vertical screens
 
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
@@ -191,9 +191,15 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createTown() {
-    // Add town map background (1024x1024)
+    // Add town map background (1024x1024) - positioned at top of taller world
     const map = this.add.image(512, 512, 'townMap');
     map.setDepth(0);
+
+    // Extend map area with darker ground at bottom for extended world height
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x4a7c3c, 1); // Darker green for extended area
+    graphics.fillRect(0, 1024, 1024, 512); // Fill bottom 512px
+    graphics.setDepth(0);
 
     // Add Productivity Board in center
     this.productivityBoard = this.add.image(512, 512, 'taskboard');
@@ -212,38 +218,40 @@ export default class MainScene extends Phaser.Scene {
 
   createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
-    // Sprite sheet layout: Row 0=Down, Row 1=Left, Row 2=Right, Row 3=Up
-    // Each row has 4 frames (idle + 3 walking frames)
+    // With 512px height: 3 rows (DOWN/LEFT in row 0, RIGHT/UP split across rows 1-2)
+    // Row 0: DOWN (0-1) + LEFT (2-3)
+    // Row 1: RIGHT (4-5) + UP (6-7)
+    // Row 2: Remaining frames (8-11)
 
-    // Walking DOWN (row 0, frames 0-3)
+    // Walking DOWN (frames 0-1)
     this.anims.create({
       key: `${spriteKey}_walk_down`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 3 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 1 }),
+      frameRate: 6,
       repeat: -1
     });
 
-    // Walking LEFT (row 1, frames 4-7)
+    // Walking LEFT (frames 2-3)
     this.anims.create({
       key: `${spriteKey}_walk_left`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 4, end: 7 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 2, end: 3 }),
+      frameRate: 6,
       repeat: -1
     });
 
-    // Walking RIGHT (row 2, frames 8-11)
+    // Walking RIGHT (frames 4-5)
     this.anims.create({
       key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 4, end: 5 }),
+      frameRate: 6,
       repeat: -1
     });
 
-    // Walking UP (row 3, frames 12-15)
+    // Walking UP (frames 6-7)
     this.anims.create({
       key: `${spriteKey}_walk_up`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 15 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 6, end: 7 }),
+      frameRate: 6,
       repeat: -1
     });
 
@@ -256,19 +264,19 @@ export default class MainScene extends Phaser.Scene {
 
     this.anims.create({
       key: `${spriteKey}_idle_left`,
-      frames: [{ key: spriteKey, frame: 4 }],
+      frames: [{ key: spriteKey, frame: 2 }],
       frameRate: 1
     });
 
     this.anims.create({
       key: `${spriteKey}_idle_right`,
-      frames: [{ key: spriteKey, frame: 8 }],
+      frames: [{ key: spriteKey, frame: 4 }],
       frameRate: 1
     });
 
     this.anims.create({
       key: `${spriteKey}_idle_up`,
-      frames: [{ key: spriteKey, frame: 12 }],
+      frames: [{ key: spriteKey, frame: 6 }],
       frameRate: 1
     });
 
