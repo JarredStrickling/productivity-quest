@@ -20,8 +20,18 @@ export default function CharacterHUD({ playerStats, onClick }) {
   };
 
   const rowIndex = classToRow[playerStats.characterClass] || 0;
-  const spriteHeight = 1536 / 5; // 307.2px per class
-  const backgroundY = -(rowIndex * spriteHeight);
+
+  // Sprite sheet is 1024x1536 with 5 rows (each row is 1024x307.2)
+  // Calculate scaling to fit container width while maintaining aspect
+  const spriteSheetHeight = 1536;
+  const rowHeight = spriteSheetHeight / 5; // 307.2px
+
+  // Scale the sprite sheet so each row fits the container
+  const containerHeight = 120; // matches CSS
+  const scale = containerHeight / rowHeight; // ~0.39
+  const scaledSheetHeight = spriteSheetHeight * scale; // ~600px
+
+  const backgroundY = -(rowIndex * containerHeight);
 
   return (
     <div className="character-hud" onClick={onClick}>
@@ -30,8 +40,8 @@ export default function CharacterHUD({ playerStats, onClick }) {
         className="hud-background"
         style={{
           backgroundImage: 'url(/assets/sprites/character-menu-xp-bars.png)',
-          backgroundPosition: `0 ${backgroundY}px`,
-          backgroundSize: '100% 500%', // 5 rows = 500%
+          backgroundPosition: `center ${backgroundY}px`,
+          backgroundSize: `auto ${scaledSheetHeight}px`,
         }}
       />
 
