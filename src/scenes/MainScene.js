@@ -24,13 +24,20 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load sprite sheets for each class
-    // Each sprite sheet should be 128x128 (4 frames x 32px wide, 4 directions x 32px tall)
-    // Row 1: Walking DOWN, Row 2: Walking LEFT, Row 3: Walking RIGHT, Row 4: Walking UP
-
     // Add cache-busting timestamp to force reload
     const cacheBust = `?v=${Date.now()}`;
 
+    // Load town map
+    this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
+
+    // Load NPC sprites
+    this.load.image('taskmaster', `/assets/sprites/Taskmaster.png${cacheBust}`);
+    this.load.image('taskboard', `/assets/sprites/Taskboard.png${cacheBust}`);
+    this.load.image('dungeonSprite', `/assets/sprites/Dungeon.png${cacheBust}`);
+
+    // Load sprite sheets for each class
+    // Each sprite sheet should be 128x128 (4 frames x 32px wide, 4 directions x 32px tall)
+    // Row 1: Walking DOWN, Row 2: Walking LEFT, Row 3: Walking RIGHT, Row 4: Walking UP
     this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
       frameWidth: 32,
       frameHeight: 32
@@ -54,13 +61,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    // Get responsive dimensions
-    const width = this.scale.width;
-    const height = this.scale.height;
+    // Map is 1024x1024 - set world bounds to match
+    const WORLD_WIDTH = 1024;
+    const WORLD_HEIGHT = 1024;
 
-    // Set world bounds to match canvas size
-    this.cameras.main.setBounds(0, 0, width, height);
-    this.physics.world.setBounds(0, 0, width, height);
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     // Create town background
     this.createTown();
@@ -107,48 +113,29 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createTown() {
-    // Use responsive dimensions
-    const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
+    // Add town map background (1024x1024)
+    const map = this.add.image(512, 512, 'townMap');
+    map.setDepth(0);
 
-    // Grass background - fill entire canvas
-    const grass = this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x4ade80);
+    // Add Productivity Board in center
+    this.productivityBoard = this.add.image(512, 512, 'taskboard');
+    this.productivityBoard.setDepth(5);
+    this.productivityBoard.setScale(1.5); // Make it larger and more visible
 
-    // Town buildings (simple rectangles for now)
-    // House 1 - position relative to canvas size
-    const house1X = this.scale.width * 0.2;
-    this.add.rectangle(house1X, 150, 120, 100, 0x8b4513);
-    this.add.rectangle(house1X, 120, 120, 40, 0x991b1b); // roof
-
-    // House 2 - position relative to canvas size
-    const house2X = this.scale.width * 0.8;
-    this.add.rectangle(house2X, 150, 120, 100, 0x8b4513);
-    this.add.rectangle(house2X, 120, 120, 40, 0x991b1b);
-
-    // Town center building (where NPC will be) - use center position
-    const townCenterY = this.scale.height * 0.75;
-    this.add.rectangle(centerX, townCenterY, 200, 150, 0x6366f1);
-    this.add.rectangle(centerX, townCenterY - 50, 200, 50, 0x4338ca); // roof
-
-    // Add some decorative trees - position relative to canvas
-    this.createTree(this.scale.width * 0.15, this.scale.height * 0.67);
-    this.createTree(this.scale.width * 0.85, this.scale.height * 0.67);
-    this.createTree(this.scale.width * 0.3, this.scale.height * 0.83);
-    this.createTree(this.scale.width * 0.7, this.scale.height * 0.83);
-
-    // Path - center path with responsive sizing
-    this.add.rectangle(centerX, centerY, 60, this.scale.height, 0xd4a574);
-  }
-
-  createTree(x, y) {
-    this.add.rectangle(x, y + 15, 20, 30, 0x78350f); // trunk
-    this.add.circle(x, y - 10, 25, 0x15803d); // leaves
+    // Add board name tag
+    const boardNameTag = this.add.text(512, 440, 'Productivity Board', {
+      fontSize: '14px',
+      fill: '#fff',
+      backgroundColor: '#10b981',
+      padding: { x: 6, y: 3 }
+    }).setOrigin(0.5);
+    boardNameTag.setDepth(11);
   }
 
   createPlayer() {
-    // Create player sprite at center of screen
-    const centerX = this.scale.width / 2;
-    const centerY = this.scale.height * 0.4;
+    // Create player sprite near center of world map
+    const centerX = 512;
+    const centerY = 600; // Slightly below center
 
     // Use class sprite or default to paladin
     const spriteKey = this.playerClass || 'paladin';
@@ -241,33 +228,26 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createNPC() {
-    // Create NPC near the town center building
-    const centerX = this.scale.width / 2;
-    const npcY = this.scale.height * 0.63;
-    this.npc = this.physics.add.sprite(centerX, npcY, null);
+    // Create Task Master in top right area (as requested)
+    const taskmasterX = 850; // Top right area
+    const taskmasterY = 200;
+    this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmaster');
 
-    // Draw NPC as a different colored character
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0xfbbf24, 1);
-    graphics.fillRect(0, 0, 32, 32);
-    graphics.generateTexture('npc', 32, 32);
-    graphics.destroy();
-
-    this.npc.setTexture('npc');
     this.npc.setImmovable(true);
     this.npc.setDepth(10);
+    this.npc.setScale(1.2); // Make NPC slightly larger
 
     // Add NPC name tag
-    const npcNameTag = this.add.text(this.npc.x, this.npc.y - 25, 'Task Master', {
-      fontSize: '12px',
+    this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 40, 'Task Master', {
+      fontSize: '14px',
       fill: '#fff',
       backgroundColor: '#f59e0b',
-      padding: { x: 4, y: 2 }
+      padding: { x: 6, y: 3 }
     }).setOrigin(0.5);
-    npcNameTag.setDepth(11);
+    this.npcNameTag.setDepth(11);
 
     // Add interaction prompt
-    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 30, 'Tap to talk', {
+    this.interactPrompt = this.add.text(this.npc.x, this.npc.y + 45, 'Tap to talk', {
       fontSize: '14px',
       fill: '#fff',
       backgroundColor: '#000',
@@ -278,33 +258,26 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createDungeonNPC() {
-    // Create Dungeon entrance near bottom of map
-    const dungeonX = this.scale.width / 2;
-    const dungeonY = this.scale.height * 0.9;
-    this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, null);
+    // Create Dungeon entrance in bottom-left area for balanced layout
+    const dungeonX = 200;
+    const dungeonY = 850;
+    this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonSprite');
 
-    // Draw dungeon entrance as a dark portal
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0x4338ca, 1);
-    graphics.fillRect(0, 0, 40, 40);
-    graphics.generateTexture('dungeon', 40, 40);
-    graphics.destroy();
-
-    this.dungeonNPC.setTexture('dungeon');
     this.dungeonNPC.setImmovable(true);
     this.dungeonNPC.setDepth(10);
+    this.dungeonNPC.setScale(1.5); // Make dungeon entrance larger
 
     // Add dungeon name tag
-    const dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 30, 'Dungeon', {
-      fontSize: '14px',
+    this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 50, 'Dungeon', {
+      fontSize: '16px',
       fill: '#fff',
       backgroundColor: '#4338ca',
-      padding: { x: 6, y: 3 }
+      padding: { x: 8, y: 4 }
     }).setOrigin(0.5);
-    dungeonNameTag.setDepth(11);
+    this.dungeonNameTag.setDepth(11);
 
     // Add interaction prompt
-    this.dungeonInteractPrompt = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y + 35, 'Tap to enter', {
+    this.dungeonInteractPrompt = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y + 50, 'Tap to enter', {
       fontSize: '14px',
       fill: '#fff',
       backgroundColor: '#000',
