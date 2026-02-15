@@ -31,7 +31,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=19`; // Fixed paladin animation frames (6x4 layout)
+    const cacheBust = `?v=20`; // Fixed disappearing frame (5 frames per direction)
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -233,40 +233,41 @@ export default class MainScene extends Phaser.Scene {
 
   createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
-    // Paladin: 256x256 frames, 1536x1024 total (6 frames wide x 4 rows tall = 24 frames)
-    // Row 1 (frames 0-5): Walking DOWN
-    // Row 2 (frames 6-11): Walking LEFT
-    // Row 3 (frames 12-17): Walking RIGHT
-    // Row 4 (frames 18-23): Walking UP
+    // Paladin: 256x256 frames, 1536x1024 total (6 frames wide x 4 rows tall)
+    // Using 5 frames per direction (6th frame appears to be blank/empty)
+    // Row 1 (frames 0-4): Walking DOWN
+    // Row 2 (frames 6-10): Walking LEFT
+    // Row 3 (frames 12-16): Walking RIGHT
+    // Row 4 (frames 18-22): Walking UP
 
-    // Walking DOWN (frames 0-5)
+    // Walking DOWN (frames 0-4)
     this.anims.create({
       key: `${spriteKey}_walk_down`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 5 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 4 }),
       frameRate: 10,
       repeat: -1
     });
 
-    // Walking LEFT (frames 6-11)
+    // Walking LEFT (frames 6-10)
     this.anims.create({
       key: `${spriteKey}_walk_left`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 6, end: 11 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 6, end: 10 }),
       frameRate: 10,
       repeat: -1
     });
 
-    // Walking RIGHT (frames 12-17)
+    // Walking RIGHT (frames 12-16)
     this.anims.create({
       key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 17 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 16 }),
       frameRate: 10,
       repeat: -1
     });
 
-    // Walking UP (frames 18-23)
+    // Walking UP (frames 18-22)
     this.anims.create({
       key: `${spriteKey}_walk_up`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 18, end: 23 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 18, end: 22 }),
       frameRate: 10,
       repeat: -1
     });
