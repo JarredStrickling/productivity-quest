@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=15`; // Reverted to full 256x256 frames + new tall map
+    const cacheBust = `?v=16`; // New paladin sprite with better spacing + tall map
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
