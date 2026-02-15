@@ -1,82 +1,60 @@
-/* Reuse modal overlay and content from TaskSubmissionModal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+/* Character Creation Modal specific styles - reuses .modal-overlay and .modal-content from TaskSubmissionModal.css */
+
+.char-creation-content {
+  max-width: 900px;
 }
 
-.modal-content {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  border: 4px solid #3b82f6;
-  border-radius: 12px;
-  padding: 30px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.character-creation-modal h2 {
+.char-creation-content h2 {
   color: white;
   margin: 0 0 10px 0;
   font-size: 28px;
   text-align: center;
 }
 
-.modal-subtitle {
+.stage-description {
   color: #94a3b8;
   text-align: center;
   margin: 0 0 30px 0;
-  font-size: 14px;
+  font-size: 16px;
 }
 
-/* Form elements */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+/* Username Stage */
+.username-input-section {
+  margin: 30px 0;
 }
 
-.form-group label {
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
+.username-input-section label {
+  display: block;
+  color: #e2e8f0;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
-.form-group input {
-  padding: 12px;
+.username-input-section input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 18px;
+  background: rgba(15, 23, 42, 0.6);
   border: 2px solid #475569;
   border-radius: 8px;
-  background: #0f172a;
   color: white;
-  font-size: 16px;
-  font-family: inherit;
+  transition: all 0.2s;
 }
 
-.form-group input:focus {
+.username-input-section input:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.error-message {
+.error-text {
   color: #ef4444;
-  font-size: 13px;
-  margin: 0;
-  font-weight: 500;
+  font-size: 14px;
+  margin-top: 8px;
 }
 
-/* Class selection grid */
+/* Class Selection Grid */
 .class-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -97,247 +75,229 @@
 .class-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  background: rgba(30, 41, 59, 0.7);
 }
 
 .class-card.selected {
   border-width: 4px;
   box-shadow: 0 0 20px currentColor;
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(30, 41, 59, 0.9);
 }
 
 .class-icon {
   font-size: 48px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .class-card h3 {
   margin: 0 0 8px 0;
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 22px;
 }
 
 .class-description {
   color: #cbd5e1;
-  font-size: 13px;
+  font-size: 14px;
   margin: 0 0 16px 0;
-  line-height: 1.4;
+  min-height: 40px;
 }
 
 .stats-preview {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #475569;
 }
 
-.stat-preview-item {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #475569;
-  border-radius: 6px;
-  padding: 8px;
+.stat-item {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 6px 10px;
+  border-radius: 4px;
 }
 
-.stat-preview-label {
+.stat-label {
   color: #94a3b8;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
 }
 
-.stat-preview-value {
+.stat-value {
   color: white;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
 }
 
-/* Confirmation stage */
+/* Confirmation Stage */
 .confirmation-card {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(30, 41, 59, 0.6);
   border: 2px solid #475569;
   border-radius: 12px;
-  padding: 25px;
+  padding: 24px;
   margin: 20px 0;
 }
 
 .confirmation-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 25px;
+  gap: 20px;
+  margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: 2px solid #475569;
 }
 
-.confirmation-icon {
-  font-size: 56px;
+.class-icon-large {
+  font-size: 72px;
 }
 
-.confirmation-header h3 {
+.confirm-username {
   color: white;
-  margin: 0;
   font-size: 24px;
   font-weight: bold;
+  margin-bottom: 4px;
 }
 
-.confirmation-header p {
-  margin: 4px 0 0 0;
-  font-size: 16px;
+.confirm-class {
+  font-size: 18px;
   font-weight: 600;
 }
 
-.stats-full h4 {
-  color: white;
+.stats-breakdown h3 {
+  color: #e2e8f0;
+  font-size: 18px;
   margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: bold;
-  text-transform: uppercase;
-  text-align: center;
 }
 
 .stat-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #475569;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 6px;
+  margin-bottom: 8px;
 }
 
-.stat-name {
+.stat-row .stat-label {
   color: #cbd5e1;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
 }
 
-.stat-value {
+.stat-row .stat-value {
   color: white;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
 }
 
 /* Buttons */
-.btn-primary {
-  padding: 15px 30px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+.btn {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 0 #1e40af;
   width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #1e40af;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #1e40af;
-}
-
-.btn-primary:disabled {
-  background: #475569;
-  cursor: not-allowed;
-  box-shadow: none;
-  opacity: 0.5;
+  transform: translateY(0);
 }
 
 .btn-secondary {
-  padding: 15px 30px;
-  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  background: rgba(71, 85, 105, 0.5);
   color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 0 #1e293b;
-  flex: 1;
+  border: 2px solid #475569;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(71, 85, 105, 0.7);
+  border-color: #64748b;
+}
+
+.btn-start-adventure {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-start-adventure:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #1e293b;
-}
-
-.btn-secondary:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #1e293b;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
 }
 
 .button-group {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
-/* Mobile responsiveness */
+/* Mobile Responsive */
 @media (max-width: 640px) {
-  .modal-content {
+  .class-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .char-creation-content {
     padding: 20px;
   }
 
-  .character-creation-modal h2 {
+  .char-creation-content h2 {
     font-size: 24px;
-  }
-
-  .class-grid {
-    grid-template-columns: 1fr;
   }
 
   .class-icon {
     font-size: 40px;
   }
 
-  .class-card h3 {
-    font-size: 18px;
+  .class-icon-large {
+    font-size: 56px;
   }
 
-  .class-description {
-    font-size: 12px;
+  .confirmation-header {
+    flex-direction: column;
+    text-align: center;
   }
 
-  .confirmation-icon {
-    font-size: 48px;
-  }
-
-  .confirmation-header h3 {
+  .confirm-username {
     font-size: 20px;
   }
 
-  .confirmation-header p {
-    font-size: 14px;
+  .confirm-class {
+    font-size: 16px;
   }
+}
 
-  .stat-row {
-    padding: 10px;
-  }
-
-  .stat-name {
-    font-size: 14px;
-  }
-
-  .stat-value {
-    font-size: 18px;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    padding: 12px 20px;
-    font-size: 14px;
+@media (max-width: 480px) {
+  .stats-preview {
+    grid-template-columns: 1fr;
   }
 
   .button-group {
-    flex-direction: column-reverse;
+    grid-template-columns: 1fr;
+  }
+
+  .char-creation-content {
+    padding: 16px;
   }
 }

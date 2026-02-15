@@ -6,32 +6,31 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
   const [stage, setStage] = useState('username'); // 'username' | 'class' | 'confirm'
   const [username, setUsername] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
-  const [error, setError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
 
   if (!isOpen) return null;
 
-  const validateUsername = () => {
-    const trimmed = username.trim();
-    if (trimmed.length < 3) {
-      setError('Username must be at least 3 characters');
-      return false;
+  const validateUsername = (value) => {
+    if (value.length < 3) {
+      return 'Username must be at least 3 characters';
     }
-    if (trimmed.length > 16) {
-      setError('Username must be 16 characters or less');
-      return false;
+    if (value.length > 16) {
+      return 'Username must be 16 characters or less';
     }
-    if (!/^[a-zA-Z0-9 ]+$/.test(trimmed)) {
-      setError('Username can only contain letters, numbers, and spaces');
-      return false;
+    if (!/^[a-zA-Z0-9 ]+$/.test(value)) {
+      return 'Username can only contain letters, numbers, and spaces';
     }
-    setError('');
-    return true;
+    return '';
   };
 
   const handleUsernameNext = () => {
-    if (validateUsername()) {
-      setStage('class');
+    const error = validateUsername(username);
+    if (error) {
+      setUsernameError(error);
+      return;
     }
+    setUsernameError('');
+    setStage('class');
   };
 
   const handleClassSelect = (classKey) => {
@@ -39,18 +38,16 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
   };
 
   const handleClassConfirm = () => {
-    if (selectedClass) {
-      setStage('confirm');
-    }
+    if (!selectedClass) return;
+    setStage('confirm');
   };
 
-  const handleComplete = () => {
+  const handleFinalConfirm = () => {
     const classData = CLASS_CONFIG[selectedClass];
     onComplete({
       username: username.trim(),
       characterClass: selectedClass,
       stats: {
-        hp: classData.baseStats.hp,
         maxHp: classData.baseStats.hp,
         strength: classData.baseStats.strength,
         agility: classData.baseStats.agility,
@@ -59,39 +56,49 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
     });
   };
 
+  const selectedClassData = selectedClass ? CLASS_CONFIG[selectedClass] : null;
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content character-creation-modal">
+    <div className="modal-overlay char-creation-overlay">
+      <div className="modal-content char-creation-content">
+        {/* Stage 1: Username */}
         {stage === 'username' && (
           <>
-            <h2>⚔️ Create Your Character</h2>
-            <p className="modal-subtitle">Choose a name for your hero</p>
+            <h2>Create Your Character</h2>
+            <p className="stage-description">Choose a name for your hero</p>
 
-            <div className="form-group">
-              <label htmlFor="username">Username</label>
+            <div className="username-input-section">
+              <label htmlFor="username">Character Name</label>
               <input
                 id="username"
                 type="text"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username..."
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setUsernameError('');
+                }}
+                placeholder="Enter your name..."
                 maxLength={16}
                 autoFocus
-                onKeyPress={(e) => e.key === 'Enter' && handleUsernameNext()}
               />
-              {error && <p className="error-message">{error}</p>}
+              {usernameError && <div className="error-text">{usernameError}</div>}
             </div>
 
-            <button onClick={handleUsernameNext} className="btn-primary">
-              Next →
+            <button
+              className="btn btn-primary"
+              onClick={handleUsernameNext}
+              disabled={!username.trim()}
+            >
+              Next
             </button>
           </>
         )}
 
+        {/* Stage 2: Class Selection */}
         {stage === 'class' && (
           <>
             <h2>Choose Your Class</h2>
-            <p className="modal-subtitle">Each class has unique strengths</p>
+            <p className="stage-description">Select your character's role</p>
 
             <div className="class-grid">
               {Object.entries(CLASS_CONFIG).map(([key, classData]) => (
@@ -103,26 +110,28 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
                     borderColor: selectedClass === key ? classData.color : '#475569'
                   }}
                 >
-                  <div className="class-icon">{classData.icon}</div>
+                  <div className="class-icon" style={{ color: classData.color }}>
+                    {classData.icon}
+                  </div>
                   <h3 style={{ color: classData.color }}>{classData.name}</h3>
                   <p className="class-description">{classData.description}</p>
 
                   <div className="stats-preview">
-                    <div className="stat-preview-item">
-                      <span className="stat-preview-label">HP</span>
-                      <span className="stat-preview-value">{classData.baseStats.hp}</span>
+                    <div className="stat-item">
+                      <span className="stat-label">HP</span>
+                      <span className="stat-value">{classData.baseStats.hp}</span>
                     </div>
-                    <div className="stat-preview-item">
-                      <span className="stat-preview-label">STR</span>
-                      <span className="stat-preview-value">{classData.baseStats.strength}</span>
+                    <div className="stat-item">
+                      <span className="stat-label">STR</span>
+                      <span className="stat-value">{classData.baseStats.strength}</span>
                     </div>
-                    <div className="stat-preview-item">
-                      <span className="stat-preview-label">AGI</span>
-                      <span className="stat-preview-value">{classData.baseStats.agility}</span>
+                    <div className="stat-item">
+                      <span className="stat-label">AGI</span>
+                      <span className="stat-value">{classData.baseStats.agility}</span>
                     </div>
-                    <div className="stat-preview-item">
-                      <span className="stat-preview-label">MIND</span>
-                      <span className="stat-preview-value">{classData.baseStats.mindPower}</span>
+                    <div className="stat-item">
+                      <span className="stat-label">MIND</span>
+                      <span className="stat-value">{classData.baseStats.mindPower}</span>
                     </div>
                   </div>
                 </div>
@@ -130,12 +139,12 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
             </div>
 
             <div className="button-group">
-              <button onClick={() => setStage('username')} className="btn-secondary">
-                ← Back
+              <button className="btn btn-secondary" onClick={() => setStage('username')}>
+                Back
               </button>
               <button
+                className="btn btn-primary"
                 onClick={handleClassConfirm}
-                className="btn-primary"
                 disabled={!selectedClass}
               >
                 Confirm Class
@@ -144,51 +153,56 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
           </>
         )}
 
-        {stage === 'confirm' && (
+        {/* Stage 3: Confirmation */}
+        {stage === 'confirm' && selectedClassData && (
           <>
             <h2>Confirm Your Hero</h2>
-            <p className="modal-subtitle">Ready to begin your adventure?</p>
+            <p className="stage-description">Ready to begin your adventure?</p>
 
             <div className="confirmation-card">
               <div className="confirmation-header">
-                <span className="confirmation-icon">
-                  {CLASS_CONFIG[selectedClass].icon}
-                </span>
+                <div className="class-icon-large" style={{ color: selectedClassData.color }}>
+                  {selectedClassData.icon}
+                </div>
                 <div>
-                  <h3>{username}</h3>
-                  <p style={{ color: CLASS_CONFIG[selectedClass].color }}>
-                    {CLASS_CONFIG[selectedClass].name}
-                  </p>
+                  <div className="confirm-username">{username}</div>
+                  <div className="confirm-class" style={{ color: selectedClassData.color }}>
+                    {selectedClassData.name}
+                  </div>
                 </div>
               </div>
 
-              <div className="stats-full">
-                <h4>Starting Stats</h4>
+              <div className="stats-breakdown">
+                <h3>Starting Stats</h3>
                 <div className="stat-row">
-                  <span className="stat-name">❤️ HP</span>
-                  <span className="stat-value">{CLASS_CONFIG[selectedClass].baseStats.hp}</span>
+                  <span className="stat-label">Health Points</span>
+                  <span className="stat-value">{selectedClassData.baseStats.hp} HP</span>
                 </div>
                 <div className="stat-row">
-                  <span className="stat-name">⚔️ Strength</span>
-                  <span className="stat-value">{CLASS_CONFIG[selectedClass].baseStats.strength}</span>
+                  <span className="stat-label">Strength</span>
+                  <span className="stat-value">{selectedClassData.baseStats.strength}</span>
                 </div>
                 <div className="stat-row">
-                  <span className="stat-name">⚡ Agility</span>
-                  <span className="stat-value">{CLASS_CONFIG[selectedClass].baseStats.agility}</span>
+                  <span className="stat-label">Agility</span>
+                  <span className="stat-value">{selectedClassData.baseStats.agility}</span>
                 </div>
                 <div className="stat-row">
-                  <span className="stat-name">🔮 Mind Power</span>
-                  <span className="stat-value">{CLASS_CONFIG[selectedClass].baseStats.mindPower}</span>
+                  <span className="stat-label">Mind Power</span>
+                  <span className="stat-value">{selectedClassData.baseStats.mindPower}</span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-label">Mana</span>
+                  <span className="stat-value">{selectedClassData.baseStats.mindPower * 10}</span>
                 </div>
               </div>
             </div>
 
             <div className="button-group">
-              <button onClick={() => setStage('class')} className="btn-secondary">
-                ← Back
+              <button className="btn btn-secondary" onClick={() => setStage('class')}>
+                Back
               </button>
-              <button onClick={handleComplete} className="btn-primary">
-                Start Adventure! 🎮
+              <button className="btn btn-primary btn-start-adventure" onClick={handleFinalConfirm}>
+                Start Adventure!
               </button>
             </div>
           </>
