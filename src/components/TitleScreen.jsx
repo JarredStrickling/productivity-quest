@@ -33,7 +33,7 @@ export default function TitleScreen({ onComplete }) {
   return (
     <div className={`title-screen ${fadeState}`}>
       <img
-        src="/assets/sprites/scrollsofdoomtitle.png"
+        src="/assets/sprites/scrolls-of-doom-logo.png"
         alt="Scrolls of Doom"
         className="title-image"
       />

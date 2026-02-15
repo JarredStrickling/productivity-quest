@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=16`; // New paladin sprite with better spacing + tall map
+    const cacheBust = `?v=17`; // Logo splash screen + background music
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -63,6 +63,9 @@ export default class MainScene extends Phaser.Scene {
       frameWidth: 256,
       frameHeight: 512
     });
+
+    // Load background music
+    this.load.audio('townTheme', '/assets/music/town-theme.wav');
   }
 
   create() {
@@ -169,6 +172,13 @@ export default class MainScene extends Phaser.Scene {
     this.game.events.on('close-task-modal', () => {
       this.isModalOpen = false;
     });
+
+    // Start background music
+    this.townMusic = this.sound.add('townTheme', {
+      loop: true,
+      volume: 0.3
+    });
+    this.townMusic.play();
 
     // Emit game-ready event after a small delay to ensure everything is loaded
     this.time.delayedCall(100, () => {
