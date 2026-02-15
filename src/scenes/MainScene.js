@@ -192,6 +192,22 @@ export default class MainScene extends Phaser.Scene {
     // Emit game-ready event after a small delay to ensure everything is loaded
     this.time.delayedCall(100, () => {
       this.game.events.emit('game-ready');
+
+      // Try to start music automatically (after title screen interaction)
+      this.time.delayedCall(500, () => {
+        if (!this.musicStarted && this.townMusic) {
+          console.log('🎵 Attempting to auto-start music after title screen...');
+          try {
+            const playResult = this.townMusic.play();
+            if (playResult) {
+              console.log('✅ Music started automatically!');
+              this.musicStarted = true;
+            }
+          } catch (error) {
+            console.log('⚠️ Auto-play blocked, will start on first touch:', error);
+          }
+        }
+      });
     });
   }
 

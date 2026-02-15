@@ -6,10 +6,12 @@
   height: 100vh;
   background: #000;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   transition: opacity 1s ease-in-out;
+  cursor: pointer;
 }
 
 .title-screen.fade-in {
@@ -28,8 +30,27 @@
 
 .title-image {
   max-width: 90vw;
-  max-height: 90vh;
+  max-height: 70vh;
   object-fit: contain;
+}
+
+.tap-to-continue {
+  position: absolute;
+  bottom: 80px;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
