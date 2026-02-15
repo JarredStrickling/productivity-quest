@@ -27,11 +27,9 @@ export default function MainMenu({ onNewGame, onLoadGame }) {
       <div className="menu-background" />
 
       <div className="menu-content">
-        <h1 className="game-title">
-          <span className="title-icon">⚔️</span>
-          SCROLLS OF DOOM
-          <span className="title-icon">⚔️</span>
-        </h1>
+        <div className="game-logo">
+          <img src="/assets/sprites/logo.png" alt="Scrolls of Doom" />
+        </div>
 
         <div className="menu-buttons">
           <button className="menu-btn-sprite" onClick={onNewGame}>
