@@ -92,71 +92,32 @@
   width: 400px;
 }
 
-.menu-btn {
-  padding: 20px 40px;
-  font-size: 24px;
-  font-weight: bold;
-  border: 4px solid;
-  border-radius: 0; /* Pixel art style - no rounded corners */
+.menu-btn-sprite {
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: all 0.1s;
-  position: relative;
-  font-family: inherit;
-  letter-spacing: 2px;
-  box-shadow:
-    4px 4px 0px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+  transition: all 0.15s;
+  padding: 0;
+  display: block;
 }
 
-.menu-btn:hover {
+.menu-btn-sprite img {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.menu-btn-sprite:hover {
   transform: translate(-2px, -2px);
-  box-shadow:
-    6px 6px 0px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+  filter: brightness(1.1);
 }
 
-.menu-btn:active {
+.menu-btn-sprite:active {
   transform: translate(2px, 2px);
-  box-shadow:
-    2px 2px 0px rgba(0, 0, 0, 0.5),
-    inset 0 0 0 2px rgba(255, 255, 255, 0.1);
-}
-
-.menu-btn-primary {
-  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
-  border-color: #047857;
-  color: white;
-}
-
-.menu-btn-primary:hover {
-  background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
-}
-
-.menu-btn-secondary {
-  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
-  border-color: #1e40af;
-  color: white;
-}
-
-.menu-btn-secondary:hover {
-  background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
-}
-
-.btn-icon {
-  margin-right: 12px;
-}
-
-.menu-footer {
-  text-align: center;
-  color: white;
-  font-size: 16px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-  max-width: 600px;
-}
-
-.menu-footer p {
-  margin: 0;
-  font-weight: 600;
+  filter: brightness(0.9);
 }
 
 /* Mobile Responsive */
@@ -168,11 +129,6 @@
 
   .menu-buttons {
     width: 320px;
-  }
-
-  .menu-btn {
-    padding: 16px 32px;
-    font-size: 20px;
   }
 }
 
@@ -187,15 +143,5 @@
 
   .menu-buttons {
     width: 280px;
-  }
-
-  .menu-btn {
-    padding: 12px 24px;
-    font-size: 18px;
-  }
-
-  .menu-footer {
-    font-size: 14px;
-    padding: 0 20px;
   }
 }

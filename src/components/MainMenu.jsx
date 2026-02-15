@@ -34,19 +34,13 @@ export default function MainMenu({ onNewGame, onLoadGame }) {
         </h1>
 
         <div className="menu-buttons">
-          <button className="menu-btn menu-btn-primary" onClick={onNewGame}>
-            <span className="btn-icon">✨</span>
-            New Game
+          <button className="menu-btn-sprite" onClick={onNewGame}>
+            <img src="/assets/sprites/newgame.png" alt="New Game" />
           </button>
 
-          <button className="menu-btn menu-btn-secondary" onClick={() => setShowSaveSlots(true)}>
-            <span className="btn-icon">📜</span>
-            Continue
+          <button className="menu-btn-sprite" onClick={() => setShowSaveSlots(true)}>
+            <img src="/assets/sprites/continue.png" alt="Continue" />
           </button>
-        </div>
-
-        <div className="menu-footer">
-          <p>A 2D MMO RPG where real-life achievements power your adventure!</p>
         </div>
       </div>
     </div>
