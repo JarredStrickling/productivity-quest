@@ -1,8 +1,8 @@
 .character-hud {
   position: fixed;
-  top: 10px;
-  left: 10px;
-  width: 240px;
+  top: 5px;
+  left: 5px;
+  width: 200px;
   cursor: pointer;
   z-index: 50;
   transition: all 0.2s;
@@ -41,23 +41,21 @@
 
 .hud-level {
   position: absolute;
-  top: 32%;
-  left: 22%;
+  top: 70%;
+  left: 8%;
   color: white;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-  font-family: 'Press Start 2P', monospace;
 }
 
 .hud-xp-bar {
   position: absolute;
-  top: 62%;
-  left: 15%;
-  width: 70%;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 4px;
+  top: 69%;
+  left: 40%;
+  width: 56%;
+  height: 12%;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -71,30 +69,22 @@
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .character-hud {
-    width: 180px;
-    top: 8px;
-    left: 8px;
+    width: 160px;
+    top: 5px;
+    left: 5px;
   }
 
   .hud-level {
-    font-size: 12px;
-  }
-
-  .hud-xp-bar {
-    height: 6px;
+    font-size: 11px;
   }
 }
 
 @media (max-width: 480px) {
   .character-hud {
-    width: 140px;
+    width: 130px;
   }
 
   .hud-level {
-    font-size: 10px;
-  }
-
-  .hud-xp-bar {
-    height: 5px;
+    font-size: 9px;
   }
 }

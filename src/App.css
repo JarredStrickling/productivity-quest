@@ -7,6 +7,10 @@
 html, body {
   background-color: #000000;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
 }
 
 body {
@@ -176,7 +180,8 @@ body {
 
 /* Mobile responsiveness */
 @media (max-width: 850px) {
-  body {
+  html, body {
+    background: #000000 !important;
     overflow: hidden;
   }
 
@@ -185,6 +190,7 @@ body {
     min-height: 100vh;
     max-height: 100vh;
     overflow: hidden;
+    background: #000000;
   }
 
   .game-header {
@@ -199,9 +205,17 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height for mobile browsers */
     border: none;
     border-radius: 0;
     margin: 0;
+    background: #000000;
+  }
+
+  .game-canvas canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
   }
 
   .game-info {
