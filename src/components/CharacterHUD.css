@@ -1,8 +1,8 @@
 .character-hud {
   position: fixed;
-  top: -15px;
-  left: -10px;
-  width: 180px;
+  top: 10px;
+  left: 10px;
+  width: 360px;
   cursor: pointer;
   z-index: 50;
   transition: all 0.2s;
@@ -41,20 +41,20 @@
 
 .hud-level {
   position: absolute;
-  top: 70%;
+  top: 83%;
   left: 8%;
   color: white;
-  font-size: 13px;
+  font-size: 26px;
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
 }
 
 .hud-xp-bar {
   position: absolute;
-  top: 69%;
-  left: 40%;
-  width: 56%;
-  height: 12%;
+  top: 49%;
+  left: 36%;
+  width: 58%;
+  height: 10%;
   background: transparent;
   overflow: hidden;
 }
@@ -69,22 +69,22 @@
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .character-hud {
-    width: 140px;
-    top: -15px;
-    left: -10px;
+    width: 280px;
+    top: 10px;
+    left: 10px;
   }
 
   .hud-level {
-    font-size: 10px;
+    font-size: 20px;
   }
 }
 
 @media (max-width: 480px) {
   .character-hud {
-    width: 120px;
+    width: 240px;
   }
 
   .hud-level {
-    font-size: 8px;
+    font-size: 16px;
   }
 }
