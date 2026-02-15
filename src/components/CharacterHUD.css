@@ -2,108 +2,63 @@
   position: fixed;
   top: 10px;
   left: 10px;
-  width: 220px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 12px;
+  width: 240px;
   cursor: pointer;
   z-index: 50;
   transition: all 0.2s;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
   pointer-events: auto;
-  backdrop-filter: blur(8px);
 }
 
 .character-hud:hover {
   transform: translateY(-2px);
   filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.8));
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .character-hud:active {
   transform: translateY(0);
 }
 
-.hud-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+.hud-background {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
-.class-icon {
-  font-size: 24px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-.class-icon-sprite {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.class-sprite-img {
+.hud-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 8% 75%; /* Position to show character icon from sprite */
-  image-rendering: pixelated;
-  transform: scale(2.2);
-}
-
-.hud-info {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  pointer-events: none;
 }
 
-.username {
+.hud-level {
+  position: absolute;
+  top: 32%;
+  left: 22%;
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.level-badge {
-  display: inline-block;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  align-self: flex-start;
-}
-
-.hud-xp-section {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.xp-label {
-  color: #cbd5e1;
-  font-size: 11px;
-  font-weight: 600;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  font-family: 'Press Start 2P', monospace;
 }
 
 .hud-xp-bar {
-  width: 100%;
-  height: 14px;
+  position: absolute;
+  top: 62%;
+  left: 15%;
+  width: 70%;
+  height: 8px;
   background: rgba(0, 0, 0, 0.6);
-  border-radius: 7px;
+  border-radius: 4px;
   overflow: hidden;
-  border: 2px solid rgba(251, 191, 36, 0.3);
 }
 
 .hud-xp-fill {
@@ -116,73 +71,30 @@
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .character-hud {
-    width: 150px;
-    padding: 8px;
+    width: 180px;
     top: 8px;
     left: 8px;
   }
 
-  .class-icon {
-    font-size: 20px;
-  }
-
-  .class-icon-sprite {
-    width: 40px;
-    height: 40px;
-  }
-
-  .username {
+  .hud-level {
     font-size: 12px;
   }
 
-  .level-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-
-  .xp-label {
-    font-size: 10px;
-  }
-
   .hud-xp-bar {
-    height: 12px;
+    height: 6px;
   }
 }
 
 @media (max-width: 480px) {
   .character-hud {
-    width: 130px;
-    padding: 6px;
+    width: 140px;
   }
 
-  .class-icon {
-    font-size: 18px;
-  }
-
-  .class-icon-sprite {
-    width: 36px;
-    height: 36px;
-  }
-
-  .hud-header {
-    gap: 8px;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-  }
-
-  .username {
-    font-size: 11px;
-  }
-
-  .level-badge {
-    font-size: 9px;
-  }
-
-  .xp-label {
-    font-size: 9px;
+  .hud-level {
+    font-size: 10px;
   }
 
   .hud-xp-bar {
-    height: 10px;
+    height: 5px;
   }
 }

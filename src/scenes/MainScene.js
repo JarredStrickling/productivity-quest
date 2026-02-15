@@ -11,6 +11,7 @@ export default class MainScene extends Phaser.Scene {
     this.playerLevel = 1;
     this.playerClass = null;
     this.isModalOpen = false;
+    this.musicStarted = false;
 
     // Touch/pointer input state
     this.isDragging = false;
@@ -173,12 +174,11 @@ export default class MainScene extends Phaser.Scene {
       this.isModalOpen = false;
     });
 
-    // Start background music
+    // Prepare background music (will start on first user interaction due to browser autoplay policy)
     this.townMusic = this.sound.add('townTheme', {
       loop: true,
       volume: 0.3
     });
-    this.townMusic.play();
 
     // Emit game-ready event after a small delay to ensure everything is loaded
     this.time.delayedCall(100, () => {
@@ -444,6 +444,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   onPointerDown(pointer) {
+    // Start background music on first user interaction (browser autoplay policy)
+    if (!this.musicStarted && this.townMusic) {
+      this.townMusic.play();
+      this.musicStarted = true;
+    }
+
     // Ignore if modal is open
     if (this.isModalOpen) return;
 

@@ -10,29 +10,14 @@ export default function CharacterHUD({ playerStats, onClick }) {
   const xpPercent = (playerStats.xp / playerStats.xpToNextLevel) * 100;
 
   return (
-    <div className="character-hud" onClick={onClick}>
-      {/* Class Icon & Info */}
-      <div className="hud-header" style={{ borderColor: classData.color }}>
-        <div className="class-icon-sprite">
-          <img
-            src={`/assets/sprites/${playerStats.characterClass}-hud.png?v=8`}
-            alt={classData.name}
-            className="class-sprite-img"
-          />
-        </div>
-        <div className="hud-info">
-          <div className="username">{playerStats.username}</div>
-          <div className="level-badge" style={{ backgroundColor: classData.color }}>
-            Lv {playerStats.level}
-          </div>
-        </div>
-      </div>
-
-      {/* XP Progress Bar */}
-      <div className="hud-xp-section">
-        <div className="xp-label">
-          {playerStats.xp} / {playerStats.xpToNextLevel} XP
-        </div>
+    <div className="character-hud" onClick={onClick} style={{ position: 'relative' }}>
+      <img
+        src="/assets/sprites/paladinHUD.png"
+        alt="Character HUD"
+        className="hud-background"
+      />
+      <div className="hud-overlay">
+        <div className="hud-level">Lv {playerStats.level}</div>
         <div className="hud-xp-bar">
           <div
             className="hud-xp-fill"
