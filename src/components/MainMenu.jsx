@@ -28,7 +28,7 @@ export default function MainMenu({ onNewGame, onLoadGame }) {
 
       <div className="menu-content">
         <div className="game-logo">
-          <img src="/assets/sprites/logo.png" alt="Scrolls of Doom" />
+          <img src="/assets/sprites/scrolls-of-doom-logo.png" alt="Scrolls of Doom" />
         </div>
 
         <div className="menu-buttons">
