@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=11`; // Clean 32x32 sprites
+    const cacheBust = `?v=12`; // High quality 256x256 paladin sprite
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -42,10 +42,10 @@ export default class MainScene extends Phaser.Scene {
 
 
     // Load sprite sheets for each class
-    // Paladin uses clean 32x32 sprite sheet (128x128 total, 4 rows x 4 cols)
-    this.load.spritesheet('paladin', `/assets/sprites/paladin-clean.png${cacheBust}`, {
-      frameWidth: 32,
-      frameHeight: 32
+    // Paladin uses 256x256 sprite sheet (1024x1024 total, 4 rows x 4 cols)
+    this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
+      frameWidth: 256,
+      frameHeight: 256
     });
     this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
       frameWidth: 256,
@@ -148,7 +148,9 @@ export default class MainScene extends Phaser.Scene {
         this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
         this.player.setCollideWorldBounds(true);
         this.player.setDepth(50);
-        this.player.setScale(3); // Integer scale for crisp pixels: 3 * 32 = 96px
+        // Scale based on sprite size: paladin is 256x256, scale to ~96px
+        const scale = spriteKey === 'paladin' ? 0.375 : 0.2; // 256 * 0.375 = 96px
+        this.player.setScale(scale);
 
         // Recreate animations for new class
         this.createPlayerAnimations(spriteKey);
@@ -222,7 +224,7 @@ export default class MainScene extends Phaser.Scene {
 
   createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
-    // Clean 32x32 sprite sheet: 128x128 total (4 rows x 4 cols)
+    // Paladin: 256x256 sprite sheet (1024x1024 total, 4 rows x 4 cols)
     // Row 0 (frames 0-3): Walking DOWN
     // Row 1 (frames 4-7): Walking LEFT
     // Row 2 (frames 8-11): Walking RIGHT
@@ -301,7 +303,9 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(50); // Increased depth to ensure above everything
-    this.player.setScale(3); // Integer scale for crisp pixels: 3 * 32 = 96px
+    // Scale based on sprite size: paladin is 256x256, scale to ~96px
+    const scale = spriteKey === 'paladin' ? 0.375 : 0.2; // 256 * 0.375 = 96px
+    this.player.setScale(scale);
     console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
 
     // Create animations
