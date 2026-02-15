@@ -234,66 +234,67 @@ export default class MainScene extends Phaser.Scene {
   createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
     // Sprite sheet: 1536x1024 total (6 frames wide x 4 rows tall = 256x256 per frame)
-    // Layout per row: [blank, blank, idle, walk1, walk2, walk3]
-    // Row 1 (Down): frame 2 = idle, frames 3-5 = walk
-    // Row 2 (Left): frame 8 = idle, frames 9-11 = walk
-    // Row 3 (Right): frame 14 = idle, frames 15-17 = walk
-    // Row 4 (Up): frame 20 = idle, frames 21-23 = walk
+    // Visible 4x4 grid with padding on left/right edges
+    // Layout per row: [padding, idle, walk1, walk2, walk3, padding]
+    // Row 1 (Down): frame 1 = idle, frames 2-4 = walk
+    // Row 2 (Left): frame 7 = idle, frames 8-10 = walk
+    // Row 3 (Right): frame 13 = idle, frames 14-16 = walk
+    // Row 4 (Up): frame 19 = idle, frames 20-22 = walk
 
-    // Walking DOWN (frames 3-5)
+    // Walking DOWN (frames 2-4)
     this.anims.create({
       key: `${spriteKey}_walk_down`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 3, end: 5 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 2, end: 4 }),
       frameRate: 10,
       repeat: -1
     });
 
-    // Walking LEFT (frames 9-11)
+    // Walking LEFT (frames 8-10)
     this.anims.create({
       key: `${spriteKey}_walk_left`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 9, end: 11 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 10 }),
       frameRate: 10,
       repeat: -1
     });
 
-    // Walking RIGHT (frames 15-17)
+    // Walking RIGHT (frames 14-16)
     this.anims.create({
       key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 15, end: 17 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 14, end: 16 }),
       frameRate: 10,
       repeat: -1
     });
 
-    // Walking UP (frames 21-23)
+    // Walking UP (frames 20-22)
     this.anims.create({
       key: `${spriteKey}_walk_up`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 21, end: 23 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 20, end: 22 }),
       frameRate: 10,
       repeat: -1
     });
 
-    // Idle poses (frame 2, 8, 14, 20 for each direction)
+    // Idle poses (frame 1, 7, 13, 19 for each direction)
     this.anims.create({
       key: `${spriteKey}_idle_down`,
-      frames: [{ key: spriteKey, frame: 2 }],
+      frames: [{ key: spriteKey, frame: 1 }],
       frameRate: 1
     });
 
     this.anims.create({
       key: `${spriteKey}_idle_left`,
-      frames: [{ key: spriteKey, frame: 8 }],
+      frames: [{ key: spriteKey, frame: 7 }],
       frameRate: 1
     });
 
     this.anims.create({
       key: `${spriteKey}_idle_right`,
-      frames: [{ key: spriteKey, frame: 14 }],
+      frames: [{ key: spriteKey, frame: 13 }],
       frameRate: 1
     });
 
     this.anims.create({
       key: `${spriteKey}_idle_up`,
-      frames: [{ key: spriteKey, frame: 20 }],
+      frames: [{ key: spriteKey, frame: 19 }],
       frameRate: 1
     });
 
