@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=12`; // High quality 256x256 paladin sprite
+    const cacheBust = `?v=13`; // Fixed paladin frame clipping with 246x246 frames
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -42,10 +42,10 @@ export default class MainScene extends Phaser.Scene {
 
 
     // Load sprite sheets for each class
-    // Paladin uses 256x256 sprite sheet (1024x1024 total, 4 rows x 4 cols)
+    // Paladin uses 246x246 frames with margin to prevent clipping (1024x1024 total, 4 rows x 4 cols)
     this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
-      frameWidth: 256,
-      frameHeight: 256
+      frameWidth: 246,
+      frameHeight: 246
     });
     this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
       frameWidth: 256,
@@ -145,8 +145,8 @@ export default class MainScene extends Phaser.Scene {
         this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
         this.player.setCollideWorldBounds(true);
         this.player.setDepth(50);
-        // Scale based on sprite size: paladin is 256x256, scale to ~96px
-        const scale = spriteKey === 'paladin' ? 0.375 : 0.2; // 256 * 0.375 = 96px
+        // Scale based on sprite size: paladin is 246x246, scale to ~96px
+        const scale = spriteKey === 'paladin' ? 0.39 : 0.2; // 246 * 0.39 = 96px
         this.player.setScale(scale);
 
         // Recreate animations for new class
