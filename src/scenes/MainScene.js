@@ -312,8 +312,8 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(50); // Increased depth to ensure above everything
-    // Scale based on sprite size: paladin is 236x236, scale to ~96px
-    const scale = spriteKey === 'paladin' ? 0.41 : 0.2; // 236 * 0.41 = 96px
+    // Scale based on sprite size: paladin is 256x256, scale to ~96px
+    const scale = spriteKey === 'paladin' ? 0.375 : 0.2; // 256 * 0.375 = 96px
     this.player.setScale(scale);
     console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
 
