@@ -31,7 +31,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=18`; // Crop-safe paladin sprite
+    const cacheBust = `?v=19`; // Fixed paladin animation frames (6x4 layout)
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -233,41 +233,41 @@ export default class MainScene extends Phaser.Scene {
 
   createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
-    // Paladin: 256x256 sprite sheet (1024x1024 total, 4 rows x 4 cols)
-    // Row 0 (frames 0-3): Walking DOWN
-    // Row 1 (frames 4-7): Walking LEFT
-    // Row 2 (frames 8-11): Walking RIGHT
-    // Row 3 (frames 12-15): Walking UP
+    // Paladin: 256x256 frames, 1536x1024 total (6 frames wide x 4 rows tall = 24 frames)
+    // Row 1 (frames 0-5): Walking DOWN
+    // Row 2 (frames 6-11): Walking LEFT
+    // Row 3 (frames 12-17): Walking RIGHT
+    // Row 4 (frames 18-23): Walking UP
 
-    // Walking DOWN (frames 0-3)
+    // Walking DOWN (frames 0-5)
     this.anims.create({
       key: `${spriteKey}_walk_down`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 3 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 5 }),
+      frameRate: 10,
       repeat: -1
     });
 
-    // Walking LEFT (frames 4-7)
+    // Walking LEFT (frames 6-11)
     this.anims.create({
       key: `${spriteKey}_walk_left`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 4, end: 7 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 6, end: 11 }),
+      frameRate: 10,
       repeat: -1
     });
 
-    // Walking RIGHT (frames 8-11)
+    // Walking RIGHT (frames 12-17)
     this.anims.create({
       key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 17 }),
+      frameRate: 10,
       repeat: -1
     });
 
-    // Walking UP (frames 12-15)
+    // Walking UP (frames 18-23)
     this.anims.create({
       key: `${spriteKey}_walk_up`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 15 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 18, end: 23 }),
+      frameRate: 10,
       repeat: -1
     });
 
@@ -280,19 +280,19 @@ export default class MainScene extends Phaser.Scene {
 
     this.anims.create({
       key: `${spriteKey}_idle_left`,
-      frames: [{ key: spriteKey, frame: 4 }],
+      frames: [{ key: spriteKey, frame: 6 }],
       frameRate: 1
     });
 
     this.anims.create({
       key: `${spriteKey}_idle_right`,
-      frames: [{ key: spriteKey, frame: 8 }],
+      frames: [{ key: spriteKey, frame: 12 }],
       frameRate: 1
     });
 
     this.anims.create({
       key: `${spriteKey}_idle_up`,
-      frames: [{ key: spriteKey, frame: 12 }],
+      frames: [{ key: spriteKey, frame: 18 }],
       frameRate: 1
     });
 
