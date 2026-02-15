@@ -58,7 +58,7 @@ function App() {
       width: window.innerWidth,
       height: window.innerHeight,
       parent: gameRef.current,
-      transparent: true,
+      backgroundColor: '#000000',
       pixelArt: true, // Enable pixel-perfect rendering
       render: {
         antialias: false,

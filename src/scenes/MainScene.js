@@ -40,8 +40,6 @@ export default class MainScene extends Phaser.Scene {
     this.load.image('taskboard', `/assets/sprites/taskboard.png${cacheBust}`);
     this.load.image('dungeonSprite', `/assets/sprites/dungeon.png${cacheBust}`);
 
-    // Load title logo
-    this.load.image('scrollsLogo', `/assets/sprites/scrolls-of-doom-logo.png${cacheBust}`);
 
     // Load sprite sheets for each class
     // Paladin uses clean 32x32 sprite sheet (128x128 total, 4 rows x 4 cols)
@@ -386,41 +384,6 @@ export default class MainScene extends Phaser.Scene {
     // No in-game instructions needed
   }
 
-  showTitleScreen() {
-    // Create title logo centered on screen
-    const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
-
-    const logo = this.add.image(centerX, centerY, 'scrollsLogo');
-    logo.setScrollFactor(0); // Keep it fixed on screen
-    logo.setDepth(1000); // Above everything
-    logo.setAlpha(0); // Start invisible
-    logo.setScale(0.4); // Scale down for better fit
-
-    // Fade in animation
-    this.tweens.add({
-      targets: logo,
-      alpha: 1,
-      duration: 1000,
-      ease: 'Power2',
-      onComplete: () => {
-        // Hold for 2 seconds, then fade out
-        this.time.delayedCall(2000, () => {
-          this.tweens.add({
-            targets: logo,
-            alpha: 0,
-            duration: 1000,
-            ease: 'Power2',
-            onComplete: () => {
-              logo.destroy();
-              // Emit event to React that game is ready
-              this.game.events.emit('game-ready');
-            }
-          });
-        });
-      }
-    });
-  }
 
   update() {
     if (!this.player) return;
