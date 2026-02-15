@@ -33,11 +33,11 @@ export default function MainMenu({ onNewGame, onLoadGame }) {
 
         <div className="menu-buttons">
           <button className="menu-btn-sprite" onClick={onNewGame}>
-            <img src="/assets/sprites/Newgamebutton.png" alt="New Game" />
+            <img src="/assets/sprites/smallernewgame.PNG" alt="New Game" />
           </button>
 
           <button className="menu-btn-sprite" onClick={() => setShowSaveSlots(true)}>
-            <img src="/assets/sprites/NEWcontinuebutton.png" alt="Continue" />
+            <img src="/assets/sprites/smallercontinue.PNG" alt="Continue" />
           </button>
         </div>
       </div>
