@@ -131,14 +131,12 @@ export default class MainScene extends Phaser.Scene {
       const classChanged = this.playerClass !== stats.characterClass;
       this.playerLevel = stats.level;
       this.playerClass = stats.characterClass;
-      this.levelText.setText(`Lv ${stats.level}`);
 
       // Recreate player if class changed
       if (classChanged && this.player) {
         const oldX = this.player.x;
         const oldY = this.player.y;
         this.player.destroy();
-        this.levelText.destroy();
 
         // Recreate player at same position
         const centerX = oldX;
@@ -153,15 +151,6 @@ export default class MainScene extends Phaser.Scene {
 
         // Recreate animations for new class
         this.createPlayerAnimations(spriteKey);
-
-        // Recreate level text
-        this.levelText = this.add.text(0, 0, `Lv ${stats.level}`, {
-          fontSize: '11px',
-          fill: '#fbbf24',
-          backgroundColor: '#000',
-          padding: { x: 3, y: 1 }
-        }).setOrigin(0.5);
-        this.levelText.setDepth(11);
 
         // Restart camera follow
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -301,15 +290,6 @@ export default class MainScene extends Phaser.Scene {
 
     // Create animations
     this.createPlayerAnimations(spriteKey);
-
-    // Add level indicator on player
-    this.levelText = this.add.text(0, 0, 'Lv 1', {
-      fontSize: '11px',
-      fill: '#fbbf24',
-      backgroundColor: '#000',
-      padding: { x: 3, y: 1 }
-    }).setOrigin(0.5);
-    this.levelText.setDepth(11);
   }
 
   createNPC() {
@@ -380,9 +360,6 @@ export default class MainScene extends Phaser.Scene {
 
   update() {
     if (!this.player) return;
-
-    // Update level text position
-    this.levelText.setPosition(this.player.x, this.player.y + 25);
 
     // If modal is open, stop all game input processing
     if (this.isModalOpen) {
