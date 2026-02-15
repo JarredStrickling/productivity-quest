@@ -67,6 +67,10 @@ export default class MainScene extends Phaser.Scene {
 
     // Load background music
     this.load.audio('townTheme', '/assets/music/town-theme.wav');
+
+    this.load.on('filecomplete-audio-townTheme', () => {
+      console.log('✅ Town theme music loaded successfully');
+    });
   }
 
   create() {
@@ -175,10 +179,15 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Prepare background music (will start on first user interaction due to browser autoplay policy)
-    this.townMusic = this.sound.add('townTheme', {
-      loop: true,
-      volume: 0.3
-    });
+    try {
+      this.townMusic = this.sound.add('townTheme', {
+        loop: true,
+        volume: 0.3
+      });
+      console.log('🎵 Town music created, ready to play on user interaction');
+    } catch (error) {
+      console.error('❌ Failed to create town music:', error);
+    }
 
     // Emit game-ready event after a small delay to ensure everything is loaded
     this.time.delayedCall(100, () => {
@@ -446,8 +455,14 @@ export default class MainScene extends Phaser.Scene {
   onPointerDown(pointer) {
     // Start background music on first user interaction (browser autoplay policy)
     if (!this.musicStarted && this.townMusic) {
-      this.townMusic.play();
-      this.musicStarted = true;
+      console.log('🎵 Starting town music...');
+      try {
+        const playResult = this.townMusic.play();
+        console.log('🎵 Music play result:', playResult);
+        this.musicStarted = true;
+      } catch (error) {
+        console.error('❌ Error playing music:', error);
+      }
     }
 
     // Ignore if modal is open
