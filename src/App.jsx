@@ -17,6 +17,7 @@ function App() {
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
   const [showBattle, setShowBattle] = useState(false)
   const [showTitleScreen, setShowTitleScreen] = useState(true)
+  const [gameLoaded, setGameLoaded] = useState(false)
   const [playerStats, setPlayerStats] = useState({
     // Identity
     username: '',
@@ -93,6 +94,10 @@ function App() {
 
       game.events.on('open-battle', () => {
         setShowBattle(true)
+      })
+
+      game.events.on('game-ready', () => {
+        setGameLoaded(true)
       })
     }
 
@@ -213,7 +218,7 @@ function App() {
       </div>
 
       {/* Character HUD - replaces old stats bar and character button */}
-      {playerStats.username && !showTitleScreen && !showCharacterCreation && (
+      {playerStats.username && !showTitleScreen && !showCharacterCreation && gameLoaded && (
         <CharacterHUD
           playerStats={playerStats}
           onClick={() => setShowCharacterPanel(true)}

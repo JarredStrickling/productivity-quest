@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=10`; // Frame height 512px, world extended to 1536, black bg
+    const cacheBust = `?v=11`; // Clean 32x32 sprites
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -44,11 +44,10 @@ export default class MainScene extends Phaser.Scene {
     this.load.image('scrollsLogo', `/assets/sprites/scrolls-of-doom-logo.png${cacheBust}`);
 
     // Load sprite sheets for each class
-    // Sprites are 1024x1536 - trying 512px height to capture full character including head
-    // Row 0: Walking DOWN, Row 1: Walking LEFT, Row 2: Walking RIGHT
-    this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
-      frameWidth: 256,
-      frameHeight: 512
+    // Paladin uses clean 32x32 sprite sheet (128x128 total, 4 rows x 4 cols)
+    this.load.spritesheet('paladin', `/assets/sprites/paladin-clean.png${cacheBust}`, {
+      frameWidth: 32,
+      frameHeight: 32
     });
     this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
       frameWidth: 256,
@@ -149,7 +148,7 @@ export default class MainScene extends Phaser.Scene {
         this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
         this.player.setCollideWorldBounds(true);
         this.player.setDepth(50);
-        this.player.setScale(0.3);
+        this.player.setScale(2.5);
 
         // Recreate animations for new class
         this.createPlayerAnimations(spriteKey);
@@ -218,40 +217,41 @@ export default class MainScene extends Phaser.Scene {
 
   createPlayerAnimations(spriteKey) {
     // Create walking animations for each direction
-    // With 512px height: 3 rows (DOWN/LEFT in row 0, RIGHT/UP split across rows 1-2)
-    // Row 0: DOWN (0-1) + LEFT (2-3)
-    // Row 1: RIGHT (4-5) + UP (6-7)
-    // Row 2: Remaining frames (8-11)
+    // Clean 32x32 sprite sheet: 128x128 total (4 rows x 4 cols)
+    // Row 0 (frames 0-3): Walking DOWN
+    // Row 1 (frames 4-7): Walking LEFT
+    // Row 2 (frames 8-11): Walking RIGHT
+    // Row 3 (frames 12-15): Walking UP
 
-    // Walking DOWN (frames 0-1)
+    // Walking DOWN (frames 0-3)
     this.anims.create({
       key: `${spriteKey}_walk_down`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 1 }),
-      frameRate: 6,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 3 }),
+      frameRate: 8,
       repeat: -1
     });
 
-    // Walking LEFT (frames 2-3)
+    // Walking LEFT (frames 4-7)
     this.anims.create({
       key: `${spriteKey}_walk_left`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 2, end: 3 }),
-      frameRate: 6,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 4, end: 7 }),
+      frameRate: 8,
       repeat: -1
     });
 
-    // Walking RIGHT (frames 4-5)
+    // Walking RIGHT (frames 8-11)
     this.anims.create({
       key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 4, end: 5 }),
-      frameRate: 6,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
+      frameRate: 8,
       repeat: -1
     });
 
-    // Walking UP (frames 6-7)
+    // Walking UP (frames 12-15)
     this.anims.create({
       key: `${spriteKey}_walk_up`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 6, end: 7 }),
-      frameRate: 6,
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 12, end: 15 }),
+      frameRate: 8,
       repeat: -1
     });
 
@@ -264,19 +264,19 @@ export default class MainScene extends Phaser.Scene {
 
     this.anims.create({
       key: `${spriteKey}_idle_left`,
-      frames: [{ key: spriteKey, frame: 2 }],
-      frameRate: 1
-    });
-
-    this.anims.create({
-      key: `${spriteKey}_idle_right`,
       frames: [{ key: spriteKey, frame: 4 }],
       frameRate: 1
     });
 
     this.anims.create({
+      key: `${spriteKey}_idle_right`,
+      frames: [{ key: spriteKey, frame: 8 }],
+      frameRate: 1
+    });
+
+    this.anims.create({
       key: `${spriteKey}_idle_up`,
-      frames: [{ key: spriteKey, frame: 6 }],
+      frames: [{ key: spriteKey, frame: 12 }],
       frameRate: 1
     });
 
@@ -296,7 +296,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(50); // Increased depth to ensure above everything
-    this.player.setScale(0.3); // Scale for 256x384 sprite frames (doubled from 0.15)
+    this.player.setScale(2.5); // Scale for 32x32 sprite frames (2.5 * 32 = 80px)
     console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
 
     // Create animations
@@ -413,6 +413,8 @@ export default class MainScene extends Phaser.Scene {
             ease: 'Power2',
             onComplete: () => {
               logo.destroy();
+              // Emit event to React that game is ready
+              this.game.events.emit('game-ready');
             }
           });
         });
