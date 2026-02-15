@@ -138,7 +138,6 @@ export default class MainScene extends Phaser.Scene {
         const oldX = this.player.x;
         const oldY = this.player.y;
         this.player.destroy();
-        this.playerNameTag.destroy();
         this.levelText.destroy();
 
         // Recreate player at same position
@@ -155,15 +154,7 @@ export default class MainScene extends Phaser.Scene {
         // Recreate animations for new class
         this.createPlayerAnimations(spriteKey);
 
-        // Recreate name tag and level text
-        this.playerNameTag = this.add.text(0, 0, 'You', {
-          fontSize: '12px',
-          fill: '#fff',
-          backgroundColor: '#000',
-          padding: { x: 4, y: 2 }
-        }).setOrigin(0.5);
-        this.playerNameTag.setDepth(11);
-
+        // Recreate level text
         this.levelText = this.add.text(0, 0, `Lv ${stats.level}`, {
           fontSize: '11px',
           fill: '#fbbf24',
@@ -311,15 +302,6 @@ export default class MainScene extends Phaser.Scene {
     // Create animations
     this.createPlayerAnimations(spriteKey);
 
-    // Add player name tag
-    this.playerNameTag = this.add.text(0, 0, 'You', {
-      fontSize: '12px',
-      fill: '#fff',
-      backgroundColor: '#000',
-      padding: { x: 4, y: 2 }
-    }).setOrigin(0.5);
-    this.playerNameTag.setDepth(11);
-
     // Add level indicator on player
     this.levelText = this.add.text(0, 0, 'Lv 1', {
       fontSize: '11px',
@@ -399,8 +381,7 @@ export default class MainScene extends Phaser.Scene {
   update() {
     if (!this.player) return;
 
-    // Update player name tag position (always do this)
-    this.playerNameTag.setPosition(this.player.x, this.player.y - 25);
+    // Update level text position
     this.levelText.setPosition(this.player.x, this.player.y + 25);
 
     // If modal is open, stop all game input processing
