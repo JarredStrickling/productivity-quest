@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+const stats = localStorage.getItem('playerStats');
+if (stats) {
+  console.log('Character data:', JSON.parse(stats));
+  document.body.innerHTML = '<pre>' + JSON.stringify(JSON.parse(stats), null, 2) + '</pre>';
+} else {
+  document.body.innerHTML = '<h1>No character data found</h1>';
+}
+</script>
+</body>
+</html>

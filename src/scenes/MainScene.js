@@ -80,10 +80,13 @@ export default class MainScene extends Phaser.Scene {
     const TILE_SIZE = 32;
     const TILES_ACROSS = 14;
     let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
-    zoom = zoom * 0.56; // Zoom out 44% to show more of the town
+    zoom = zoom * 0.5; // Zoom out 50% to show more of the town - using 0.5 for cleaner pixel alignment
+
+    // Round to nearest 0.5 increment for crisp pixel rendering
+    zoom = Math.round(zoom * 2) / 2;
 
     // Clamp zoom to prevent too zoomed in/out on different devices
-    zoom = Phaser.Math.Clamp(zoom, 0.4, 2.0); // Lowered min from 1.0 to 0.4
+    zoom = Phaser.Math.Clamp(zoom, 0.5, 2.0); // Using 0.5 instead of 0.4 for integer-like scaling
     this.cameras.main.setZoom(zoom);
 
     // Handle screen rotation and resize
@@ -91,8 +94,12 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = newZoom * 0.56; // Zoom out 44%
-      newZoom = Phaser.Math.Clamp(newZoom, 0.4, 2.0); // Lowered min from 1.0 to 0.4
+      newZoom = newZoom * 0.5; // Zoom out 50% - using 0.5 for cleaner pixel alignment
+
+      // Round to nearest 0.5 increment for crisp pixel rendering
+      newZoom = Math.round(newZoom * 2) / 2;
+
+      newZoom = Phaser.Math.Clamp(newZoom, 0.5, 2.0); // Using 0.5 for integer-like scaling
       this.cameras.main.setZoom(newZoom);
     });
 
@@ -141,7 +148,7 @@ export default class MainScene extends Phaser.Scene {
         this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
         this.player.setCollideWorldBounds(true);
         this.player.setDepth(50);
-        this.player.setScale(2.5);
+        this.player.setScale(3); // Integer scale for crisp pixels: 3 * 32 = 96px
 
         // Recreate animations for new class
         this.createPlayerAnimations(spriteKey);
@@ -294,7 +301,7 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(50); // Increased depth to ensure above everything
-    this.player.setScale(2.5); // Scale for 32x32 sprite frames (2.5 * 32 = 80px)
+    this.player.setScale(3); // Integer scale for crisp pixels: 3 * 32 = 96px
     console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
 
     // Create animations
