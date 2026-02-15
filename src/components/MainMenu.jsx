@@ -29,7 +29,7 @@ export default function MainMenu({ onNewGame, onLoadGame }) {
       <div className="menu-content">
         <h1 className="game-title">
           <span className="title-icon">⚔️</span>
-          PRODUCTIVITY QUEST
+          SCROLLS OF DOOM
           <span className="title-icon">⚔️</span>
         </h1>
 

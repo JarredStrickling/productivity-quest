@@ -17,8 +17,8 @@ function App() {
   const [showCharacterCreation, setShowCharacterCreation] = useState(false)
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
   const [showBattle, setShowBattle] = useState(false)
-  const [showTitleScreen, setShowTitleScreen] = useState(true)
-  const [showMainMenu, setShowMainMenu] = useState(false)
+  const [showTitleScreen, setShowTitleScreen] = useState(false)
+  const [showMainMenu, setShowMainMenu] = useState(true)
   const [gameLoaded, setGameLoaded] = useState(false)
   const [currentSaveSlot, setCurrentSaveSlot] = useState(null)
   const [playerStats, setPlayerStats] = useState({

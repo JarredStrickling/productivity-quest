@@ -93,18 +93,20 @@
 }
 
 .menu-btn-sprite {
-  background: transparent;
+  background: transparent !important;
   border: none;
   cursor: pointer;
   transition: all 0.15s;
   padding: 0;
   display: block;
+  outline: none;
 }
 
 .menu-btn-sprite img {
   width: 100%;
   height: auto;
   display: block;
+  background: transparent;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
