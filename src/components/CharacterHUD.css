@@ -1,8 +1,8 @@
 .character-hud {
   position: fixed;
-  top: 5px;
-  left: 5px;
-  width: 200px;
+  top: -15px;
+  left: -10px;
+  width: 180px;
   cursor: pointer;
   z-index: 50;
   transition: all 0.2s;
@@ -69,22 +69,22 @@
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .character-hud {
-    width: 160px;
-    top: 5px;
-    left: 5px;
+    width: 140px;
+    top: -15px;
+    left: -10px;
   }
 
   .hud-level {
-    font-size: 11px;
+    font-size: 10px;
   }
 }
 
 @media (max-width: 480px) {
   .character-hud {
-    width: 130px;
+    width: 120px;
   }
 
   .hud-level {
-    font-size: 9px;
+    font-size: 8px;
   }
 }
