@@ -7,6 +7,7 @@ import CharacterPanel from './components/CharacterPanel'
 import BattleModal from './components/BattleModal'
 import TitleScreen from './components/TitleScreen'
 import CharacterHUD from './components/CharacterHUD'
+import MainMenu from './components/MainMenu'
 import './App.css'
 
 function App() {
@@ -17,7 +18,9 @@ function App() {
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
   const [showBattle, setShowBattle] = useState(false)
   const [showTitleScreen, setShowTitleScreen] = useState(true)
+  const [showMainMenu, setShowMainMenu] = useState(false)
   const [gameLoaded, setGameLoaded] = useState(false)
+  const [currentSaveSlot, setCurrentSaveSlot] = useState(null)
   const [playerStats, setPlayerStats] = useState({
     // Identity
     username: '',
@@ -142,8 +145,41 @@ function App() {
       })
     }
 
-    // Save to localStorage
-    localStorage.setItem('playerStats', JSON.stringify(newStats))
+    // Save to current save slot
+    const slotKey = `saveSlot${currentSaveSlot || 1}`
+    localStorage.setItem(slotKey, JSON.stringify(newStats))
+  }
+
+  const handleNewGame = (slotId = null) => {
+    // Use provided slot ID or find first empty slot
+    let slotToUse = slotId
+    if (!slotToUse) {
+      slotToUse = 1
+      for (let i = 1; i <= 3; i++) {
+        const slotKey = `saveSlot${i}`
+        const savedData = localStorage.getItem(slotKey)
+        if (!savedData) {
+          slotToUse = i
+          break
+        }
+      }
+    }
+    setCurrentSaveSlot(slotToUse)
+    setShowMainMenu(false)
+    setShowCharacterCreation(true)
+  }
+
+  const handleLoadGame = (slot) => {
+    if (slot && slot.data) {
+      // Load existing save
+      setCurrentSaveSlot(slot.slotId)
+      setPlayerStats(slot.data)
+      setShowMainMenu(false)
+
+      if (gameInstanceRef.current) {
+        gameInstanceRef.current.events.emit('update-stats', slot.data)
+      }
+    }
   }
 
   const handleCharacterCreation = ({ username, characterClass, stats }) => {
@@ -169,7 +205,11 @@ function App() {
     }
 
     setPlayerStats(newStats)
-    localStorage.setItem('playerStats', JSON.stringify(newStats))
+
+    // Save to the current save slot
+    const slotKey = `saveSlot${currentSaveSlot || 1}`
+    localStorage.setItem(slotKey, JSON.stringify(newStats))
+
     setShowCharacterCreation(false)
 
     if (gameInstanceRef.current) {
@@ -177,29 +217,21 @@ function App() {
     }
   }
 
-  // Load player stats from localStorage on mount
+  // Migrate old save data to new slot system on first load
   useEffect(() => {
-    const savedStats = localStorage.getItem('playerStats')
-    if (savedStats) {
+    const oldSaveData = localStorage.getItem('playerStats')
+    if (oldSaveData && !localStorage.getItem('saveSlot1')) {
+      // Migrate old save to slot 1
       try {
-        const parsed = JSON.parse(savedStats)
+        const parsed = JSON.parse(oldSaveData)
         if (parsed.username && parsed.characterClass) {
-          // Has complete character data
-          setPlayerStats(parsed)
-        } else {
-          // Old or incomplete data, clear and show creation
+          localStorage.setItem('saveSlot1', oldSaveData)
           localStorage.removeItem('playerStats')
-          setShowCharacterCreation(true)
         }
       } catch (error) {
-        // Corrupted data, clear and show creation
-        console.error('Failed to parse saved stats:', error)
+        console.error('Failed to migrate old save data:', error)
         localStorage.removeItem('playerStats')
-        setShowCharacterCreation(true)
       }
-    } else {
-      // First time, show creation
-      setShowCharacterCreation(true)
     }
   }, [])
 
@@ -218,7 +250,7 @@ function App() {
       </div>
 
       {/* Character HUD - replaces old stats bar and character button */}
-      {playerStats.username && !showTitleScreen && !showCharacterCreation && gameLoaded && (
+      {playerStats.username && !showTitleScreen && !showMainMenu && !showCharacterCreation && gameLoaded && (
         <CharacterHUD
           playerStats={playerStats}
           onClick={() => setShowCharacterPanel(true)}
@@ -263,7 +295,18 @@ function App() {
 
       {/* Title Screen - shows on first load */}
       {showTitleScreen && (
-        <TitleScreen onComplete={() => setShowTitleScreen(false)} />
+        <TitleScreen onComplete={() => {
+          setShowTitleScreen(false)
+          setShowMainMenu(true)
+        }} />
+      )}
+
+      {/* Main Menu - shows after title screen */}
+      {showMainMenu && (
+        <MainMenu
+          onNewGame={handleNewGame}
+          onLoadGame={handleLoadGame}
+        />
       )}
     </div>
   )
