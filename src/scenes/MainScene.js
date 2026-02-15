@@ -101,11 +101,6 @@ export default class MainScene extends Phaser.Scene {
     // Create town background FIRST
     this.createTown();
 
-    // Show title screen after a frame (so map renders first)
-    this.time.delayedCall(100, () => {
-      this.showTitleScreen();
-    });
-
     // Create player
     this.createPlayer();
 
@@ -186,6 +181,11 @@ export default class MainScene extends Phaser.Scene {
 
     this.game.events.on('close-task-modal', () => {
       this.isModalOpen = false;
+    });
+
+    // Emit game-ready event after a small delay to ensure everything is loaded
+    this.time.delayedCall(100, () => {
+      this.game.events.emit('game-ready');
     });
   }
 
