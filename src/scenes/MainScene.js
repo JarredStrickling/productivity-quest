@@ -31,7 +31,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=17`; // Logo splash screen + background music
+    const cacheBust = `?v=18`; // Crop-safe paladin sprite
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -255,10 +255,10 @@ export default class MainScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Walking RIGHT (frames 8-10, skipping 11 due to sprite overlap)
+    // Walking RIGHT (frames 8-11)
     this.anims.create({
       key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 10 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
       frameRate: 8,
       repeat: -1
     });
