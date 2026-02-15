@@ -30,7 +30,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=14`; // Fixed paladin frame clipping with 236x236 frames (20px margin)
+    const cacheBust = `?v=15`; // Reverted to full 256x256 frames + new tall map
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -42,10 +42,10 @@ export default class MainScene extends Phaser.Scene {
 
 
     // Load sprite sheets for each class
-    // Paladin uses 236x236 frames with 20px margin to prevent clipping (1024x1024 total, 4 rows x 4 cols)
+    // Paladin uses full 256x256 frames (1024x1024 total, 4 rows x 4 cols)
     this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
-      frameWidth: 236,
-      frameHeight: 236
+      frameWidth: 256,
+      frameHeight: 256
     });
     this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
       frameWidth: 256,
@@ -145,8 +145,8 @@ export default class MainScene extends Phaser.Scene {
         this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
         this.player.setCollideWorldBounds(true);
         this.player.setDepth(50);
-        // Scale based on sprite size: paladin is 236x236, scale to ~96px
-        const scale = spriteKey === 'paladin' ? 0.41 : 0.2; // 236 * 0.41 = 96px
+        // Scale based on sprite size: paladin is 256x256, scale to ~96px
+        const scale = spriteKey === 'paladin' ? 0.375 : 0.2; // 256 * 0.375 = 96px
         this.player.setScale(scale);
 
         // Recreate animations for new class
@@ -177,15 +177,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createTown() {
-    // Add town map background (1024x1024) - positioned at top of taller world
-    const map = this.add.image(512, 512, 'townMap');
+    // Add town map background (1024x1536) - centered in taller world for phones
+    const map = this.add.image(512, 768, 'townMap');
     map.setDepth(0);
-
-    // Extend map area with darker ground at bottom for extended world height
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0x4a7c3c, 1); // Darker green for extended area
-    graphics.fillRect(0, 1024, 1024, 512); // Fill bottom 512px
-    graphics.setDepth(0);
 
     // Add Productivity Board in center
     this.productivityBoard = this.add.image(512, 512, 'taskboard');
