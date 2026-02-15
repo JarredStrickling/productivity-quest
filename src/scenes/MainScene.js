@@ -255,10 +255,10 @@ export default class MainScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // Walking RIGHT (frames 8-11)
+    // Walking RIGHT (frames 8-10, skipping 11 due to sprite overlap)
     this.anims.create({
       key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 11 }),
+      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 10 }),
       frameRate: 8,
       repeat: -1
     });
