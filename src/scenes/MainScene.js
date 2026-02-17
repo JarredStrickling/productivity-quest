@@ -34,7 +34,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=20`; // Fixed disappearing frame (5 frames per direction)
+    const cacheBust = `?v=21`; // Arena update - force sprite reload
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
