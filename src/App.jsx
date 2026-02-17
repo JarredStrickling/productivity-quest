@@ -6,8 +6,12 @@ import CharacterCreationModal from './components/CharacterCreationModal'
 import CharacterPanel from './components/CharacterPanel'
 import BattleModal from './components/BattleModal'
 import TitleScreen from './components/TitleScreen'
-import CharacterHUD from './components/CharacterHUD'
+import SimpleHUD from './components/SimpleHUD'
 import MainMenu from './components/MainMenu'
+import WeeklyQuestsModal from './components/WeeklyQuestsModal'
+import ArenaModal from './components/ArenaModal'
+import DungeonConfirm from './components/DungeonConfirm'
+import { getXpForNextLevel, calculateLevelUp } from './config/levelingSystem'
 import './App.css'
 
 function App() {
@@ -17,6 +21,9 @@ function App() {
   const [showCharacterCreation, setShowCharacterCreation] = useState(false)
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
   const [showBattle, setShowBattle] = useState(false)
+  const [showWeeklyQuests, setShowWeeklyQuests] = useState(false)
+  const [showDungeonConfirm, setShowDungeonConfirm] = useState(false)
+  const [showArena, setShowArena] = useState(false)
   const [showTitleScreen, setShowTitleScreen] = useState(false)
   const [showMainMenu, setShowMainMenu] = useState(true)
   const [gameLoaded, setGameLoaded] = useState(false)
@@ -29,7 +36,7 @@ function App() {
     // Progression
     level: 1,
     xp: 0,
-    xpToNextLevel: 100,
+    xpToNextLevel: 10, // XP needed to reach level 2
 
     // Core Stats
     stats: {
@@ -99,6 +106,14 @@ function App() {
         setShowBattle(true)
       })
 
+      game.events.on('open-weekly-quests', () => {
+        setShowWeeklyQuests(true)
+      })
+
+      game.events.on('dungeon-confirm', () => {
+        setShowDungeonConfirm(true)
+      })
+
       game.events.on('game-ready', () => {
         setGameLoaded(true)
       })
@@ -114,25 +129,19 @@ function App() {
   }, [])
 
   const handleTaskSubmit = (result) => {
-    // Add XP to player
-    const newXp = playerStats.xp + result.xp
-    let newLevel = playerStats.level
-    let remainingXp = newXp
-
-    // Check for level ups
-    let xpNeeded = playerStats.xpToNextLevel
-    while (remainingXp >= xpNeeded) {
-      remainingXp -= xpNeeded
-      newLevel++
-      xpNeeded = newLevel * 100 // Each level needs more XP
-    }
+    // Calculate level ups using new leveling system
+    const { newLevel, remainingXp, xpToNextLevel } = calculateLevelUp(
+      playerStats.level,
+      playerStats.xp,
+      result.xp
+    );
 
     // Preserve all existing stats and only update level/xp
     const newStats = {
       ...playerStats,
       level: newLevel,
       xp: remainingXp,
-      xpToNextLevel: newLevel * 100
+      xpToNextLevel
     }
 
     setPlayerStats(newStats)
@@ -189,7 +198,7 @@ function App() {
       characterClass,
       level: 1,
       xp: 0,
-      xpToNextLevel: 100,
+      xpToNextLevel: getXpForNextLevel(1), // 10 XP to reach level 2
       stats: {
         hp: stats.maxHp,
         maxHp: stats.maxHp,
@@ -249,12 +258,48 @@ function App() {
         <p>A 2D MMO RPG where real-life achievements power your adventure!</p>
       </div>
 
-      {/* Character HUD - replaces old stats bar and character button */}
+      {/* Simple HUD in top left */}
       {playerStats.username && !showTitleScreen && !showMainMenu && !showCharacterCreation && gameLoaded && (
-        <CharacterHUD
+        <SimpleHUD
           playerStats={playerStats}
           onClick={() => setShowCharacterPanel(true)}
         />
+      )}
+
+      {/* Home button in top right */}
+      {playerStats.username && !showTitleScreen && !showMainMenu && !showCharacterCreation && gameLoaded && (
+        <button
+          className="home-button"
+          onClick={() => {
+            setShowMainMenu(true)
+            setPlayerStats({
+              username: '',
+              characterClass: '',
+              level: 1,
+              xp: 0,
+              xpToNextLevel: 10,
+              stats: {
+                hp: 0,
+                maxHp: 0,
+                mana: 0,
+                maxMana: 0,
+                strength: 0,
+                agility: 0,
+                mindPower: 0
+              },
+              inventory: [],
+              equipment: {
+                weapon: null,
+                armor: null,
+                accessory: null
+              },
+              equippedAbilities: []
+            })
+          }}
+          aria-label="Return to main menu"
+        >
+          🏠
+        </button>
       )}
 
       <div ref={gameRef} className="game-canvas" />
@@ -290,6 +335,26 @@ function App() {
       <BattleModal
         isOpen={showBattle}
         onClose={() => setShowBattle(false)}
+        playerStats={playerStats}
+      />
+
+      <WeeklyQuestsModal
+        isOpen={showWeeklyQuests}
+        onClose={() => setShowWeeklyQuests(false)}
+      />
+
+      <DungeonConfirm
+        isOpen={showDungeonConfirm}
+        onConfirm={() => {
+          setShowDungeonConfirm(false)
+          setShowArena(true)
+        }}
+        onCancel={() => setShowDungeonConfirm(false)}
+      />
+
+      <ArenaModal
+        isOpen={showArena}
+        onClose={() => setShowArena(false)}
         playerStats={playerStats}
       />
 

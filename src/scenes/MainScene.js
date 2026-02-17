@@ -6,8 +6,11 @@ export default class MainScene extends Phaser.Scene {
     this.player = null;
     this.npc = null;
     this.dungeonNPC = null;
+    this.questGiverNPC = null;
+    this.barriers = null;
     this.canInteract = false;
     this.canInteractDungeon = false;
+    this.canInteractQuestGiver = false;
     this.playerLevel = 1;
     this.playerClass = null;
     this.isModalOpen = false;
@@ -41,28 +44,33 @@ export default class MainScene extends Phaser.Scene {
     this.load.image('taskboard', `/assets/sprites/taskboard.png${cacheBust}`);
     this.load.image('dungeonSprite', `/assets/sprites/dungeon.png${cacheBust}`);
 
+    // Load battle arena assets
+    this.load.image('arenaBackground', `/assets/sprites/ARENA1background.png${cacheBust}`);
+    this.load.image('orcBaddie', `/assets/sprites/Baddiearena1.png${cacheBust}`);
+
 
     // Load sprite sheets for each class
-    // Paladin uses full 256x256 frames (1024x1024 total, 4 rows x 4 cols)
+    // Paladin: 256x256 frames (original working configuration)
+    // Others: 128x128 frames (1536x1024 sprite sheets, 12x8 grid)
     this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
       frameWidth: 256,
       frameHeight: 256
     });
     this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
-      frameWidth: 256,
-      frameHeight: 512
+      frameWidth: 128,
+      frameHeight: 128
     });
     this.load.spritesheet('mage', `/assets/sprites/mage.png${cacheBust}`, {
-      frameWidth: 256,
-      frameHeight: 512
+      frameWidth: 128,
+      frameHeight: 128
     });
     this.load.spritesheet('archer', `/assets/sprites/archer.png${cacheBust}`, {
-      frameWidth: 256,
-      frameHeight: 512
+      frameWidth: 128,
+      frameHeight: 128
     });
     this.load.spritesheet('cleric', `/assets/sprites/cleric.png${cacheBust}`, {
-      frameWidth: 256,
-      frameHeight: 512
+      frameWidth: 128,
+      frameHeight: 128
     });
 
     // Load background music
@@ -122,6 +130,12 @@ export default class MainScene extends Phaser.Scene {
 
     // Create Dungeon NPC
     this.createDungeonNPC();
+
+    // Create Quest Giver NPC
+    this.createQuestGiverNPC();
+
+    // Create collision barriers for water and houses
+    this.createCollisionBarriers();
 
     // Create UI elements
     this.createUI();
@@ -216,13 +230,26 @@ export default class MainScene extends Phaser.Scene {
     const map = this.add.image(512, 768, 'townMap');
     map.setDepth(0);
 
-    // Add Productivity Board in center
-    this.productivityBoard = this.add.image(512, 512, 'taskboard');
-    this.productivityBoard.setDepth(5);
-    this.productivityBoard.setScale(0.35); // Increased for visibility with zoom out
+    // Create placeholder for Productivity Board if sprite doesn't load
+    const boardGraphics = this.add.graphics();
+    boardGraphics.fillStyle(0x10b981, 1); // Green color
+    boardGraphics.fillRect(0, 0, 120, 160); // Rectangle
+    boardGraphics.generateTexture('taskboardPlaceholder', 120, 160);
+    boardGraphics.destroy();
+
+    // Add Productivity Board in center - try sprite first, fallback to placeholder
+    try {
+      this.productivityBoard = this.add.image(512, 545, 'taskboard');
+      this.productivityBoard.setDepth(5);
+      this.productivityBoard.setScale(0.15); // Reduced scale for better visibility
+    } catch (e) {
+      this.productivityBoard = this.add.image(512, 545, 'taskboardPlaceholder');
+      this.productivityBoard.setDepth(5);
+      this.productivityBoard.setScale(1);
+    }
 
     // Add board name tag
-    const boardNameTag = this.add.text(512, 420, 'Productivity Board', {
+    const boardNameTag = this.add.text(512, 453, 'Productivity Board', {
       fontSize: '12px',
       fill: '#fff',
       backgroundColor: '#10b981',
@@ -232,71 +259,127 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createPlayerAnimations(spriteKey) {
-    // Create walking animations for each direction
-    // Sprite sheet: 1536x1024 total (6 frames wide x 4 rows tall = 256x256 per frame)
-    // Visible 4x4 grid with padding on left/right edges
-    // Layout per row: [padding, idle, walk1, walk2, walk3, padding]
-    // Row 1 (Down): frame 1 = idle, frames 2-4 = walk
-    // Row 2 (Left): frame 7 = idle, frames 8-10 = walk
-    // Row 3 (Right): frame 13 = idle, frames 14-16 = walk
-    // Row 4 (Up): frame 19 = idle, frames 20-22 = walk
+    // Paladin uses 256x256 frames (4x4 grid) - original working config
+    // Others use 128x128 frames (12x8 grid)
+    const isPaladin = spriteKey === 'paladin';
 
-    // Walking DOWN (frames 2-4)
-    this.anims.create({
-      key: `${spriteKey}_walk_down`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 2, end: 4 }),
-      frameRate: 10,
-      repeat: -1
-    });
+    if (isPaladin) {
+      // Paladin: 4x4 grid (256x256 frames)
+      // Row 1 (Down): frame 1 = idle, frames 2-4 = walk
+      // Row 2 (Left): frame 7 = idle, frames 8-10 = walk
+      // Row 3 (Right): frame 13 = idle, frames 14-16 = walk
+      // Row 4 (Up): frame 19 = idle, frames 20-22 = walk
 
-    // Walking LEFT (frames 8-10)
-    this.anims.create({
-      key: `${spriteKey}_walk_left`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 10 }),
-      frameRate: 10,
-      repeat: -1
-    });
+      this.anims.create({
+        key: `${spriteKey}_walk_down`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 2, end: 4 }),
+        frameRate: 10,
+        repeat: -1
+      });
 
-    // Walking RIGHT (frames 14-16)
-    this.anims.create({
-      key: `${spriteKey}_walk_right`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 14, end: 16 }),
-      frameRate: 10,
-      repeat: -1
-    });
+      this.anims.create({
+        key: `${spriteKey}_walk_left`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 10 }),
+        frameRate: 10,
+        repeat: -1
+      });
 
-    // Walking UP (frames 20-22)
-    this.anims.create({
-      key: `${spriteKey}_walk_up`,
-      frames: this.anims.generateFrameNumbers(spriteKey, { start: 20, end: 22 }),
-      frameRate: 10,
-      repeat: -1
-    });
+      this.anims.create({
+        key: `${spriteKey}_walk_right`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 14, end: 16 }),
+        frameRate: 10,
+        repeat: -1
+      });
 
-    // Idle poses (frame 1, 7, 13, 19 for each direction)
-    this.anims.create({
-      key: `${spriteKey}_idle_down`,
-      frames: [{ key: spriteKey, frame: 1 }],
-      frameRate: 1
-    });
+      this.anims.create({
+        key: `${spriteKey}_walk_up`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 20, end: 22 }),
+        frameRate: 10,
+        repeat: -1
+      });
 
-    this.anims.create({
-      key: `${spriteKey}_idle_left`,
-      frames: [{ key: spriteKey, frame: 7 }],
-      frameRate: 1
-    });
+      this.anims.create({
+        key: `${spriteKey}_idle_down`,
+        frames: [{ key: spriteKey, frame: 1 }],
+        frameRate: 1
+      });
 
-    this.anims.create({
-      key: `${spriteKey}_idle_right`,
-      frames: [{ key: spriteKey, frame: 13 }],
-      frameRate: 1
-    });
+      this.anims.create({
+        key: `${spriteKey}_idle_left`,
+        frames: [{ key: spriteKey, frame: 7 }],
+        frameRate: 1
+      });
 
-    this.anims.create({
-      key: `${spriteKey}_idle_up`,
-      frames: [{ key: spriteKey, frame: 19 }],
-      frameRate: 1
-    });
+      this.anims.create({
+        key: `${spriteKey}_idle_right`,
+        frames: [{ key: spriteKey, frame: 13 }],
+        frameRate: 1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_idle_up`,
+        frames: [{ key: spriteKey, frame: 19 }],
+        frameRate: 1
+      });
+    } else {
+      // Other classes: 12x8 grid (128x128 frames)
+      // Row 0 (Down): frames 0-11 (idle=0, walk=1-3)
+      // Row 1 (Left): frames 12-23 (idle=12, walk=13-15)
+      // Row 2 (Right): frames 24-35 (idle=24, walk=25-27)
+      // Row 3 (Up): frames 36-47 (idle=36, walk=37-39)
+
+      this.anims.create({
+        key: `${spriteKey}_walk_down`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 1, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_walk_left`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 13, end: 15 }),
+        frameRate: 10,
+        repeat: -1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_walk_right`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 25, end: 27 }),
+        frameRate: 10,
+        repeat: -1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_walk_up`,
+        frames: this.anims.generateFrameNumbers(spriteKey, { start: 37, end: 39 }),
+        frameRate: 10,
+        repeat: -1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_idle_down`,
+        frames: [{ key: spriteKey, frame: 0 }],
+        frameRate: 1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_idle_left`,
+        frames: [{ key: spriteKey, frame: 12 }],
+        frameRate: 1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_idle_right`,
+        frames: [{ key: spriteKey, frame: 24 }],
+        frameRate: 1
+      });
+
+      this.anims.create({
+        key: `${spriteKey}_idle_up`,
+        frames: [{ key: spriteKey, frame: 36 }],
+        frameRate: 1
+      });
+    }
 
     // Start with idle down animation
     this.player.play(`${spriteKey}_idle_down`);
@@ -314,8 +397,9 @@ export default class MainScene extends Phaser.Scene {
 
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(50); // Increased depth to ensure above everything
-    // Scale based on sprite size: paladin is 256x256, scale to ~96px
-    const scale = spriteKey === 'paladin' ? 0.375 : 0.2; // 256 * 0.375 = 96px
+    // Paladin uses 256x256 frames, others use 128x128 frames
+    // Scale to similar visual size (~60-96px)
+    const scale = spriteKey === 'paladin' ? 0.375 : 0.75; // Paladin: 256*0.375=96px, Others: 128*0.75=96px
     this.player.setScale(scale);
     console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
 
@@ -324,14 +408,27 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createNPC() {
-    // Create Task Master in top right area (as requested)
-    const taskmasterX = 850; // Top right area
-    const taskmasterY = 200;
-    this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmaster');
+    // Create Task Master in grass next to path
+    const taskmasterX = 450; // Left of center
+    const taskmasterY = 400; // Above and to the left
+
+    // Create placeholder for Task Master if sprite doesn't load
+    const taskmasterGraphics = this.add.graphics();
+    taskmasterGraphics.fillStyle(0xf59e0b, 1); // Orange color
+    taskmasterGraphics.fillCircle(32, 32, 32); // Circle
+    taskmasterGraphics.generateTexture('taskmasterPlaceholder', 64, 64);
+    taskmasterGraphics.destroy();
+
+    try {
+      this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmaster');
+      this.npc.setScale(0.15); // Reduced scale
+    } catch (e) {
+      this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmasterPlaceholder');
+      this.npc.setScale(1);
+    }
 
     this.npc.setImmovable(true);
     this.npc.setDepth(10);
-    this.npc.setScale(0.2); // Increased for visibility with zoom out
 
     // Add NPC name tag
     this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 20, 'Task Master', {
@@ -354,14 +451,29 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createDungeonNPC() {
-    // Create Dungeon entrance in bottom-left area for balanced layout
-    const dungeonX = 200;
-    const dungeonY = 850;
-    this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonSprite');
+    // Create Dungeon entrance at top above staircase
+    const dungeonX = 530; // Adjusted to align with path
+    const dungeonY = 150;
+
+    // Create placeholder for Dungeon if sprite doesn't load
+    const dungeonGraphics = this.add.graphics();
+    dungeonGraphics.fillStyle(0x4338ca, 1); // Purple/blue color
+    dungeonGraphics.fillRect(0, 0, 100, 100); // Square
+    dungeonGraphics.fillStyle(0x000000, 1); // Black for entrance
+    dungeonGraphics.fillRect(30, 40, 40, 60); // Door opening
+    dungeonGraphics.generateTexture('dungeonPlaceholder', 100, 100);
+    dungeonGraphics.destroy();
+
+    try {
+      this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonSprite');
+      this.dungeonNPC.setScale(0.225); // 1.5x size
+    } catch (e) {
+      this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonPlaceholder');
+      this.dungeonNPC.setScale(1.5);
+    }
 
     this.dungeonNPC.setImmovable(true);
     this.dungeonNPC.setDepth(10);
-    this.dungeonNPC.setScale(0.25); // Increased for visibility with zoom out
 
     // Add dungeon name tag
     this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 22, 'Dungeon', {
@@ -381,6 +493,72 @@ export default class MainScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.dungeonInteractPrompt.setVisible(false);
     this.dungeonInteractPrompt.setDepth(11);
+  }
+
+  createQuestGiverNPC() {
+    // Create Quest Giver in bottom-right area
+    const questGiverX = 780;
+    const questGiverY = 850;
+
+    // Create placeholder sprite using graphics
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x9333ea, 1); // Purple color
+    graphics.fillCircle(32, 32, 32); // Circle with 32px radius
+    graphics.generateTexture('questGiverPlaceholder', 64, 64);
+    graphics.destroy();
+
+    this.questGiverNPC = this.physics.add.sprite(questGiverX, questGiverY, 'questGiverPlaceholder');
+
+    this.questGiverNPC.setImmovable(true);
+    this.questGiverNPC.setDepth(10);
+    this.questGiverNPC.setScale(0.25);
+
+    // Add quest giver name tag
+    this.questGiverNameTag = this.add.text(this.questGiverNPC.x, this.questGiverNPC.y - 22, 'Quest Giver', {
+      fontSize: '12px',
+      fill: '#fff',
+      backgroundColor: '#9333ea',
+      padding: { x: 6, y: 3 }
+    }).setOrigin(0.5);
+    this.questGiverNameTag.setDepth(11);
+
+    // Add interaction prompt
+    this.questGiverInteractPrompt = this.add.text(this.questGiverNPC.x, this.questGiverNPC.y + 22, 'Tap for quests', {
+      fontSize: '11px',
+      fill: '#fff',
+      backgroundColor: '#000',
+      padding: { x: 4, y: 2 }
+    }).setOrigin(0.5);
+    this.questGiverInteractPrompt.setVisible(false);
+    this.questGiverInteractPrompt.setDepth(11);
+  }
+
+  createCollisionBarriers() {
+    // Create a group for all collision barriers
+    this.barriers = this.physics.add.staticGroup();
+
+    // Water barriers (right side river)
+    this.barriers.create(900, 300, null).setSize(250, 600).setVisible(false);
+
+    // Houses (approximate positions based on typical town layout)
+    // Bottom-left houses
+    this.barriers.create(120, 350, null).setSize(100, 80).setVisible(false);
+    this.barriers.create(120, 500, null).setSize(100, 80).setVisible(false);
+
+    // Bottom-right houses
+    this.barriers.create(900, 500, null).setSize(100, 80).setVisible(false);
+    this.barriers.create(900, 650, null).setSize(100, 80).setVisible(false);
+
+    // Top area structures
+    this.barriers.create(150, 200, null).setSize(120, 100).setVisible(false);
+    this.barriers.create(800, 200, null).setSize(100, 80).setVisible(false);
+
+    // Center buildings/obstacles
+    this.barriers.create(300, 250, null).setSize(80, 70).setVisible(false);
+    this.barriers.create(650, 300, null).setSize(90, 75).setVisible(false);
+
+    // Add collision between player and barriers
+    this.physics.add.collider(this.player, this.barriers);
   }
 
   createUI() {
@@ -467,6 +645,22 @@ export default class MainScene extends Phaser.Scene {
     } else {
       this.canInteractDungeon = false;
       this.dungeonInteractPrompt.setVisible(false);
+    }
+
+    // Check distance to Quest Giver NPC for interaction
+    const questGiverDistance = Phaser.Math.Distance.Between(
+      this.player.x,
+      this.player.y,
+      this.questGiverNPC.x,
+      this.questGiverNPC.y
+    );
+
+    if (questGiverDistance < 70) {
+      this.canInteractQuestGiver = true;
+      this.questGiverInteractPrompt.setVisible(true);
+    } else {
+      this.canInteractQuestGiver = false;
+      this.questGiverInteractPrompt.setVisible(false);
     }
   }
 
@@ -558,6 +752,22 @@ export default class MainScene extends Phaser.Scene {
       if (tappedOnDungeon && dungeonDistance < 70) {
         this.openBattle();
       }
+
+      // Check if tapped on Quest Giver NPC
+      const questGiverBounds = this.questGiverNPC.getBounds();
+      const tappedOnQuestGiver = questGiverBounds.contains(pointer.worldX, pointer.worldY);
+
+      // Check if player is within interaction range
+      const questGiverDistance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        this.questGiverNPC.x,
+        this.questGiverNPC.y
+      );
+
+      if (tappedOnQuestGiver && questGiverDistance < 70) {
+        this.openWeeklyQuests();
+      }
     }
 
     // Reset drag state
@@ -572,8 +782,13 @@ export default class MainScene extends Phaser.Scene {
   }
 
   openBattle() {
-    // Emit event to React to open the battle modal
-    this.game.events.emit('open-battle');
+    // Emit event to React to show dungeon confirmation
+    this.game.events.emit('dungeon-confirm');
+  }
+
+  openWeeklyQuests() {
+    // Emit event to React to open the weekly quests modal
+    this.game.events.emit('open-weekly-quests');
   }
 
   showXPGainFeedback(data) {

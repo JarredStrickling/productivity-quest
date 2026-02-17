@@ -28,7 +28,32 @@
   border-radius: 12px;
 }
 
-/* Party Side (Left) */
+/* Party Side (Left) - Arena specific - All 4 on left */
+.arena-modal .party-side {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap; /* Force single column */
+  gap: 16px;
+  position: absolute;
+  left: 8%;
+  top: 50%;
+  transform: translateY(-50%);
+  align-items: center;
+  width: auto; /* Don't constrain width */
+  padding: 10px;
+}
+
+/* Boss Side (Right) - Arena specific */
+.arena-modal .boss-side {
+  position: absolute;
+  right: 15%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+/* Default (non-arena) layout */
 .party-side {
   display: flex;
   flex-direction: column;
@@ -37,7 +62,6 @@
   align-items: flex-start;
 }
 
-/* Boss Side (Right) */
 .boss-side {
   flex: 1;
   display: flex;
@@ -352,6 +376,57 @@
   font-weight: 600;
 }
 
+/* Ability Info Button and Description */
+.ability-wrapper {
+  position: relative;
+}
+
+.ability-info-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 4px;
+  padding: 2px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.ability-info-btn:hover {
+  opacity: 1;
+}
+
+.ability-description {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 2px solid #8b5cf6;
+  border-radius: 8px;
+  padding: 10px;
+  color: #e2e8f0;
+  font-size: 12px;
+  line-height: 1.4;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Battle Result */
 .battle-result {
   position: absolute;
@@ -515,6 +590,15 @@
     font-size: 24px;
   }
 
+  .ability-info-btn {
+    font-size: 14px;
+  }
+
+  .ability-description {
+    font-size: 13px;
+    padding: 12px;
+  }
+
   .battle-result {
     padding: 30px 20px;
     min-width: 250px;
@@ -560,5 +644,206 @@
   .sprite-bar-text {
     font-size: 9px;
     line-height: 14px;
+  }
+}
+
+/* Arena Battle Specific Styles */
+.arena-modal {
+  border-color: #f59e0b;
+  max-width: 100vw;
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  padding: 0;
+  border-radius: 0;
+}
+
+.arena-modal .battle-arena {
+  height: calc(100vh - 120px);
+  min-height: unset;
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.arena-background {
+  background-image: url('/assets/sprites/ARENA1background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Arena Character Sprites */
+.arena-character-sprite {
+  width: 96px !important;
+  height: 96px !important;
+  overflow: hidden;
+  display: block;
+  position: relative;
+}
+
+.arena-character-sprite img {
+  display: block;
+  transform-origin: top left;
+}
+
+.arena-orc-sprite {
+  width: 120px !important;
+  height: 120px !important;
+  overflow: hidden;
+  display: block;
+  position: relative;
+}
+
+.arena-orc-sprite img {
+  display: block;
+  transform-origin: top left;
+}
+
+/* Arena sprite containers */
+.arena-modal .battle-sprite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Arena floating bars - positioned above sprite */
+.arena-modal .floating-bars {
+  position: absolute;
+  top: -42px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 90px;
+  align-items: center;
+}
+
+.arena-modal .sprite-name {
+  font-size: 10px;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.arena-modal .sprite-bar {
+  height: 8px;
+  width: 100px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #334155;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.arena-modal .sprite-bar-text {
+  font-size: 7px;
+  line-height: 8px;
+}
+
+.arena-modal .boss-hp {
+  width: 120px;
+}
+
+/* Arena battle log positioning */
+.arena-modal .battle-log {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 600px;
+  margin: 0;
+}
+
+/* Arena action menu positioning */
+.arena-modal .action-menu {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 400px;
+  flex-direction: row;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.95);
+  padding: 16px;
+  border: 3px solid #f59e0b;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+.arena-modal .ability-submenu {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 500px;
+  background: rgba(15, 23, 42, 0.95);
+  padding: 16px;
+  border: 3px solid #f59e0b;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+.arena-modal .close-btn {
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+/* Mobile adjustments for arena sprites */
+@media (max-width: 768px) {
+  .arena-character-sprite {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  .arena-orc-sprite {
+    width: 96px !important;
+    height: 96px !important;
+  }
+
+  .arena-modal .party-side {
+    gap: 12px;
+    max-height: 30vh;
+  }
+
+  .arena-modal .floating-bars {
+    top: -36px;
+    min-width: 80px;
+  }
+
+  .arena-modal .sprite-name {
+    font-size: 9px;
+  }
+
+  .arena-modal .sprite-bar {
+    height: 6px;
+    width: 80px;
+  }
+
+  .arena-modal .boss-hp {
+    width: 100px;
+  }
+
+  .arena-modal .sprite-bar-text {
+    font-size: 6px;
+    line-height: 6px;
+  }
+
+  .arena-modal .action-menu,
+  .arena-modal .ability-submenu {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 10px;
+    max-width: calc(100vw - 20px);
+    padding: 12px;
+  }
+
+  .arena-modal .battle-log {
+    bottom: 100px;
+    width: 90%;
   }
 }

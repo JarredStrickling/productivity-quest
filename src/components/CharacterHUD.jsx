@@ -11,7 +11,7 @@ export default function CharacterHUD({ playerStats, onClick }) {
 
   // Map class to HUD file names
   const hudFiles = {
-    paladin: 'paladinHUD.png',
+    paladin: 'paladin-hud.png',
     warrior: 'warrior-hud.png',
     mage: 'mage-hud.png',
     archer: 'archer-hud.png',
