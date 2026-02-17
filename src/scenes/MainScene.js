@@ -237,16 +237,18 @@ export default class MainScene extends Phaser.Scene {
     boardGraphics.generateTexture('taskboardPlaceholder', 120, 160);
     boardGraphics.destroy();
 
-    // Add Productivity Board in center - try sprite first, fallback to placeholder
-    try {
+    // Add Productivity Board in center
+    if (this.textures.exists('taskboard')) {
+      console.log('✅ Taskboard sprite loaded');
       this.productivityBoard = this.add.image(512, 545, 'taskboard');
-      this.productivityBoard.setDepth(5);
-      this.productivityBoard.setScale(0.15); // Reduced scale for better visibility
-    } catch (e) {
+      this.productivityBoard.setScale(0.15);
+    } else {
+      console.warn('⚠️ Taskboard sprite not found, using placeholder');
       this.productivityBoard = this.add.image(512, 545, 'taskboardPlaceholder');
-      this.productivityBoard.setDepth(5);
       this.productivityBoard.setScale(1);
     }
+    this.productivityBoard.setDepth(5);
+    this.productivityBoard.setAlpha(1); // Ensure visibility
 
     // Add board name tag
     const boardNameTag = this.add.text(512, 453, 'Productivity Board', {
@@ -412,23 +414,27 @@ export default class MainScene extends Phaser.Scene {
     const taskmasterX = 450; // Left of center
     const taskmasterY = 400; // Above and to the left
 
-    // Create placeholder for Task Master if sprite doesn't load
+    // Create placeholder for Task Master
     const taskmasterGraphics = this.add.graphics();
     taskmasterGraphics.fillStyle(0xf59e0b, 1); // Orange color
     taskmasterGraphics.fillCircle(32, 32, 32); // Circle
     taskmasterGraphics.generateTexture('taskmasterPlaceholder', 64, 64);
     taskmasterGraphics.destroy();
 
-    try {
+    // Check if texture loaded, use placeholder if not
+    if (this.textures.exists('taskmaster')) {
+      console.log('✅ Task Master sprite loaded');
       this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmaster');
-      this.npc.setScale(0.15); // Reduced scale
-    } catch (e) {
+      this.npc.setScale(0.15);
+    } else {
+      console.warn('⚠️ Task Master sprite not found, using placeholder');
       this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmasterPlaceholder');
       this.npc.setScale(1);
     }
 
     this.npc.setImmovable(true);
     this.npc.setDepth(10);
+    this.npc.setAlpha(1); // Ensure visibility
 
     // Add NPC name tag
     this.npcNameTag = this.add.text(this.npc.x, this.npc.y - 20, 'Task Master', {
@@ -455,7 +461,7 @@ export default class MainScene extends Phaser.Scene {
     const dungeonX = 530; // Adjusted to align with path
     const dungeonY = 150;
 
-    // Create placeholder for Dungeon if sprite doesn't load
+    // Create placeholder for Dungeon
     const dungeonGraphics = this.add.graphics();
     dungeonGraphics.fillStyle(0x4338ca, 1); // Purple/blue color
     dungeonGraphics.fillRect(0, 0, 100, 100); // Square
@@ -464,16 +470,20 @@ export default class MainScene extends Phaser.Scene {
     dungeonGraphics.generateTexture('dungeonPlaceholder', 100, 100);
     dungeonGraphics.destroy();
 
-    try {
+    // Check if texture loaded, use placeholder if not
+    if (this.textures.exists('dungeonSprite')) {
+      console.log('✅ Dungeon sprite loaded');
       this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonSprite');
-      this.dungeonNPC.setScale(0.225); // 1.5x size
-    } catch (e) {
+      this.dungeonNPC.setScale(0.225);
+    } else {
+      console.warn('⚠️ Dungeon sprite not found, using placeholder');
       this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonPlaceholder');
       this.dungeonNPC.setScale(1.5);
     }
 
     this.dungeonNPC.setImmovable(true);
     this.dungeonNPC.setDepth(10);
+    this.dungeonNPC.setAlpha(1); // Ensure visibility
 
     // Add dungeon name tag
     this.dungeonNameTag = this.add.text(this.dungeonNPC.x, this.dungeonNPC.y - 22, 'Dungeon', {
