@@ -10,13 +10,14 @@ const MS_SHEETS = getAllSpriteSheets();
 // Page 1 frame layout (512x512 sheet, 64x64 cells, 8 cols × 8 rows)
 // Rows 0-3: stand/push/pull/jump (directions: down, up, left, right)
 // Rows 4-7: walk 6-frame + run 2-frame (directions: down, up, left, right)
+// Mana Seed direction order: Down, Up, RIGHT, LEFT (rows 2/6 = right, rows 3/7 = left)
 const MS_ANIMS = {
-  idle:  { down: 0,  up: 8,  left: 16, right: 24 }, // col 0 of rows 0-3
+  idle:  { down: 0,  up: 8,  right: 16, left: 24 }, // col 0 of rows 0-3
   walk: {
     down:  { start: 32, end: 37 }, // row 4, cols 0-5
     up:    { start: 40, end: 45 }, // row 5, cols 0-5
-    left:  { start: 48, end: 53 }, // row 6, cols 0-5
-    right: { start: 56, end: 61 }, // row 7, cols 0-5
+    right: { start: 48, end: 53 }, // row 6, cols 0-5
+    left:  { start: 56, end: 61 }, // row 7, cols 0-5
   },
 };
 // ─────────────────────────────────────────────────────────────────────
@@ -56,7 +57,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=23`; // Mana Seed paper doll sprite system
+    const cacheBust = `?v=24`; // Fix directions, zoom, NPC scale
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -99,7 +100,7 @@ export default class MainScene extends Phaser.Scene {
     const TILE_SIZE = 32;
     const TILES_ACROSS = 14;
     let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
-    zoom = zoom * 0.5; // Zoom out 50% to show more of the town - using 0.5 for cleaner pixel alignment
+    zoom = zoom * 0.625; // Zoom level tuned for closer view of town
 
     // Round to nearest 0.5 increment for crisp pixel rendering
     zoom = Math.round(zoom * 2) / 2;
@@ -113,7 +114,7 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = newZoom * 0.5; // Zoom out 50% - using 0.5 for cleaner pixel alignment
+      newZoom = newZoom * 0.625; // Zoom level tuned for closer view of town
 
       // Round to nearest 0.5 increment for crisp pixel rendering
       newZoom = Math.round(newZoom * 2) / 2;
@@ -362,7 +363,7 @@ export default class MainScene extends Phaser.Scene {
     if (this.textures.exists('taskmaster')) {
       console.log('✅ Task Master sprite loaded');
       this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmaster');
-      this.npc.setScale(0.15);
+      this.npc.setScale(0.10);
     } else {
       console.warn('⚠️ Task Master sprite not found, using placeholder');
       this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmasterPlaceholder');
@@ -643,8 +644,16 @@ export default class MainScene extends Phaser.Scene {
 
     if (distance > 5) { // Minimum drag threshold
       const speed = 160;
-      this.moveVector.x = (deltaX / distance) * speed;
-      this.moveVector.y = (deltaY / distance) * speed;
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+      // 4-direction only: move along the dominant axis
+      if (absX > absY) {
+        this.moveVector.x = (deltaX > 0 ? 1 : -1) * speed;
+        this.moveVector.y = 0;
+      } else {
+        this.moveVector.x = 0;
+        this.moveVector.y = (deltaY > 0 ? 1 : -1) * speed;
+      }
     } else {
       this.moveVector.x = 0;
       this.moveVector.y = 0;

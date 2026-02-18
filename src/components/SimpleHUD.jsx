@@ -2,11 +2,15 @@ import './SimpleHUD.css';
 import { MS_PATH, getAppearancePaths, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
 
 // Build the CSS for a single paper doll layer showing frame 0 (standing down)
+// Zoomed into the face: shows a ~32x32 region from the top-center of the 64x64 cell
 function makeLayerStyle(portraitSize, sheetPath) {
-  // Sheet is 512x512, 8 cols. Scale to show one 64x64 cell filling the portrait.
-  const scale = portraitSize / 64;
+  // 2x zoom: show 32px of sprite filling the portrait
+  const scale = portraitSize / 32;
   const sheetW = Math.round(512 * scale);
   const sheetH = Math.round(512 * scale);
+  // Center horizontally (offset by 16 sprite-px) and crop from near top (offset by 6 sprite-px)
+  const offsetX = Math.round(-16 * scale);
+  const offsetY = Math.round(-6 * scale);
   return {
     position: 'absolute',
     top: 0,
@@ -15,7 +19,7 @@ function makeLayerStyle(portraitSize, sheetPath) {
     height: portraitSize,
     backgroundImage: `url(${MS_PATH}/${sheetPath})`,
     backgroundSize: `${sheetW}px ${sheetH}px`,
-    backgroundPosition: '0px 0px', // frame 0 = top-left cell
+    backgroundPosition: `${offsetX}px ${offsetY}px`,
     backgroundRepeat: 'no-repeat',
     imageRendering: 'pixelated',
   };
