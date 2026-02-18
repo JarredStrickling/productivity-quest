@@ -397,13 +397,13 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                 >
                   <div className="arena-character-sprite">
                     <img
-                      src={`/assets/sprites/${member.characterClass}.png`}
-                      alt={member.characterClass}
+                      src={member.isAI ? '/assets/sprites/battlearcher.png' : `/assets/sprites/${member.characterClass}.png`}
+                      alt={member.isAI ? 'Battle Archer' : member.characterClass}
                       style={{
                         objectFit: 'none',
                         objectPosition: '0px 0px',
-                        width: isPaladin ? '256px' : '128px', /* Single frame width */
-                        height: isPaladin ? '256px' : '128px' /* Single frame height */
+                        width: member.isAI ? '128px' : (isPaladin ? '256px' : '128px'), /* Single frame width */
+                        height: member.isAI ? '128px' : (isPaladin ? '256px' : '128px') /* Single frame height */
                       }}
                     />
                   </div>
