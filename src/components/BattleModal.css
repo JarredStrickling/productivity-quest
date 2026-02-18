@@ -30,23 +30,22 @@
 
 /* Party Side (Left) - Arena specific - All 4 on left */
 .arena-modal .party-side {
+  position: absolute;
+  left: 18%; /* Percentage-based positioning */
+  top: 0;
+  height: 100%;
+  width: 120px; /* Fixed slot width */
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap; /* Force single column */
-  gap: 16px;
-  position: absolute;
-  left: 8%;
-  top: 50%;
-  transform: translateY(-50%);
+  justify-content: center;
+  gap: 20px;
   align-items: center;
-  width: auto; /* Don't constrain width */
-  padding: 10px;
 }
 
 /* Boss Side (Right) - Arena specific */
 .arena-modal .boss-side {
   position: absolute;
-  right: 15%;
+  left: 72%; /* Percentage-based positioning */
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -674,39 +673,62 @@
   image-rendering: pixelated;
 }
 
-/* Arena Character Sprites */
+/* Arena Character Sprites - Fixed battle slots */
 .arena-character-sprite {
-  width: 96px !important;
-  height: 96px !important;
-  overflow: hidden;
-  display: block;
+  width: 120px !important; /* Fixed slot width */
+  height: 120px !important; /* Fixed slot height */
   position: relative;
+  display: flex;
+  align-items: flex-end; /* Anchor sprites to bottom */
+  justify-content: center; /* Center horizontally */
 }
 
 .arena-character-sprite img {
   display: block;
-  transform-origin: top left;
+  position: absolute;
+  bottom: 0; /* Anchor to bottom (feet planted) */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Offset for centering */
+  transform-origin: bottom center; /* Scale from feet */
+  image-rendering: pixelated; /* Pixel-perfect rendering */
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 .arena-orc-sprite {
-  width: 120px !important;
-  height: 120px !important;
-  overflow: hidden;
-  display: block;
+  width: 140px !important; /* Fixed slot width */
+  height: 140px !important; /* Fixed slot height */
   position: relative;
+  display: flex;
+  align-items: flex-end; /* Anchor sprites to bottom */
+  justify-content: center; /* Center horizontally */
 }
 
 .arena-orc-sprite img {
   display: block;
-  transform-origin: top left;
+  position: absolute;
+  bottom: 0; /* Anchor to bottom (feet planted) */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Offset for centering */
+  transform-origin: bottom center; /* Scale from feet */
+  image-rendering: pixelated; /* Pixel-perfect rendering */
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
-/* Arena sprite containers */
+/* Arena sprite containers - Fixed slots */
 .arena-modal .battle-sprite {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
+  width: 120px; /* Match slot width */
+  height: 120px; /* Match slot height */
+}
+
+.arena-modal .boss-sprite {
+  width: 140px; /* Match boss slot width */
+  height: 140px; /* Match boss slot height */
 }
 
 /* Arena floating bars - positioned above sprite */

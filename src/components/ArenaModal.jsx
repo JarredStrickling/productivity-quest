@@ -400,12 +400,10 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                       src={`/assets/sprites/${member.characterClass}.png`}
                       alt={member.characterClass}
                       style={{
-                        width: '100%',
-                        height: '100%',
                         objectFit: 'none',
                         objectPosition: '0px 0px',
-                        imageRendering: 'pixelated',
-                        transform: `scale(${isPaladin ? 0.375 : 0.75})`
+                        width: isPaladin ? '256px' : '128px', /* Single frame width */
+                        height: isPaladin ? '256px' : '128px' /* Single frame height */
                       }}
                     />
                   </div>
@@ -440,12 +438,10 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                   src="/assets/sprites/Baddiearena1.png"
                   alt="Orc Warrior"
                   style={{
-                    width: '100%',
-                    height: '100%',
                     objectFit: 'none',
                     objectPosition: '0px 0px',
-                    imageRendering: 'pixelated',
-                    transform: 'scale(0.9375)'
+                    width: '128px', /* Single frame width */
+                    height: '128px' /* Single frame height */
                   }}
                 />
               </div>
