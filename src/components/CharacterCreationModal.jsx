@@ -1,34 +1,47 @@
 import { useState } from 'react';
 import './CharacterCreationModal.css';
 import { CLASS_CONFIG } from '../config/classes';
+import {
+  SKIN_TONES, HAIR_STYLES, HAIR_COLORS, OUTFIT_COLORS,
+  HAT_STYLES, HAT_COLORS, CLASS_DEFAULT_APPEARANCE
+} from '../config/appearance';
+import PaperDollPreview from './PaperDollPreview';
+
+// Cycle helper: wraps around in either direction
+function cycle(arr, current, delta) {
+  const idx = arr.indexOf(current);
+  return arr[(idx + delta + arr.length) % arr.length];
+}
+
+function cycleObj(arr, currentId, delta) {
+  const idx = arr.findIndex(item => item.id === currentId);
+  const next = arr[(idx + delta + arr.length) % arr.length];
+  return next.id;
+}
+
+function getObjName(arr, id) {
+  return arr.find(item => item.id === id)?.name || '';
+}
 
 export default function CharacterCreationModal({ isOpen, onComplete }) {
-  const [stage, setStage] = useState('username'); // 'username' | 'class' | 'confirm'
+  const [stage, setStage] = useState('username');
   const [username, setUsername] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [usernameError, setUsernameError] = useState('');
+  const [appearance, setAppearance] = useState(CLASS_DEFAULT_APPEARANCE.paladin);
 
   if (!isOpen) return null;
 
   const validateUsername = (value) => {
-    if (value.length < 3) {
-      return 'Username must be at least 3 characters';
-    }
-    if (value.length > 16) {
-      return 'Username must be 16 characters or less';
-    }
-    if (!/^[a-zA-Z0-9 ]+$/.test(value)) {
-      return 'Username can only contain letters, numbers, and spaces';
-    }
+    if (value.length < 3) return 'Username must be at least 3 characters';
+    if (value.length > 16) return 'Username must be 16 characters or less';
+    if (!/^[a-zA-Z0-9 ]+$/.test(value)) return 'Letters, numbers, and spaces only';
     return '';
   };
 
   const handleUsernameNext = () => {
     const error = validateUsername(username);
-    if (error) {
-      setUsernameError(error);
-      return;
-    }
+    if (error) { setUsernameError(error); return; }
     setUsernameError('');
     setStage('class');
   };
@@ -39,7 +52,13 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
 
   const handleClassConfirm = () => {
     if (!selectedClass) return;
-    setStage('confirm');
+    // Pre-fill appearance with class defaults
+    setAppearance({ ...CLASS_DEFAULT_APPEARANCE[selectedClass] });
+    setStage('customize');
+  };
+
+  const updateAppearance = (key, value) => {
+    setAppearance(prev => ({ ...prev, [key]: value }));
   };
 
   const handleFinalConfirm = () => {
@@ -47,6 +66,7 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
     onComplete({
       username: username.trim(),
       characterClass: selectedClass,
+      appearance,
       stats: {
         maxHp: classData.baseStats.hp,
         strength: classData.baseStats.strength,
@@ -57,6 +77,7 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
   };
 
   const selectedClassData = selectedClass ? CLASS_CONFIG[selectedClass] : null;
+  const hatStyleObj = HAT_STYLES.find(h => h.id === appearance.hatStyle);
 
   return (
     <div className="modal-overlay char-creation-overlay">
@@ -73,10 +94,7 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
                 id="username"
                 type="text"
                 value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                  setUsernameError('');
-                }}
+                onChange={(e) => { setUsername(e.target.value); setUsernameError(''); }}
                 placeholder="Enter your name..."
                 maxLength={16}
                 autoFocus
@@ -84,11 +102,7 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
               {usernameError && <div className="error-text">{usernameError}</div>}
             </div>
 
-            <button
-              className="btn btn-primary"
-              onClick={handleUsernameNext}
-              disabled={!username.trim()}
-            >
+            <button className="btn btn-primary" onClick={handleUsernameNext} disabled={!username.trim()}>
               Next
             </button>
           </>
@@ -106,54 +120,114 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
                   key={key}
                   className={`class-card ${selectedClass === key ? 'selected' : ''}`}
                   onClick={() => handleClassSelect(key)}
-                  style={{
-                    borderColor: selectedClass === key ? classData.color : '#475569'
-                  }}
+                  style={{ borderColor: selectedClass === key ? classData.color : '#475569' }}
                 >
-                  <div className="class-icon" style={{ color: classData.color }}>
-                    {classData.icon}
-                  </div>
+                  <div className="class-icon" style={{ color: classData.color }}>{classData.icon}</div>
                   <h3 style={{ color: classData.color }}>{classData.name}</h3>
                   <p className="class-description">{classData.description}</p>
-
                   <div className="stats-preview">
-                    <div className="stat-item">
-                      <span className="stat-label">HP</span>
-                      <span className="stat-value">{classData.baseStats.hp}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">STR</span>
-                      <span className="stat-value">{classData.baseStats.strength}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">AGI</span>
-                      <span className="stat-value">{classData.baseStats.agility}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">MIND</span>
-                      <span className="stat-value">{classData.baseStats.mindPower}</span>
-                    </div>
+                    <div className="stat-item"><span className="stat-label">HP</span><span className="stat-value">{classData.baseStats.hp}</span></div>
+                    <div className="stat-item"><span className="stat-label">STR</span><span className="stat-value">{classData.baseStats.strength}</span></div>
+                    <div className="stat-item"><span className="stat-label">AGI</span><span className="stat-value">{classData.baseStats.agility}</span></div>
+                    <div className="stat-item"><span className="stat-label">MIND</span><span className="stat-value">{classData.baseStats.mindPower}</span></div>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="button-group">
-              <button className="btn btn-secondary" onClick={() => setStage('username')}>
-                Back
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleClassConfirm}
-                disabled={!selectedClass}
-              >
-                Confirm Class
+              <button className="btn btn-secondary" onClick={() => setStage('username')}>Back</button>
+              <button className="btn btn-primary" onClick={handleClassConfirm} disabled={!selectedClass}>
+                Customize Look
               </button>
             </div>
           </>
         )}
 
-        {/* Stage 3: Confirmation */}
+        {/* Stage 3: Customize Appearance */}
+        {stage === 'customize' && (
+          <>
+            <h2>Customize Appearance</h2>
+            <p className="stage-description">Design your hero's look</p>
+
+            <div className="customize-layout">
+              <div className="preview-area">
+                <PaperDollPreview appearance={appearance} size={160} />
+              </div>
+
+              <div className="customize-options">
+                {/* Skin Tone */}
+                <div className="option-row">
+                  <span className="option-label">Skin</span>
+                  <div className="option-control">
+                    <button className="cycle-btn" onClick={() => updateAppearance('skin', cycle(SKIN_TONES, appearance.skin, -1))}>&#9664;</button>
+                    <span className="option-value">{SKIN_TONES.indexOf(appearance.skin) + 1} / {SKIN_TONES.length}</span>
+                    <button className="cycle-btn" onClick={() => updateAppearance('skin', cycle(SKIN_TONES, appearance.skin, 1))}>&#9654;</button>
+                  </div>
+                </div>
+
+                {/* Hair Style */}
+                <div className="option-row">
+                  <span className="option-label">Hair</span>
+                  <div className="option-control">
+                    <button className="cycle-btn" onClick={() => updateAppearance('hairStyle', cycleObj(HAIR_STYLES, appearance.hairStyle, -1))}>&#9664;</button>
+                    <span className="option-value">{getObjName(HAIR_STYLES, appearance.hairStyle)}</span>
+                    <button className="cycle-btn" onClick={() => updateAppearance('hairStyle', cycleObj(HAIR_STYLES, appearance.hairStyle, 1))}>&#9654;</button>
+                  </div>
+                </div>
+
+                {/* Hair Color */}
+                <div className="option-row">
+                  <span className="option-label">Hair Color</span>
+                  <div className="option-control">
+                    <button className="cycle-btn" onClick={() => updateAppearance('hairColor', cycle(HAIR_COLORS, appearance.hairColor, -1))}>&#9664;</button>
+                    <span className="option-value">{HAIR_COLORS.indexOf(appearance.hairColor) + 1} / {HAIR_COLORS.length}</span>
+                    <button className="cycle-btn" onClick={() => updateAppearance('hairColor', cycle(HAIR_COLORS, appearance.hairColor, 1))}>&#9654;</button>
+                  </div>
+                </div>
+
+                {/* Outfit Color */}
+                <div className="option-row">
+                  <span className="option-label">Outfit</span>
+                  <div className="option-control">
+                    <button className="cycle-btn" onClick={() => updateAppearance('outfit', cycle(OUTFIT_COLORS, appearance.outfit, -1))}>&#9664;</button>
+                    <span className="option-value">{OUTFIT_COLORS.indexOf(appearance.outfit) + 1} / {OUTFIT_COLORS.length}</span>
+                    <button className="cycle-btn" onClick={() => updateAppearance('outfit', cycle(OUTFIT_COLORS, appearance.outfit, 1))}>&#9654;</button>
+                  </div>
+                </div>
+
+                {/* Hat Style */}
+                <div className="option-row">
+                  <span className="option-label">Hat</span>
+                  <div className="option-control">
+                    <button className="cycle-btn" onClick={() => updateAppearance('hatStyle', cycleObj(HAT_STYLES, appearance.hatStyle, -1))}>&#9664;</button>
+                    <span className="option-value">{hatStyleObj?.name || 'None'}</span>
+                    <button className="cycle-btn" onClick={() => updateAppearance('hatStyle', cycleObj(HAT_STYLES, appearance.hatStyle, 1))}>&#9654;</button>
+                  </div>
+                </div>
+
+                {/* Hat Color (only if hat is selected) */}
+                {appearance.hatStyle && (
+                  <div className="option-row">
+                    <span className="option-label">Hat Color</span>
+                    <div className="option-control">
+                      <button className="cycle-btn" onClick={() => updateAppearance('hatColor', cycle(HAT_COLORS, appearance.hatColor, -1))}>&#9664;</button>
+                      <span className="option-value">{HAT_COLORS.indexOf(appearance.hatColor) + 1} / {HAT_COLORS.length}</span>
+                      <button className="cycle-btn" onClick={() => updateAppearance('hatColor', cycle(HAT_COLORS, appearance.hatColor, 1))}>&#9654;</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="button-group">
+              <button className="btn btn-secondary" onClick={() => setStage('class')}>Back</button>
+              <button className="btn btn-primary" onClick={() => setStage('confirm')}>Continue</button>
+            </div>
+          </>
+        )}
+
+        {/* Stage 4: Confirmation */}
         {stage === 'confirm' && selectedClassData && (
           <>
             <h2>Confirm Your Hero</h2>
@@ -161,9 +235,7 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
 
             <div className="confirmation-card">
               <div className="confirmation-header">
-                <div className="class-icon-large" style={{ color: selectedClassData.color }}>
-                  {selectedClassData.icon}
-                </div>
+                <PaperDollPreview appearance={appearance} size={96} />
                 <div>
                   <div className="confirm-username">{username}</div>
                   <div className="confirm-class" style={{ color: selectedClassData.color }}>
@@ -174,33 +246,16 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
 
               <div className="stats-breakdown">
                 <h3>Starting Stats</h3>
-                <div className="stat-row">
-                  <span className="stat-label">Health Points</span>
-                  <span className="stat-value">{selectedClassData.baseStats.hp} HP</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Strength</span>
-                  <span className="stat-value">{selectedClassData.baseStats.strength}</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Agility</span>
-                  <span className="stat-value">{selectedClassData.baseStats.agility}</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Mind Power</span>
-                  <span className="stat-value">{selectedClassData.baseStats.mindPower}</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Mana</span>
-                  <span className="stat-value">{selectedClassData.baseStats.mindPower * 10}</span>
-                </div>
+                <div className="stat-row"><span className="stat-label">Health Points</span><span className="stat-value">{selectedClassData.baseStats.hp} HP</span></div>
+                <div className="stat-row"><span className="stat-label">Strength</span><span className="stat-value">{selectedClassData.baseStats.strength}</span></div>
+                <div className="stat-row"><span className="stat-label">Agility</span><span className="stat-value">{selectedClassData.baseStats.agility}</span></div>
+                <div className="stat-row"><span className="stat-label">Mind Power</span><span className="stat-value">{selectedClassData.baseStats.mindPower}</span></div>
+                <div className="stat-row"><span className="stat-label">Mana</span><span className="stat-value">{selectedClassData.baseStats.mindPower * 10}</span></div>
               </div>
             </div>
 
             <div className="button-group">
-              <button className="btn btn-secondary" onClick={() => setStage('class')}>
-                Back
-              </button>
+              <button className="btn btn-secondary" onClick={() => setStage('customize')}>Back</button>
               <button className="btn btn-primary btn-start-adventure" onClick={handleFinalConfirm}>
                 Start Adventure!
               </button>

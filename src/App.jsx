@@ -191,14 +191,15 @@ function App() {
     }
   }
 
-  const handleCharacterCreation = ({ username, characterClass, stats }) => {
+  const handleCharacterCreation = ({ username, characterClass, stats, appearance }) => {
     const maxMana = stats.mindPower * 10
     const newStats = {
       username,
       characterClass,
+      appearance, // Paper doll customization choices
       level: 1,
       xp: 0,
-      xpToNextLevel: getXpForNextLevel(1), // 10 XP to reach level 2
+      xpToNextLevel: getXpForNextLevel(1),
       stats: {
         hp: stats.maxHp,
         maxHp: stats.maxHp,
@@ -210,7 +211,7 @@ function App() {
       },
       inventory: [],
       equipment: { weapon: null, armor: null, accessory: null },
-      equippedAbilities: [] // Track which abilities are equipped
+      equippedAbilities: []
     }
 
     setPlayerStats(newStats)
@@ -244,9 +245,9 @@ function App() {
     }
   }, [])
 
-  // Update game when player stats change
+  // Update game when player stats change (only with valid class)
   useEffect(() => {
-    if (gameInstanceRef.current) {
+    if (gameInstanceRef.current && playerStats.characterClass) {
       gameInstanceRef.current.events.emit('update-stats', playerStats)
     }
   }, [playerStats])

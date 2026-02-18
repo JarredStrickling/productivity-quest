@@ -2,6 +2,55 @@ import { useState, useEffect } from 'react';
 import './BattleModal.css';
 import { CLASS_CONFIG } from '../config/classes';
 import { getClassAbilities, isAbilityUnlocked } from '../config/abilities';
+import { MS_PATH, getAppearancePaths, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+
+// Floor marker positions (% of arena container)
+const PARTY_SLOTS = [
+  { left: 20, top: 78 },
+  { left: 70, top: 76 },
+  { left: 25, top: 60 },
+  { left: 65, top: 58 },
+];
+
+const ENEMY_SLOT = { left: 48, top: 38 };
+
+// Renders a Mana Seed paper doll character (stacked layers)
+// Accepts either a full appearance object or falls back to class defaults
+function SpriteFrame({ characterClass, appearance, maxSize = 220 }) {
+  const effectiveAppearance = appearance || CLASS_DEFAULT_APPEARANCE[characterClass];
+  if (!effectiveAppearance) return null;
+
+  const paths = getAppearancePaths(effectiveAppearance);
+  const scale = maxSize / 64;
+  const sheetPx = Math.round(512 * scale);
+  const layerOrder = ['base', 'outfit', 'hair', 'hat'];
+
+  return (
+    <div style={{ position: 'relative', width: maxSize, height: maxSize }}>
+      {layerOrder.map(layer => {
+        const path = paths[layer];
+        if (!path) return null;
+        return (
+          <div
+            key={layer}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: maxSize,
+              height: maxSize,
+              backgroundImage: `url(${MS_PATH}/${path})`,
+              backgroundSize: `${sheetPx}px ${sheetPx}px`,
+              backgroundPosition: '0px 0px',
+              backgroundRepeat: 'no-repeat',
+              imageRendering: 'pixelated',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
 // Orc enemy configuration
 const ORC_ENEMY = {
@@ -23,11 +72,12 @@ function generateArenaTeam(playerStats) {
     : playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
   const playerMaxMana = playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
 
-  // Add player
+  // Add player (carry custom appearance for rendering)
   const playerCombat = {
     id: 'player',
     name: playerStats.username,
     characterClass: playerClass,
+    appearance: playerStats.appearance || null,
     isAI: false,
     stats: {
       ...playerStats.stats,
@@ -382,81 +432,70 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
       <div className="modal-content battle-modal arena-modal" onClick={e => e.stopPropagation()}>
         {/* Battle Arena with background */}
         <div className="battle-arena arena-background">
-          {/* Party Side (Left) */}
-          <div className="party-side">
-            {party.map((member, index) => {
-              const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
-              const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
-              const isCurrentTurn = index === currentTurn;
-              const isPaladin = member.characterClass === 'paladin';
+          {/* Party members on floor marker slots */}
+          {party.map((member, index) => {
+            const slot = PARTY_SLOTS[index];
+            if (!slot) return null;
+            const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
+            const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
+            const isActive = index === currentTurn;
 
-              return (
-                <div
-                  key={member.id}
-                  className={`battle-sprite party-sprite ${isCurrentTurn ? 'active-turn' : ''}`}
-                >
-                  <div className="arena-character-sprite">
-                    <img
-                      src={member.isAI ? '/assets/sprites/battlearcher.png' : `/assets/sprites/${member.characterClass}.png`}
-                      alt={member.isAI ? 'Battle Archer' : member.characterClass}
-                      style={{
-                        objectFit: 'none',
-                        objectPosition: '0px 0px',
-                        width: member.isAI ? '128px' : (isPaladin ? '256px' : '128px'), /* Single frame width */
-                        height: member.isAI ? '128px' : (isPaladin ? '256px' : '128px') /* Single frame height */
-                      }}
+            return (
+              <div
+                key={member.id}
+                className={`arena-slot ${isActive ? 'arena-slot-active' : ''}`}
+                style={{
+                  left: `${slot.left}%`,
+                  top: `${slot.top}%`,
+                  zIndex: Math.round(slot.top),
+                }}
+              >
+                <div className="arena-floating-bars">
+                  <div className="sprite-name">{member.name}</div>
+                  <div className="sprite-bar hp-bar">
+                    <div
+                      className="sprite-bar-fill hp-bar-fill"
+                      style={{ width: `${hpPercent}%` }}
                     />
+                    <span className="sprite-bar-text">{member.stats.hp}</span>
                   </div>
-
-                  <div className="floating-bars">
-                    <div className="sprite-name">{member.name}</div>
-                    <div className="sprite-bar hp-bar">
-                      <div
-                        className="sprite-bar-fill hp-bar-fill"
-                        style={{ width: `${hpPercent}%` }}
-                      />
-                      <span className="sprite-bar-text">{member.stats.hp}</span>
-                    </div>
-                    <div className="sprite-bar mana-bar">
-                      <div
-                        className="sprite-bar-fill mana-bar-fill"
-                        style={{ width: `${manaPercent}%` }}
-                      />
-                      <span className="sprite-bar-text">{member.stats.mana}</span>
-                    </div>
+                  <div className="sprite-bar mana-bar">
+                    <div
+                      className="sprite-bar-fill mana-bar-fill"
+                      style={{ width: `${manaPercent}%` }}
+                    />
+                    <span className="sprite-bar-text">{member.stats.mana}</span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Enemy Side (Right) */}
-          <div className="boss-side enemy-side">
-            <div className="battle-sprite boss-sprite enemy-sprite">
-              <div className="arena-orc-sprite">
-                <img
-                  src="/assets/sprites/Baddiearena1.png"
-                  alt="Orc Warrior"
-                  style={{
-                    objectFit: 'none',
-                    objectPosition: '0px 0px',
-                    width: '128px', /* Single frame width */
-                    height: '128px' /* Single frame height */
-                  }}
-                />
+                <SpriteFrame characterClass={member.characterClass} appearance={member.appearance} />
               </div>
+            );
+          })}
 
-              <div className="floating-bars">
-                <div className="sprite-name boss-name-tag">{enemy.name}</div>
-                <div className="sprite-bar hp-bar boss-hp">
-                  <div
-                    className="sprite-bar-fill hp-bar-fill"
-                    style={{ width: `${enemyHpPercent}%` }}
-                  />
-                  <span className="sprite-bar-text">{enemy.hp} / {enemy.maxHp}</span>
-                </div>
+          {/* Enemy on upper floor marker */}
+          <div
+            className="arena-slot"
+            style={{
+              left: `${ENEMY_SLOT.left}%`,
+              top: `${ENEMY_SLOT.top}%`,
+              zIndex: Math.round(ENEMY_SLOT.top),
+            }}
+          >
+            <div className="arena-floating-bars">
+              <div className="sprite-name boss-name-tag">{enemy.name}</div>
+              <div className="sprite-bar hp-bar boss-hp">
+                <div
+                  className="sprite-bar-fill hp-bar-fill"
+                  style={{ width: `${enemyHpPercent}%` }}
+                />
+                <span className="sprite-bar-text">{enemy.hp} / {enemy.maxHp}</span>
               </div>
             </div>
+            <img
+              src="/assets/sprites/Baddiearena1.png"
+              alt="Orc Warrior"
+              className="arena-enemy-img"
+            />
           </div>
         </div>
 

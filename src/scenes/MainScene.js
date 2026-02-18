@@ -1,9 +1,31 @@
 import Phaser from 'phaser';
+import { MS_PATH, getAllSpriteSheets, getAppearanceTextureKeys, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+
+// ── Mana Seed Paper Doll Configuration ──────────────────────────────
+const MS_FRAME = { frameWidth: 64, frameHeight: 64 };
+
+// All sprite sheets for full character customization support
+const MS_SHEETS = getAllSpriteSheets();
+
+// Page 1 frame layout (512x512 sheet, 64x64 cells, 8 cols × 8 rows)
+// Rows 0-3: stand/push/pull/jump (directions: down, up, left, right)
+// Rows 4-7: walk 6-frame + run 2-frame (directions: down, up, left, right)
+const MS_ANIMS = {
+  idle:  { down: 0,  up: 8,  left: 16, right: 24 }, // col 0 of rows 0-3
+  walk: {
+    down:  { start: 32, end: 37 }, // row 4, cols 0-5
+    up:    { start: 40, end: 45 }, // row 5, cols 0-5
+    left:  { start: 48, end: 53 }, // row 6, cols 0-5
+    right: { start: 56, end: 61 }, // row 7, cols 0-5
+  },
+};
+// ─────────────────────────────────────────────────────────────────────
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
     super('MainScene');
     this.player = null;
+    this.playerLayers = null; // paper doll layers: { outfit, hair, hat }
     this.npc = null;
     this.dungeonNPC = null;
     this.questGiverNPC = null;
@@ -34,7 +56,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Use static cache bust instead of Date.now() for production stability
-    const cacheBust = `?v=21`; // Arena update - force sprite reload
+    const cacheBust = `?v=23`; // Mana Seed paper doll sprite system
 
     // Load town map
     this.load.image('townMap', `/assets/sprites/map1.png${cacheBust}`);
@@ -49,29 +71,10 @@ export default class MainScene extends Phaser.Scene {
     this.load.image('orcBaddie', `/assets/sprites/Baddiearena1.png${cacheBust}`);
 
 
-    // Load sprite sheets for each class
-    // Paladin: 256x256 frames (original working configuration)
-    // Others: 128x128 frames (1536x1024 sprite sheets, 12x8 grid)
-    this.load.spritesheet('paladin', `/assets/sprites/paladin.png${cacheBust}`, {
-      frameWidth: 256,
-      frameHeight: 256
-    });
-    this.load.spritesheet('warrior', `/assets/sprites/warrior.png${cacheBust}`, {
-      frameWidth: 128,
-      frameHeight: 128
-    });
-    this.load.spritesheet('mage', `/assets/sprites/mage.png${cacheBust}`, {
-      frameWidth: 128,
-      frameHeight: 128
-    });
-    this.load.spritesheet('archer', `/assets/sprites/archer.png${cacheBust}`, {
-      frameWidth: 128,
-      frameHeight: 128
-    });
-    this.load.spritesheet('cleric', `/assets/sprites/cleric.png${cacheBust}`, {
-      frameWidth: 128,
-      frameHeight: 128
-    });
+    // Load Mana Seed paper doll sprite sheets (all 512x512, 64x64 frames)
+    for (const [key, path] of Object.entries(MS_SHEETS)) {
+      this.load.spritesheet(key, `${MS_PATH}/${path}${cacheBust}`, MS_FRAME);
+    }
 
     // Load background music
     this.load.audio('townTheme', '/assets/music/town-theme.wav');
@@ -150,32 +153,18 @@ export default class MainScene extends Phaser.Scene {
 
     // Listen for events from React
     this.game.events.on('update-stats', (stats) => {
+      // Skip if no valid class (prevents broken player on initial empty stats)
+      if (!stats.characterClass) return;
+
       const classChanged = this.playerClass !== stats.characterClass;
       this.playerLevel = stats.level;
       this.playerClass = stats.characterClass;
 
-      // Recreate player if class changed
+      // Apply paper doll layers from player's custom appearance (or class defaults)
       if (classChanged && this.player) {
-        const oldX = this.player.x;
-        const oldY = this.player.y;
-        this.player.destroy();
-
-        // Recreate player at same position
-        const centerX = oldX;
-        const centerY = oldY;
-        const spriteKey = this.playerClass;
-        this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
-        this.player.setCollideWorldBounds(true);
-        this.player.setDepth(50);
-        // Scale based on sprite size: paladin is 256x256, scale to ~96px
-        const scale = spriteKey === 'paladin' ? 0.375 : 0.2; // 256 * 0.375 = 96px
-        this.player.setScale(scale);
-
-        // Recreate animations for new class
-        this.createPlayerAnimations(spriteKey);
-
-        // Restart camera follow
-        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+        const appearance = stats.appearance || CLASS_DEFAULT_APPEARANCE[stats.characterClass];
+        this.applyAppearanceLayers(appearance);
+        this.syncPlayerLayers();
       }
     });
 
@@ -260,153 +249,101 @@ export default class MainScene extends Phaser.Scene {
     boardNameTag.setDepth(11);
   }
 
-  createPlayerAnimations(spriteKey) {
-    // Paladin uses 256x256 frames (4x4 grid) - original working config
-    // Others use 128x128 frames (12x8 grid)
-    const isPaladin = spriteKey === 'paladin';
+  createPlayerAnimations() {
+    // Mana Seed page 1: 8×8 grid (64×64 cells in 512×512 sheet)
+    // Animations reference ms_base_v01 for frame timing; visual layers sync via frame index
+    const key = 'ms_base_v01';
 
-    if (isPaladin) {
-      // Paladin: 4x4 grid (256x256 frames)
-      // Row 1 (Down): frame 1 = idle, frames 2-4 = walk
-      // Row 2 (Left): frame 7 = idle, frames 8-10 = walk
-      // Row 3 (Right): frame 13 = idle, frames 14-16 = walk
-      // Row 4 (Up): frame 19 = idle, frames 20-22 = walk
-
+    for (const dir of ['down', 'up', 'left', 'right']) {
       this.anims.create({
-        key: `${spriteKey}_walk_down`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 2, end: 4 }),
-        frameRate: 10,
+        key: `ms_walk_${dir}`,
+        frames: this.anims.generateFrameNumbers(key, MS_ANIMS.walk[dir]),
+        frameRate: 8,
         repeat: -1
       });
 
       this.anims.create({
-        key: `${spriteKey}_walk_left`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 8, end: 10 }),
-        frameRate: 10,
-        repeat: -1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_walk_right`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 14, end: 16 }),
-        frameRate: 10,
-        repeat: -1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_walk_up`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 20, end: 22 }),
-        frameRate: 10,
-        repeat: -1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_down`,
-        frames: [{ key: spriteKey, frame: 1 }],
-        frameRate: 1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_left`,
-        frames: [{ key: spriteKey, frame: 7 }],
-        frameRate: 1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_right`,
-        frames: [{ key: spriteKey, frame: 13 }],
-        frameRate: 1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_up`,
-        frames: [{ key: spriteKey, frame: 19 }],
-        frameRate: 1
-      });
-    } else {
-      // Other classes: 12x8 grid (128x128 frames)
-      // Row 0 (Down): frames 0-11 (idle=0, walk=1-3)
-      // Row 1 (Left): frames 12-23 (idle=12, walk=13-15)
-      // Row 2 (Right): frames 24-35 (idle=24, walk=25-27)
-      // Row 3 (Up): frames 36-47 (idle=36, walk=37-39)
-
-      this.anims.create({
-        key: `${spriteKey}_walk_down`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 1, end: 3 }),
-        frameRate: 10,
-        repeat: -1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_walk_left`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 13, end: 15 }),
-        frameRate: 10,
-        repeat: -1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_walk_right`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 25, end: 27 }),
-        frameRate: 10,
-        repeat: -1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_walk_up`,
-        frames: this.anims.generateFrameNumbers(spriteKey, { start: 37, end: 39 }),
-        frameRate: 10,
-        repeat: -1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_down`,
-        frames: [{ key: spriteKey, frame: 0 }],
-        frameRate: 1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_left`,
-        frames: [{ key: spriteKey, frame: 12 }],
-        frameRate: 1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_right`,
-        frames: [{ key: spriteKey, frame: 24 }],
-        frameRate: 1
-      });
-
-      this.anims.create({
-        key: `${spriteKey}_idle_up`,
-        frames: [{ key: spriteKey, frame: 36 }],
+        key: `ms_idle_${dir}`,
+        frames: [{ key, frame: MS_ANIMS.idle[dir] }],
         frameRate: 1
       });
     }
-
-    // Start with idle down animation
-    this.player.play(`${spriteKey}_idle_down`);
   }
 
   createPlayer() {
-    // Create player sprite near center of world map
     const centerX = 512;
-    const centerY = 600; // Slightly below center
+    const centerY = 600;
+    const defaultSkin = 'ms_base_v01';
 
-    // Use class sprite or default to paladin
-    const spriteKey = this.playerClass || 'paladin';
-    console.log('Creating player with sprite:', spriteKey);
-    this.player = this.physics.add.sprite(centerX, centerY, spriteKey);
-
+    // Invisible physics sprite - drives animation timing + movement
+    this.player = this.physics.add.sprite(centerX, centerY, defaultSkin);
     this.player.setCollideWorldBounds(true);
-    this.player.setDepth(50); // Increased depth to ensure above everything
-    // Paladin uses 256x256 frames, others use 128x128 frames
-    // Scale to similar visual size (~60-96px)
-    const scale = spriteKey === 'paladin' ? 0.375 : 0.75; // Paladin: 256*0.375=96px, Others: 128*0.75=96px
-    this.player.setScale(scale);
-    console.log('Player created at:', centerX, centerY, 'depth:', this.player.depth, 'scale:', this.player.scale);
+    this.player.setDepth(49); // behind visual layers
+    this.player.setScale(2);
+    this.player.setAlpha(0); // invisible - visual layers handle rendering
 
-    // Create animations
-    this.createPlayerAnimations(spriteKey);
+    // Tighter collision box centered on feet
+    this.player.body.setSize(20, 16);
+    this.player.body.setOffset(22, 44);
+
+    // Paper doll visual layers (base body + equipment)
+    this.playerLayers = {
+      base:   this.add.sprite(centerX, centerY, defaultSkin).setDepth(50).setScale(2),
+      outfit: this.add.sprite(centerX, centerY, defaultSkin).setDepth(50.1).setScale(2).setVisible(false),
+      hair:   this.add.sprite(centerX, centerY, defaultSkin).setDepth(50.2).setScale(2).setVisible(false),
+      hat:    this.add.sprite(centerX, centerY, defaultSkin).setDepth(50.3).setScale(2).setVisible(false),
+    };
+
+    this.createPlayerAnimations();
+    this.player.play('ms_idle_down');
+  }
+
+  // Apply paper doll layers from a player's custom appearance object
+  applyAppearanceLayers(appearance) {
+    if (!appearance || !this.playerLayers) return;
+
+    const keys = getAppearanceTextureKeys(appearance);
+
+    // Also update the base body skin tone
+    if (keys.base && this.textures.exists(keys.base)) {
+      this.player.setTexture(keys.base);
+      this.player.play(`ms_idle_${this.lastDirection}`, true);
+    }
+
+    const layerMap = { base: keys.base, outfit: keys.outfit, hair: keys.hair, hat: keys.hat };
+    for (const [layerName, layer] of Object.entries(this.playerLayers)) {
+      const textureKey = layerMap[layerName];
+      if (textureKey && this.textures.exists(textureKey)) {
+        layer.setTexture(textureKey);
+        layer.setVisible(true);
+      } else if (layerName !== 'base') {
+        // Hide optional layers (outfit/hair/hat) if missing, but base always stays visible
+        layer.setVisible(false);
+      }
+    }
+  }
+
+  // Keep all paper doll layers in sync with the base player sprite
+  syncPlayerLayers() {
+    if (!this.playerLayers) return;
+    const { x, y } = this.player;
+    const frameName = this.player.frame.name;
+    for (const layer of Object.values(this.playerLayers)) {
+      if (layer.active) {
+        layer.setPosition(x, y);
+        if (layer.visible) {
+          layer.setFrame(frameName);
+        }
+      }
+    }
+  }
+
+  destroyPlayerLayers() {
+    if (!this.playerLayers) return;
+    for (const layer of Object.values(this.playerLayers)) {
+      if (layer && layer.active) layer.destroy();
+    }
+    this.playerLayers = null;
   }
 
   createNPC() {
@@ -589,8 +526,6 @@ export default class MainScene extends Phaser.Scene {
     // Player movement - touch only
     this.player.setVelocity(0);
 
-    // Get sprite key for animations
-    const spriteKey = this.playerClass || 'paladin';
     let isMoving = false;
     let newDirection = this.lastDirection;
 
@@ -599,33 +534,32 @@ export default class MainScene extends Phaser.Scene {
       this.player.setVelocity(this.moveVector.x, this.moveVector.y);
       isMoving = true;
 
-      // Determine animation direction based on movement vector
       const absX = Math.abs(this.moveVector.x);
       const absY = Math.abs(this.moveVector.y);
 
       if (absX > absY) {
-        // Moving more horizontally
         newDirection = this.moveVector.x > 0 ? 'right' : 'left';
       } else {
-        // Moving more vertically
         newDirection = this.moveVector.y > 0 ? 'down' : 'up';
       }
     }
 
-    // Update animation based on movement
+    // Update animation based on movement (Mana Seed ms_ prefix)
     if (isMoving) {
-      const animKey = `${spriteKey}_walk_${newDirection}`;
+      const animKey = `ms_walk_${newDirection}`;
       if (this.player.anims.currentAnim?.key !== animKey) {
         this.player.play(animKey, true);
       }
       this.lastDirection = newDirection;
     } else {
-      // Play idle animation
-      const idleKey = `${spriteKey}_idle_${this.lastDirection}`;
+      const idleKey = `ms_idle_${this.lastDirection}`;
       if (this.player.anims.currentAnim?.key !== idleKey) {
         this.player.play(idleKey, true);
       }
     }
+
+    // Sync paper doll layers with base sprite
+    this.syncPlayerLayers();
 
     // Check distance to NPC for interaction
     const distance = Phaser.Math.Distance.Between(
@@ -840,7 +774,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     // Particle effect
-    const particles = this.add.particles(this.player.x, this.player.y, 'player', {
+    const particles = this.add.particles(this.player.x, this.player.y, 'ms_base_v01', {
       speed: { min: -100, max: 100 },
       angle: { min: 0, max: 360 },
       scale: { start: 0.3, end: 0 },
