@@ -30,26 +30,46 @@
 
 /* Party Side (Left) - Arena specific - All 4 on left */
 .arena-modal .party-side {
-  position: absolute;
-  left: 18%; /* Percentage-based positioning */
-  top: 0;
+  position: relative;
+  width: 100%;
   height: 100%;
-  width: 120px; /* Fixed slot width */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 20px;
-  align-items: center;
+}
+
+/* Individual party member positioning on floor markers */
+.arena-modal .party-sprite:nth-child(1) {
+  position: absolute;
+  left: 20%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+}
+
+.arena-modal .party-sprite:nth-child(2) {
+  position: absolute;
+  left: 20%;
+  top: 58%;
+  transform: translate(-50%, -50%);
+}
+
+.arena-modal .party-sprite:nth-child(3) {
+  position: absolute;
+  left: 20%;
+  top: 68%;
+  transform: translate(-50%, -50%);
+}
+
+.arena-modal .party-sprite:nth-child(4) {
+  position: absolute;
+  left: 20%;
+  top: 78%;
+  transform: translate(-50%, -50%);
 }
 
 /* Boss Side (Right) - Arena specific */
 .arena-modal .boss-side {
   position: absolute;
-  left: 72%; /* Percentage-based positioning */
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
+  left: 78%; /* Floor marker position */
+  top: 82%; /* Floor marker position */
+  transform: translate(-50%, -50%);
 }
 
 /* Default (non-arena) layout */
