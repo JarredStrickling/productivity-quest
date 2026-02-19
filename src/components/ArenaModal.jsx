@@ -15,25 +15,94 @@ const PARTY_SLOTS = [
 
 const ENEMY_SLOT = { left: 78, top: 70 };
 
-// Renders a Mana Seed paper doll in combat idle pose (right-facing with weapon)
-function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
-  const baseAppearance = appearance || CLASS_DEFAULT_APPEARANCE[characterClass];
-  if (!baseAppearance) return null;
+// ── ANIMATION HELPERS ────────────────────────────────────────────────
+// Returns { page, row, frames[], timings[], loop } for each animation state
+function getAnimConfig(animation, combatType) {
+  if (animation === 'attack') {
+    if (combatType === 'bow') {
+      // pBOW3 top half: 8-frame shoot-up, right-facing = row 2
+      return { page: 3, row: 2, frames: [0,1,2,3,4,5,6,7], timings: [180,100,100,100,400,50,50,100], loop: false };
+    }
+    // pONE3/pPOL3 top-left: 4-frame slash, right-facing = row 2
+    return { page: 3, row: 2, frames: [0,1,2,3], timings: [160,65,65,200], loop: false };
+  }
+  if (animation === 'hurt') {
+    // Page 1: col 5 = hurt, cols 6-7 = knockdown, right-facing = row 2
+    return { page: 1, row: 2, frames: [5,6,7], timings: [200,200,400], loop: false };
+  }
+  // idle: page 2 cols 0-3, 200ms each, loops
+  return { page: 2, row: 2, frames: [0,1,2,3], timings: [200,200,200,200], loop: true };
+}
 
+// Total ms for an attack animation
+function getAttackDuration(combatType) {
+  if (combatType === 'bow') return 1080; // 180+100+100+100+400+50+50+100
+  return 490; // 160+65+65+200 (sword & spear)
+}
+
+// Resolve combat type from a character's equipment
+function getCombatTypeForCharacter(character) {
+  const eq = character.equipment || CLASS_DEFAULT_EQUIPMENT[character.characterClass];
+  if (eq?.weapon) {
+    const item = EQUIPMENT_DATABASE[eq.weapon.itemId];
+    if (item) return item.combatType;
+  }
+  return 'sword';
+}
+
+// ── ANIMATED SPRITE FRAME ────────────────────────────────────────────
+function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220, animation = 'idle' }) {
+  const [frameIdx, setFrameIdx] = useState(0);
+
+  const baseAppearance = appearance || CLASS_DEFAULT_APPEARANCE[characterClass];
   const effectiveEquipment = equipment || CLASS_DEFAULT_EQUIPMENT[characterClass] || null;
 
-  // Determine combat page from equipped weapon
-  let combatPage = null;
+  // Determine combat type & idle page from weapon
+  let combatType = null;
+  let idlePage = null;
   if (effectiveEquipment?.weapon) {
     const weaponItem = EQUIPMENT_DATABASE[effectiveEquipment.weapon.itemId];
     if (weaponItem) {
-      combatPage = COMBAT_PAGE_MAP[weaponItem.combatType];
+      combatType = weaponItem.combatType;
+      idlePage = COMBAT_PAGE_MAP[combatType]; // 'pONE2', 'pBOW2', 'pPOL2'
     }
   }
 
-  // Use combat page sprites with weapons, or fall back to walking page
-  let paths;
-  let layerOrder;
+  // Animation config for current state
+  const animConfig = getAnimConfig(animation, combatType);
+
+  // Swap page number: 'pONE2' → 'pONE3' for attack, 'pONE1' for hurt
+  let combatPage = idlePage;
+  if (idlePage && animConfig.page !== 2) {
+    combatPage = idlePage.slice(0, -1) + animConfig.page;
+  }
+
+  // Frame cycling effect
+  useEffect(() => {
+    setFrameIdx(0);
+    const config = getAnimConfig(animation, combatType);
+
+    if (config.loop) {
+      const interval = setInterval(() => {
+        setFrameIdx(prev => (prev + 1) % config.frames.length);
+      }, config.timings[0]);
+      return () => clearInterval(interval);
+    } else {
+      const timeouts = [];
+      let elapsed = 0;
+      for (let i = 1; i < config.frames.length; i++) {
+        elapsed += config.timings[i - 1];
+        const idx = i;
+        timeouts.push(setTimeout(() => setFrameIdx(idx), elapsed));
+      }
+      return () => timeouts.forEach(clearTimeout);
+    }
+  }, [animation, combatType]);
+
+  if (!baseAppearance) return null;
+
+  // Build layer paths
+  let paths, layerOrder;
   if (combatPage) {
     paths = getCombatAppearancePaths(baseAppearance, effectiveEquipment, combatPage);
     layerOrder = ['base', 'outfit', 'hair', 'hat', 'weapon', 'offHand'];
@@ -44,10 +113,12 @@ function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
   }
   if (!paths) return null;
 
+  const col = animConfig.frames[frameIdx] || 0;
+  const row = animConfig.row;
   const scale = maxSize / 64;
   const sheetPx = Math.round(512 * scale);
-  // Right-facing idle = row 2 (down=0, up=1, right=2, left=3)
-  const yOffset = -2 * maxSize;
+  const xOffset = -col * maxSize;
+  const yOffset = -row * maxSize;
 
   return (
     <div style={{ position: 'relative', width: maxSize, height: maxSize }}>
@@ -65,7 +136,7 @@ function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
               height: maxSize,
               backgroundImage: `url(${MS_PATH}/${path})`,
               backgroundSize: `${sheetPx}px ${sheetPx}px`,
-              backgroundPosition: `0px ${yOffset}px`,
+              backgroundPosition: `${xOffset}px ${yOffset}px`,
               backgroundRepeat: 'no-repeat',
               imageRendering: 'pixelated',
             }}
@@ -76,27 +147,24 @@ function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
   );
 }
 
-// Orc enemy configuration
+// ── BATTLE CONFIG ────────────────────────────────────────────────────
 const ORC_ENEMY = {
   name: 'Orc Warrior',
-  maxHp: 800, // 2-3 min fight with 4 party members
+  maxHp: 800,
   hp: 800,
   icon: '🐗',
-  agility: 5 // Low agility, attacks last
+  agility: 5
 };
 
-// Generate team with required classes
 function generateArenaTeam(playerStats) {
   const party = [];
   const playerClass = playerStats.characterClass;
 
-  // Ensure maxMana is set correctly
   const playerMana = playerStats.stats.mana !== undefined
     ? playerStats.stats.mana
     : playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
   const playerMaxMana = playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
 
-  // Add player (carry custom appearance + equipment for rendering)
   const playerCombat = {
     id: 'player',
     name: playerStats.username,
@@ -113,37 +181,26 @@ function generateArenaTeam(playerStats) {
   };
   party.push(playerCombat);
 
-  // Required classes that must be in party
   const requiredClasses = ['paladin', 'cleric'];
   const neededClasses = requiredClasses.filter(c => c !== playerClass);
 
-  // Add required classes first
   neededClasses.forEach((className, index) => {
     party.push(generateAITeammate(index + 1, className));
   });
 
-  // Fill remaining slots with random classes
   const availableClasses = ['warrior', 'mage', 'archer'];
-  // If player is paladin or cleric, add one of the others
-  if (!neededClasses.includes('paladin')) {
-    availableClasses.push('paladin');
-  }
-  if (!neededClasses.includes('cleric')) {
-    availableClasses.push('cleric');
-  }
+  if (!neededClasses.includes('paladin')) availableClasses.push('paladin');
+  if (!neededClasses.includes('cleric')) availableClasses.push('cleric');
 
   while (party.length < 4) {
     const randomClass = availableClasses[Math.floor(Math.random() * availableClasses.length)];
     party.push(generateAITeammate(party.length, randomClass));
   }
 
-  // Sort party by agility (highest first)
   party.sort((a, b) => b.stats.agility - a.stats.agility);
-
   return party;
 }
 
-// Generate AI teammate
 function generateAITeammate(index, characterClass) {
   const classData = CLASS_CONFIG[characterClass];
   const maxMana = classData.baseStats.mindPower * 10;
@@ -166,7 +223,6 @@ function generateAITeammate(index, characterClass) {
   };
 }
 
-// Calculate damage from ability
 function calculateDamage(ability, casterStats) {
   const formula = ability.effect.formula;
   let damage = 0;
@@ -175,17 +231,14 @@ function calculateDamage(ability, casterStats) {
     const multiplier = parseFloat(formula.match(/strength\s*\*\s*(\d+\.?\d*)/)?.[1] || 1);
     damage += casterStats.strength * multiplier;
   }
-
   if (formula.includes('agility')) {
     const multiplier = parseFloat(formula.match(/agility\s*\*\s*(\d+\.?\d*)/)?.[1] || 1);
     damage += casterStats.agility * multiplier;
   }
-
   if (formula.includes('mindPower')) {
     const multiplier = parseFloat(formula.match(/mindPower\s*\*\s*(\d+\.?\d*)/)?.[1] || 1);
     damage += casterStats.mindPower * multiplier;
   }
-
   if (formula.includes('maxHp')) {
     const multiplier = parseFloat(formula.match(/maxHp\s*\*\s*(\d+\.?\d*)/)?.[1] || 1);
     damage += casterStats.maxHp * multiplier;
@@ -194,6 +247,7 @@ function calculateDamage(ability, casterStats) {
   return Math.floor(damage);
 }
 
+// ── ARENA MODAL ──────────────────────────────────────────────────────
 export default function ArenaModal({ isOpen, onClose, playerStats }) {
   const [battleState, setBattleState] = useState('intro');
   const [party, setParty] = useState([]);
@@ -203,6 +257,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
   const [animating, setAnimating] = useState(false);
   const [showAbilityMenu, setShowAbilityMenu] = useState(false);
   const [showAbilityInfo, setShowAbilityInfo] = useState(null);
+  const [attackingMemberId, setAttackingMemberId] = useState(null);
 
   // Initialize battle
   useEffect(() => {
@@ -210,7 +265,6 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
       const generatedParty = generateArenaTeam(playerStats);
       setParty(generatedParty);
 
-      // Find player's index after sorting by agility
       const playerIndex = generatedParty.findIndex(member => !member.isAI);
       setCurrentTurn(playerIndex >= 0 ? playerIndex : 0);
 
@@ -219,126 +273,131 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     }
   }, [isOpen, playerStats, party.length]);
 
-  // Get current turn character
   const currentCharacter = party[currentTurn];
   const isPlayerTurn = currentCharacter && !currentCharacter.isAI;
 
-  // Get available abilities for current character
   const currentAbilities = currentCharacter
     ? Object.values(getClassAbilities(currentCharacter.characterClass))
         .filter(ability => isAbilityUnlocked(ability, 1))
         .sort((a, b) => a.slot - b.slot)
     : [];
 
-  // Handle basic attack
+  // ── PLAYER ATTACK ──────────────────────────────────────────────────
   const handleAttack = () => {
     if (animating || !currentCharacter) return;
-
     setAnimating(true);
     setShowAbilityMenu(false);
 
-    const baseDamage = Math.floor(
-      currentCharacter.stats.strength + (currentCharacter.stats.agility * 0.5)
-    );
+    // Play attack animation
+    const cType = getCombatTypeForCharacter(currentCharacter);
+    const duration = getAttackDuration(cType);
+    setAttackingMemberId(currentCharacter.id);
 
-    const newEnemy = { ...enemy };
-    newEnemy.hp = Math.max(0, newEnemy.hp - baseDamage);
-    setEnemy(newEnemy);
-
-    addLog(`${currentCharacter.name} attacked! Dealt ${baseDamage} damage!`);
-
-    if (newEnemy.hp <= 0) {
-      setTimeout(() => {
-        setBattleState('victory');
-        addLog('🎉 Victory! The Orc Warrior has been defeated!');
-        setAnimating(false);
-      }, 3000);
-      return;
-    }
-
+    // Apply damage when animation finishes
     setTimeout(() => {
-      if (!currentCharacter.isAI) {
-        executeAITurns();
-      } else {
-        setAnimating(false);
-      }
-    }, 4500);
-  };
+      setAttackingMemberId(null);
 
-  // Handle ability use
-  const useAbility = (ability) => {
-    if (animating || !currentCharacter || currentCharacter.stats.mana < ability.manaCost) {
-      return;
-    }
-
-    setAnimating(true);
-    setShowAbilityMenu(false);
-
-    const newParty = [...party];
-    const charIndex = party.findIndex(p => p.id === currentCharacter.id);
-    newParty[charIndex].stats.mana -= ability.manaCost;
-
-    if (ability.effect.type === 'damage') {
-      const baseDamage = calculateDamage(ability, currentCharacter.stats);
-      const hits = ability.effect.hits || 1;
-      let totalDamage = baseDamage * hits;
-
+      const baseDamage = Math.floor(
+        currentCharacter.stats.strength + (currentCharacter.stats.agility * 0.5)
+      );
       const newEnemy = { ...enemy };
-      newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
+      newEnemy.hp = Math.max(0, newEnemy.hp - baseDamage);
       setEnemy(newEnemy);
-
-      addLog(`${currentCharacter.name} used ${ability.name}! Dealt ${totalDamage} damage!`);
+      addLog(`${currentCharacter.name} attacked! Dealt ${baseDamage} damage!`);
 
       if (newEnemy.hp <= 0) {
         setTimeout(() => {
           setBattleState('victory');
           addLog('🎉 Victory! The Orc Warrior has been defeated!');
           setAnimating(false);
-        }, 3000);
-        setParty(newParty);
+        }, 1000);
         return;
       }
-    } else if (ability.effect.type === 'heal') {
-      const healAmount = calculateDamage(ability, currentCharacter.stats);
-      newParty[charIndex].stats.hp = Math.min(
-        newParty[charIndex].stats.maxHp,
-        newParty[charIndex].stats.hp + healAmount
-      );
-      addLog(`${currentCharacter.name} used ${ability.name}! Restored ${healAmount} HP!`);
-    }
 
-    setParty(newParty);
-
-    setTimeout(() => {
-      if (!currentCharacter.isAI) {
-        executeAITurns();
-      } else {
-        setAnimating(false);
-      }
-    }, 4500);
+      setTimeout(() => {
+        if (!currentCharacter.isAI) {
+          executeAITurns();
+        } else {
+          setAnimating(false);
+        }
+      }, 500);
+    }, duration);
   };
 
-  // Execute all AI turns in sequence
+  // ── PLAYER ABILITY ─────────────────────────────────────────────────
+  const useAbility = (ability) => {
+    if (animating || !currentCharacter || currentCharacter.stats.mana < ability.manaCost) return;
+    setAnimating(true);
+    setShowAbilityMenu(false);
+
+    // Play attack animation
+    const cType = getCombatTypeForCharacter(currentCharacter);
+    const duration = getAttackDuration(cType);
+    setAttackingMemberId(currentCharacter.id);
+
+    setTimeout(() => {
+      setAttackingMemberId(null);
+
+      const newParty = [...party];
+      const charIndex = party.findIndex(p => p.id === currentCharacter.id);
+      newParty[charIndex].stats.mana -= ability.manaCost;
+
+      if (ability.effect.type === 'damage') {
+        const baseDamage = calculateDamage(ability, currentCharacter.stats);
+        const hits = ability.effect.hits || 1;
+        const totalDamage = baseDamage * hits;
+
+        const newEnemy = { ...enemy };
+        newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
+        setEnemy(newEnemy);
+        addLog(`${currentCharacter.name} used ${ability.name}! Dealt ${totalDamage} damage!`);
+
+        if (newEnemy.hp <= 0) {
+          setTimeout(() => {
+            setBattleState('victory');
+            addLog('🎉 Victory! The Orc Warrior has been defeated!');
+            setAnimating(false);
+          }, 1000);
+          setParty(newParty);
+          return;
+        }
+      } else if (ability.effect.type === 'heal') {
+        const healAmount = calculateDamage(ability, currentCharacter.stats);
+        newParty[charIndex].stats.hp = Math.min(
+          newParty[charIndex].stats.maxHp,
+          newParty[charIndex].stats.hp + healAmount
+        );
+        addLog(`${currentCharacter.name} used ${ability.name}! Restored ${healAmount} HP!`);
+      }
+
+      setParty(newParty);
+
+      setTimeout(() => {
+        if (!currentCharacter.isAI) {
+          executeAITurns();
+        } else {
+          setAnimating(false);
+        }
+      }, 500);
+    }, duration);
+  };
+
+  // ── AI TURNS ───────────────────────────────────────────────────────
   const executeAITurns = () => {
     if (!currentCharacter || currentCharacter.isAI) return;
 
     const aiTurns = [];
-
-    // Collect all AI turns that come after the player
     for (let i = 1; i < party.length; i++) {
       const nextIndex = (currentTurn + i) % party.length;
       const character = party[nextIndex];
-
       if (character && character.isAI) {
         aiTurns.push({ character, index: nextIndex });
       } else {
-        // Stop when we reach the next player turn
         break;
       }
     }
 
     if (aiTurns.length === 0) {
-      // No AI turns, go back to player
       setCurrentTurn((currentTurn + 1) % party.length);
       return;
     }
@@ -348,7 +407,6 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
 
     const executeNextAI = () => {
       if (currentAIIndex >= aiTurns.length) {
-        // All AI turns done, find next player turn
         const nextPlayerIndex = (aiTurns[aiTurns.length - 1].index + 1) % party.length;
         setCurrentTurn(nextPlayerIndex);
         setAnimating(false);
@@ -358,77 +416,74 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
       const { character, index } = aiTurns[currentAIIndex];
       setCurrentTurn(index);
 
+      // Brief pause, then play attack animation
       setTimeout(() => {
-        // Execute AI action
-        const charAbilities = Object.values(getClassAbilities(character.characterClass))
-          .filter(ability => isAbilityUnlocked(ability, 1))
-          .sort((a, b) => a.slot - b.slot);
+        const cType = getCombatTypeForCharacter(character);
+        const duration = getAttackDuration(cType);
+        setAttackingMemberId(character.id);
 
-        const availableAbility = charAbilities.find(
-          ab => character.stats.mana >= ab.manaCost
-        );
-
-        // Perform action
-        const baseDamage = Math.floor(
-          character.stats.strength + (character.stats.agility * 0.5)
-        );
-
-        if (availableAbility) {
-          // Use ability
-          const abilityDamage = calculateDamage(availableAbility, character.stats);
-          const hits = availableAbility.effect.hits || 1;
-          const totalDamage = abilityDamage * hits;
-
-          setParty(prev => {
-            const newParty = [...prev];
-            const charIndex = newParty.findIndex(p => p.id === character.id);
-            if (charIndex >= 0) {
-              newParty[charIndex].stats.mana -= availableAbility.manaCost;
-            }
-            return newParty;
-          });
-
-          setEnemy(prev => {
-            const newHp = Math.max(0, prev.hp - totalDamage);
-            if (newHp <= 0) {
-              setTimeout(() => {
-                setBattleState('victory');
-                addLog('🎉 Victory! The Orc Warrior has been defeated!');
-                setAnimating(false);
-              }, 2000);
-            }
-            return { ...prev, hp: newHp };
-          });
-
-          addLog(`${character.name} used ${availableAbility.name}! Dealt ${totalDamage} damage!`);
-        } else {
-          // Basic attack
-          setEnemy(prev => {
-            const newHp = Math.max(0, prev.hp - baseDamage);
-            if (newHp <= 0) {
-              setTimeout(() => {
-                setBattleState('victory');
-                addLog('🎉 Victory! The Orc Warrior has been defeated!');
-                setAnimating(false);
-              }, 2000);
-            }
-            return { ...prev, hp: newHp };
-          });
-
-          addLog(`${character.name} attacked! Dealt ${baseDamage} damage!`);
-        }
-
-        // Move to next AI after delay (only if enemy still alive)
         setTimeout(() => {
-          setEnemy(prev => {
-            if (prev.hp > 0) {
-              currentAIIndex++;
-              executeNextAI();
-            }
-            return prev;
-          });
-        }, 4500);
-      }, 1000);
+          setAttackingMemberId(null);
+
+          // AI picks ability or basic attack
+          const charAbilities = Object.values(getClassAbilities(character.characterClass))
+            .filter(ab => isAbilityUnlocked(ab, 1))
+            .sort((a, b) => a.slot - b.slot);
+          const availableAbility = charAbilities.find(ab => character.stats.mana >= ab.manaCost);
+          const baseDamage = Math.floor(character.stats.strength + (character.stats.agility * 0.5));
+
+          if (availableAbility) {
+            const abilityDamage = calculateDamage(availableAbility, character.stats);
+            const hits = availableAbility.effect.hits || 1;
+            const totalDamage = abilityDamage * hits;
+
+            setParty(prev => {
+              const newParty = [...prev];
+              const ci = newParty.findIndex(p => p.id === character.id);
+              if (ci >= 0) newParty[ci].stats.mana -= availableAbility.manaCost;
+              return newParty;
+            });
+
+            setEnemy(prev => {
+              const newHp = Math.max(0, prev.hp - totalDamage);
+              if (newHp <= 0) {
+                setTimeout(() => {
+                  setBattleState('victory');
+                  addLog('🎉 Victory! The Orc Warrior has been defeated!');
+                  setAnimating(false);
+                }, 1000);
+              }
+              return { ...prev, hp: newHp };
+            });
+
+            addLog(`${character.name} used ${availableAbility.name}! Dealt ${totalDamage} damage!`);
+          } else {
+            setEnemy(prev => {
+              const newHp = Math.max(0, prev.hp - baseDamage);
+              if (newHp <= 0) {
+                setTimeout(() => {
+                  setBattleState('victory');
+                  addLog('🎉 Victory! The Orc Warrior has been defeated!');
+                  setAnimating(false);
+                }, 1000);
+              }
+              return { ...prev, hp: newHp };
+            });
+            addLog(`${character.name} attacked! Dealt ${baseDamage} damage!`);
+          }
+
+          // Next AI after brief pause
+          setTimeout(() => {
+            setEnemy(prev => {
+              if (prev.hp > 0) {
+                currentAIIndex++;
+                executeNextAI();
+              }
+              return prev;
+            });
+          }, 500);
+        }, duration);
+      }, 300);
     };
 
     executeNextAI();
@@ -445,6 +500,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     setBattleLog([]);
     setBattleState('intro');
     setAnimating(false);
+    setAttackingMemberId(null);
     onClose();
   };
 
@@ -464,6 +520,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
             const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
             const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
             const isActive = index === currentTurn;
+            const memberAnim = attackingMemberId === member.id ? 'attack' : 'idle';
 
             return (
               <div
@@ -492,12 +549,17 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                     <span className="sprite-bar-text">{member.stats.mana}</span>
                   </div>
                 </div>
-                <SpriteFrame characterClass={member.characterClass} appearance={member.appearance} equipment={member.equipment} />
+                <SpriteFrame
+                  characterClass={member.characterClass}
+                  appearance={member.appearance}
+                  equipment={member.equipment}
+                  animation={memberAnim}
+                />
               </div>
             );
           })}
 
-          {/* Enemy on upper floor marker */}
+          {/* Enemy on right side */}
           <div
             className="arena-slot"
             style={{

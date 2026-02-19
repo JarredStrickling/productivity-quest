@@ -120,8 +120,8 @@ const COMBAT_HAIR_FALLBACK = {
   bob2: 'bob1', flat: 'dap1', fro1: 'dap1', pon1: 'bob1', spk2: 'dap1',
 };
 
-// pONE2 has fstr/pfpn outfits; pBOW2/pPOL2 only have boxr
-const COMBAT_OUTFIT_PAGES = { pONE2: true };
+// pONE pages have fstr/pfpn outfits + hats; pBOW/pPOL only have boxr
+const COMBAT_OUTFIT_PAGES = { pONE1: true, pONE2: true, pONE3: true };
 
 // Build sprite sheet file paths for a combat idle page (right-facing with weapon)
 // combatPage: 'pONE2', 'pBOW2', or 'pPOL2'
