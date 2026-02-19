@@ -18,6 +18,7 @@ import './App.css'
 function App() {
   const gameRef = useRef(null)
   const gameInstanceRef = useRef(null)
+  const handleTaskSubmitRef = useRef(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showCharacterCreation, setShowCharacterCreation] = useState(false)
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
@@ -118,6 +119,10 @@ function App() {
         setShowDungeonConfirm(true)
       })
 
+      game.events.on('test-xp', () => {
+        handleTaskSubmitRef.current({ xp: 10, tier: 'Test', explanation: 'Test dummy XP', color: '#d97706' })
+      })
+
       game.events.on('game-ready', () => {
         setGameLoaded(true)
       })
@@ -167,6 +172,9 @@ function App() {
     const slotKey = `saveSlot${currentSaveSlot || 1}`
     localStorage.setItem(slotKey, JSON.stringify(newStats))
   }
+
+  // Keep ref in sync so Phaser event listeners always call the latest version
+  handleTaskSubmitRef.current = handleTaskSubmit
 
   const handleAllocateStat = (statKey) => {
     if ((playerStats.unspentStatPoints || 0) <= 0) return

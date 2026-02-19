@@ -31,10 +31,12 @@ export default class MainScene extends Phaser.Scene {
     this.npc = null;
     this.dungeonNPC = null;
     this.questGiverNPC = null;
+    this.testDummy = null;
     this.barriers = null;
     this.canInteract = false;
     this.canInteractDungeon = false;
     this.canInteractQuestGiver = false;
+    this.canInteractTestDummy = false;
     this.playerLevel = 1;
     this.playerClass = null;
     this.isModalOpen = false;
@@ -138,6 +140,9 @@ export default class MainScene extends Phaser.Scene {
 
     // Create Quest Giver NPC
     this.createQuestGiverNPC();
+
+    // Create Test Dummy NPC (for testing XP/leveling)
+    this.createTestDummy();
 
     // Create collision barriers for water and houses
     this.createCollisionBarriers();
@@ -505,6 +510,41 @@ export default class MainScene extends Phaser.Scene {
     this.questGiverInteractPrompt.setDepth(11);
   }
 
+  createTestDummy() {
+    const dummyX = 620;
+    const dummyY = 850;
+
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0xd97706, 1);
+    graphics.fillCircle(24, 24, 24);
+    graphics.fillStyle(0x92400e, 1);
+    graphics.fillRect(18, 8, 12, 12);
+    graphics.generateTexture('testDummyPlaceholder', 48, 48);
+    graphics.destroy();
+
+    this.testDummy = this.physics.add.sprite(dummyX, dummyY, 'testDummyPlaceholder');
+    this.testDummy.setImmovable(true);
+    this.testDummy.setDepth(10);
+    this.testDummy.setScale(0.6);
+
+    this.testDummyNameTag = this.add.text(this.testDummy.x, this.testDummy.y - 18, 'Test Dummy', {
+      fontSize: '11px',
+      fill: '#fff',
+      backgroundColor: '#d97706',
+      padding: { x: 4, y: 2 }
+    }).setOrigin(0.5);
+    this.testDummyNameTag.setDepth(11);
+
+    this.testDummyPrompt = this.add.text(this.testDummy.x, this.testDummy.y + 18, 'Tap for 10 XP', {
+      fontSize: '11px',
+      fill: '#fff',
+      backgroundColor: '#000',
+      padding: { x: 4, y: 2 }
+    }).setOrigin(0.5);
+    this.testDummyPrompt.setVisible(false);
+    this.testDummyPrompt.setDepth(11);
+  }
+
   createCollisionBarriers() {
     // Create a group for all collision barriers
     this.barriers = this.physics.add.staticGroup();
@@ -631,6 +671,22 @@ export default class MainScene extends Phaser.Scene {
       this.canInteractQuestGiver = false;
       this.questGiverInteractPrompt.setVisible(false);
     }
+
+    // Check distance to Test Dummy for interaction
+    const testDummyDistance = Phaser.Math.Distance.Between(
+      this.player.x,
+      this.player.y,
+      this.testDummy.x,
+      this.testDummy.y
+    );
+
+    if (testDummyDistance < 70) {
+      this.canInteractTestDummy = true;
+      this.testDummyPrompt.setVisible(true);
+    } else {
+      this.canInteractTestDummy = false;
+      this.testDummyPrompt.setVisible(false);
+    }
   }
 
   onPointerDown(pointer) {
@@ -744,6 +800,21 @@ export default class MainScene extends Phaser.Scene {
 
       if (tappedOnQuestGiver && questGiverDistance < 70) {
         this.openWeeklyQuests();
+      }
+
+      // Check if tapped on Test Dummy
+      const testDummyBounds = this.testDummy.getBounds();
+      const tappedOnTestDummy = testDummyBounds.contains(pointer.worldX, pointer.worldY);
+
+      const testDummyDist = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        this.testDummy.x,
+        this.testDummy.y
+      );
+
+      if (tappedOnTestDummy && testDummyDist < 70) {
+        this.game.events.emit('test-xp');
       }
     }
 
