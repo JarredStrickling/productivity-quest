@@ -106,8 +106,8 @@ export default class MainScene extends Phaser.Scene {
     // Round to nearest 0.5 increment for crisp pixel rendering
     zoom = Math.round(zoom * 2) / 2;
 
-    // Clamp zoom to prevent too zoomed in/out on different devices
-    zoom = Phaser.Math.Clamp(zoom, 0.5, 2.0); // Using 0.5 instead of 0.4 for integer-like scaling
+    // Clamp zoom: min 1.0 so mobile doesn't get too zoomed out
+    zoom = Phaser.Math.Clamp(zoom, 1.0, 2.0);
     this.cameras.main.setZoom(zoom);
 
     // Handle screen rotation and resize
@@ -115,12 +115,12 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = newZoom * 0.625; // Zoom level tuned for closer view of town
+      newZoom = newZoom * 0.625;
 
       // Round to nearest 0.5 increment for crisp pixel rendering
       newZoom = Math.round(newZoom * 2) / 2;
 
-      newZoom = Phaser.Math.Clamp(newZoom, 0.5, 2.0); // Using 0.5 for integer-like scaling
+      newZoom = Phaser.Math.Clamp(newZoom, 1.0, 2.0);
       this.cameras.main.setZoom(newZoom);
     });
 
@@ -255,7 +255,7 @@ export default class MainScene extends Phaser.Scene {
     if (this.textures.exists('taskboard')) {
       console.log('✅ Taskboard sprite loaded');
       this.productivityBoard = this.add.image(512, 545, 'taskboard');
-      this.productivityBoard.setScale(0.15);
+      this.productivityBoard.setScale(0.60);
     } else {
       console.warn('⚠️ Taskboard sprite not found, using placeholder');
       this.productivityBoard = this.add.image(512, 545, 'taskboardPlaceholder');
@@ -387,7 +387,7 @@ export default class MainScene extends Phaser.Scene {
     if (this.textures.exists('taskmaster')) {
       console.log('✅ Task Master sprite loaded');
       this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmaster');
-      this.npc.setScale(0.10);
+      this.npc.setScale(0.40);
     } else {
       console.warn('⚠️ Task Master sprite not found, using placeholder');
       this.npc = this.physics.add.sprite(taskmasterX, taskmasterY, 'taskmasterPlaceholder');
@@ -436,7 +436,7 @@ export default class MainScene extends Phaser.Scene {
     if (this.textures.exists('dungeonSprite')) {
       console.log('✅ Dungeon sprite loaded');
       this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonSprite');
-      this.dungeonNPC.setScale(0.225);
+      this.dungeonNPC.setScale(0.90);
     } else {
       console.warn('⚠️ Dungeon sprite not found, using placeholder');
       this.dungeonNPC = this.physics.add.sprite(dungeonX, dungeonY, 'dungeonPlaceholder');
