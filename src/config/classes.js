@@ -4,11 +4,12 @@ export const CLASS_CONFIG = {
     description: 'Heavily armored tank with high HP and defense',
     color: '#f59e0b', // Gold
     icon: '🛡️',
+    // 20 points total: 1 point = 50 HP or 1 stat point
     baseStats: {
-      hp: 140,
-      strength: 8,
-      agility: 3,
-      mindPower: 2
+      hp: 350,       // 7 pts
+      strength: 8,   // 8 pts
+      agility: 3,    // 3 pts
+      mindPower: 2   // 2 pts  = 20
     }
   },
   warrior: {
@@ -17,10 +18,10 @@ export const CLASS_CONFIG = {
     color: '#dc2626', // Red
     icon: '⚔️',
     baseStats: {
-      hp: 100,
-      strength: 12,
-      agility: 5,
-      mindPower: 1
+      hp: 200,       // 4 pts
+      strength: 12,  // 12 pts
+      agility: 3,    // 3 pts
+      mindPower: 1   // 1 pt   = 20
     }
   },
   mage: {
@@ -29,10 +30,10 @@ export const CLASS_CONFIG = {
     color: '#3b82f6', // Blue
     icon: '🔮',
     baseStats: {
-      hp: 80,
-      strength: 2,
-      agility: 2,
-      mindPower: 14
+      hp: 100,       // 2 pts
+      strength: 2,   // 2 pts
+      agility: 2,    // 2 pts
+      mindPower: 14  // 14 pts = 20
     }
   },
   archer: {
@@ -41,10 +42,10 @@ export const CLASS_CONFIG = {
     color: '#10b981', // Green
     icon: '🏹',
     baseStats: {
-      hp: 90,
-      strength: 5,
-      agility: 12,
-      mindPower: 3
+      hp: 150,       // 3 pts
+      strength: 4,   // 4 pts
+      agility: 11,   // 11 pts
+      mindPower: 2   // 2 pts  = 20
     }
   },
   cleric: {
@@ -53,10 +54,10 @@ export const CLASS_CONFIG = {
     color: '#8b5cf6', // Purple
     icon: '✨',
     baseStats: {
-      hp: 100,
-      strength: 3,
-      agility: 4,
-      mindPower: 10
+      hp: 150,       // 3 pts
+      strength: 2,   // 2 pts
+      agility: 5,    // 5 pts
+      mindPower: 10  // 10 pts = 20
     }
   }
 };
