@@ -1,294 +1,345 @@
-/* Character Panel specific styles - reuses .modal-overlay and .modal-content */
+/* Character Panel — RPG Parchment Theme */
 
-.character-panel {
-  max-width: 600px;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #475569;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.class-icon-display {
-  font-size: 56px;
-}
-
-.character-name {
-  color: white;
-  margin: 0;
-  font-size: 24px;
-}
-
-.character-class {
-  font-size: 16px;
-  font-weight: 600;
-  margin-top: 4px;
-}
-
-/* XP Section */
-.xp-section {
-  margin-bottom: 20px;
-}
-
-.xp-header,
-.resource-header {
-  display: flex;
-  justify-content: space-between;
-  color: #cbd5e1;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.progress-bar {
+/* ── Panel Container ──────────────────────────────────────── */
+.character-panel-rpg {
+  position: relative;
+  max-width: 340px;
   width: 100%;
-  height: 24px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 2px solid #475569;
-  border-radius: 12px;
+  padding: 14px 18px;
   overflow: hidden;
-}
 
-.progress-fill {
-  height: 100%;
-  transition: width 0.5s ease;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
-}
+  /* Parchment background */
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 111, 58, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 111, 58, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(139, 111, 58, 0.05) 0%, transparent 50%),
+    linear-gradient(170deg, #f4e4c1 0%, #e8d5a3 40%, #dcc896 70%, #e8d5a3 100%);
 
-.xp-fill {
-  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
-}
-
-.hp-fill {
-  background: linear-gradient(90deg, #dc2626 0%, #16a34a 100%);
-  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
-}
-
-.mana-fill {
-  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
-}
-
-/* Resource Bars */
-.resource-bars {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.resource-section {
-  /* Individual resource styling */
-}
-
-/* Core Stats */
-.stats-section,
-.equipment-section,
-.inventory-section {
-  margin-bottom: 20px;
-}
-
-.stats-section h3,
-.equipment-section h3,
-.inventory-section h3 {
-  color: #e2e8f0;
-  font-size: 18px;
-  margin: 0 0 12px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #475569;
-}
-
-.stats-grid-panel {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.stat-box {
-  background: rgba(30, 41, 59, 0.5);
-  border: 2px solid #475569;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  transition: all 0.2s;
-}
-
-.stat-box:hover {
-  border-color: #3b82f6;
-  background: rgba(30, 41, 59, 0.7);
-}
-
-.stat-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-.stat-label {
-  color: #94a3b8;
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.stat-value-large {
-  color: white;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-/* Equipment Grid */
-.equipment-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.equipment-slot {
-  background: rgba(30, 41, 59, 0.5);
-  border: 2px dashed #475569;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  transition: all 0.2s;
-}
-
-.equipment-slot:hover {
-  border-color: #64748b;
-  background: rgba(30, 41, 59, 0.7);
-}
-
-.slot-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-.slot-label {
-  color: #94a3b8;
-  font-size: 12px;
-  margin-bottom: 8px;
-}
-
-.empty-slot {
-  color: #475569;
-  font-size: 14px;
-  font-style: italic;
-}
-
-.equipped-item {
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 4px 8px;
-  background: rgba(59, 130, 246, 0.2);
+  border: 3px solid #a08050;
   border-radius: 4px;
+  box-shadow:
+    inset 0 0 30px rgba(139, 111, 58, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(59, 36, 21, 0.3);
+
+  display: flex;
+  flex-direction: column;
+  max-height: min(510px, calc(100vh - 40px));
 }
 
-/* Inventory */
-.inventory-grid {
-  min-height: 100px;
-  background: rgba(30, 41, 59, 0.3);
-  border: 2px solid #475569;
-  border-radius: 8px;
-  padding: 12px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+/* ── Close Button ─────────────────────────────────────────── */
+.rpg-close-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #8b7355, #6b5335);
+  border: 2px solid #4a3a20;
+  color: #f4e4c1;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+  line-height: 1;
+  padding: 0;
+}
+
+.rpg-close-btn:hover {
+  background: linear-gradient(145deg, #9b8365, #7b6345);
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.cpanel-header {
+  display: flex;
+  align-items: baseline;
   gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.empty-inventory {
-  grid-column: 1 / -1;
+.cpanel-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3b2415;
+}
+
+.cpanel-class {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cpanel-level {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b5030;
+  background: rgba(160, 128, 80, 0.2);
+  padding: 1px 8px;
+  border-radius: 3px;
+  border: 1px solid #a08050;
+}
+
+/* ── Ornamental Divider ───────────────────────────────────── */
+.rpg-divider {
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 6px 0;
+  flex-shrink: 0;
+}
+
+.rpg-divider::before {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #a08050 20%, #a08050 80%, transparent);
+}
+
+.rpg-divider::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #a08050;
+  transform: rotate(45deg);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Equipment Doll Area ──────────────────────────────────── */
+.equip-doll-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.equip-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.equip-column--left {
+  justify-content: space-between;
+  height: 160px;
+}
+
+.equip-column--right {
+  justify-content: center;
+}
+
+.equip-doll-center {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Equipment Slots ──────────────────────────────────────── */
+.equip-slot {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(145deg, #d4c4a0, #c0b090);
+  border: 2px solid #8b6f3a;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #64748b;
-  padding: 20px;
+  cursor: default;
+  position: relative;
 }
 
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 8px;
-  opacity: 0.5;
+.equip-slot--locked {
+  opacity: 0.45;
+  background: repeating-linear-gradient(
+    45deg,
+    #c4b490,
+    #c4b490 4px,
+    #b8a880 4px,
+    #b8a880 8px
+  );
 }
 
-.inventory-item {
-  background: rgba(59, 130, 246, 0.2);
-  border: 2px solid #3b82f6;
-  border-radius: 6px;
-  padding: 12px;
-  color: white;
-  font-size: 14px;
+.equip-slot--filled {
+  border-color: #6b5030;
+  background: linear-gradient(145deg, #ddd0b0, #ccbfa0);
+}
+
+.equip-slot-label {
+  font-size: 8px;
+  color: #7a5c3a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.equip-slot-item-name {
+  font-size: 7px;
+  color: #3b2415;
   text-align: center;
-  transition: all 0.2s;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 2px;
+  word-break: break-word;
 }
 
-.inventory-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
-  border-color: #60a5fa;
+.equip-slot-locked-icon {
+  font-size: 14px;
+  color: #a09070;
+  font-weight: bold;
 }
 
-/* Mobile Responsive */
-@media (max-width: 640px) {
-  .character-panel {
-    padding: 20px;
-  }
-
-  .header-left {
-    flex-direction: column;
-    text-align: center;
-    gap: 8px;
-  }
-
-  .class-icon-display {
-    font-size: 48px;
-  }
-
-  .character-name {
-    font-size: 20px;
-  }
-
-  .character-class {
-    font-size: 14px;
-  }
-
-  .stats-grid-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .equipment-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stat-icon,
-  .slot-icon {
-    font-size: 28px;
-  }
+/* ── Resource Bars (HP & MP) ──────────────────────────────── */
+.cpanel-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0;
 }
 
-@media (max-width: 480px) {
-  .character-panel {
-    padding: 16px;
+.cpanel-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cpanel-bar-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5c3d24;
+  width: 22px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.rpg-bar {
+  flex: 1;
+  height: 14px;
+  background: #4a3a20;
+  border: 1.5px solid #6b5030;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.rpg-bar-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.rpg-bar-fill--hp {
+  background: linear-gradient(90deg, #8b2020, #a63030);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.rpg-bar-fill--mana {
+  background: linear-gradient(90deg, #2a4a8b, #3a5aab);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.rpg-bar-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #f4e4c1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+  font-weight: 600;
+}
+
+/* ── Stats Row ────────────────────────────────────────────── */
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.stat-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.stat-badge-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #3b2415;
+  line-height: 1.1;
+}
+
+.stat-badge-label {
+  font-size: 9px;
+  color: #7a5c3a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* ── Small Viewport Fallback ──────────────────────────────── */
+@media (max-height: 580px) {
+  .character-panel-rpg {
+    padding: 10px 14px;
   }
 
-  .panel-header {
-    flex-direction: column;
-    gap: 12px;
+  .rpg-divider {
+    height: 6px;
+    margin: 3px 0;
   }
 
-  .close-btn {
-    align-self: flex-end;
+  .equip-column--left {
+    height: 128px;
   }
 
-  .inventory-grid {
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  .equip-slot {
+    width: 40px;
+    height: 40px;
+  }
+
+  .equip-slot-label {
+    font-size: 7px;
+  }
+
+  .equip-slot-item-name {
+    font-size: 6px;
+  }
+
+  .stat-badge-value {
+    font-size: 16px;
+  }
+
+  .cpanel-bars {
+    gap: 4px;
+  }
+
+  .rpg-bar {
+    height: 12px;
+  }
+
+  .rpg-bar-text {
+    font-size: 8px;
   }
 }
