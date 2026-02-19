@@ -13,6 +13,7 @@ import ArenaModal from './components/ArenaModal'
 import DungeonConfirm from './components/DungeonConfirm'
 import { getXpForNextLevel, calculateLevelUp } from './config/levelingSystem'
 import { CLASS_DEFAULT_EQUIPMENT } from './config/equipment'
+import { getEquippedAbilitiesForLevel } from './config/abilities'
 import './App.css'
 
 function App() {
@@ -59,8 +60,8 @@ function App() {
       armor: null
     },
 
-    // Combat
-    equippedAbilities: [],
+    // Combat — ability IDs equipped per slot
+    equippedAbilities: { slot1: null, slot2: null, slot3: null, slot4: null },
 
     // Stat allocation
     unspentStatPoints: 0
@@ -149,13 +150,19 @@ function App() {
     const levelsGained = newLevel - playerStats.level
     const pointsAwarded = levelsGained * 2
 
+    // Auto-equip newly unlocked abilities
+    const updatedAbilities = levelsGained > 0
+      ? getEquippedAbilitiesForLevel(playerStats.characterClass, newLevel)
+      : playerStats.equippedAbilities
+
     // Preserve all existing stats and only update level/xp/points
     const newStats = {
       ...playerStats,
       level: newLevel,
       xp: remainingXp,
       xpToNextLevel,
-      unspentStatPoints: (playerStats.unspentStatPoints || 0) + pointsAwarded
+      unspentStatPoints: (playerStats.unspentStatPoints || 0) + pointsAwarded,
+      equippedAbilities: updatedAbilities
     }
 
     setPlayerStats(newStats)
@@ -246,6 +253,11 @@ function App() {
         data.unspentStatPoints = 0
       }
 
+      // Backfill equippedAbilities for old saves
+      if (!data.equippedAbilities || Array.isArray(data.equippedAbilities)) {
+        data.equippedAbilities = getEquippedAbilitiesForLevel(data.characterClass, data.level || 1)
+      }
+
       setCurrentSaveSlot(slot.slotId)
       setPlayerStats(data)
       setShowMainMenu(false)
@@ -281,7 +293,7 @@ function App() {
         offHand: defaultEquipment.offHand,
         armor: defaultEquipment.armor,
       },
-      equippedAbilities: [],
+      equippedAbilities: getEquippedAbilitiesForLevel(characterClass, 1),
       unspentStatPoints: 0
     }
 
@@ -365,7 +377,7 @@ function App() {
                 offHand: null,
                 armor: null
               },
-              equippedAbilities: []
+              equippedAbilities: { slot1: null, slot2: null, slot3: null, slot4: null }
             })
           }}
           aria-label="Return to main menu"

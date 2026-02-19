@@ -124,10 +124,11 @@ export default function BattleModal({ isOpen, onClose, playerStats }) {
   const currentCharacter = party[currentTurn];
   const isPlayerTurn = currentCharacter && !currentCharacter.isAI;
 
-  // Get available abilities for current character
+  // Get available abilities for current character (use player level for unlocking)
+  const playerLevel = playerStats.level || 1;
   const currentAbilities = currentCharacter
     ? Object.values(getClassAbilities(currentCharacter.characterClass))
-        .filter(ability => isAbilityUnlocked(ability, 1)) // Level 1 for MVP
+        .filter(ability => isAbilityUnlocked(ability, currentCharacter.isAI ? 1 : playerLevel))
         .sort((a, b) => a.slot - b.slot)
     : [];
 

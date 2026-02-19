@@ -276,9 +276,10 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
   const currentCharacter = party[currentTurn];
   const isPlayerTurn = currentCharacter && !currentCharacter.isAI;
 
+  const playerLevel = playerStats.level || 1;
   const currentAbilities = currentCharacter
     ? Object.values(getClassAbilities(currentCharacter.characterClass))
-        .filter(ability => isAbilityUnlocked(ability, 1))
+        .filter(ability => isAbilityUnlocked(ability, currentCharacter.isAI ? 1 : playerLevel))
         .sort((a, b) => a.slot - b.slot)
     : [];
 
@@ -427,7 +428,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
 
           // AI picks ability or basic attack
           const charAbilities = Object.values(getClassAbilities(character.characterClass))
-            .filter(ab => isAbilityUnlocked(ab, 1))
+            .filter(ab => isAbilityUnlocked(ab, 1)) // AI teammates use level 1 abilities
             .sort((a, b) => a.slot - b.slot);
           const availableAbility = charAbilities.find(ab => character.stats.mana >= ab.manaCost);
           const baseDamage = Math.floor(character.stats.strength + (character.stats.agility * 0.5));

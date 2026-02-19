@@ -1,14 +1,16 @@
-// Ability unlock levels
+// Ability unlock levels (player level required)
 export const ABILITY_UNLOCK_LEVELS = {
   SLOT_1: 1,   // Basic
   SLOT_2: 3,   // Utility
-  SLOT_3: 15   // Ultimate
+  SLOT_3: 5,   // Flex (TBD)
+  SLOT_4: 8    // Ultimate
 };
 
 // Ability slot types
 export const ABILITY_TYPES = {
   BASIC: 'basic',
   UTILITY: 'utility',
+  FLEX: 'flex',
   ULTIMATE: 'ultimate'
 };
 
@@ -21,6 +23,14 @@ export const TARGET_TYPES = {
   ALL_ENEMIES: 'all_enemies'
 };
 
+// Flow State config (Warrior only)
+// Each basic hit adds a stack: 0 → 1 → 2 → reset
+// Stack bonuses are flat damage added to each hit
+export const FLOW_STATE = {
+  maxStacks: 2,
+  bonusPerStack: [0, 5, 10] // stack 0 = +0, stack 1 = +5, stack 2 = +10
+};
+
 // All abilities organized by class
 export const ABILITIES = {
   // PALADIN (Tank)
@@ -28,14 +38,13 @@ export const ABILITIES = {
     stomp: {
       id: 'stomp',
       name: 'Stomp',
-      description: 'Shield yourself based on your max HP',
+      description: 'Shield yourself for 10% of your max HP',
       type: ABILITY_TYPES.BASIC,
       slot: 1,
-      unlockLevel: 1,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_1,
       manaCost: 20,
       cooldown: 0,
       targetType: TARGET_TYPES.SELF,
-      icon: '🛡️',
       effect: {
         type: 'shield',
         formula: 'maxHp * 0.1'
@@ -47,11 +56,10 @@ export const ABILITIES = {
       description: 'Reduce boss damage by 20% for 2 turns',
       type: ABILITY_TYPES.UTILITY,
       slot: 2,
-      unlockLevel: 3,
-      manaCost: 25,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_2,
+      manaCost: 15,
       cooldown: 0,
       targetType: TARGET_TYPES.ENEMY,
-      icon: '📢',
       effect: {
         type: 'debuff',
         stat: 'damage',
@@ -64,12 +72,11 @@ export const ABILITIES = {
       name: 'Unbreakable',
       description: 'Redirect all team damage to yourself with 50% damage reduction',
       type: ABILITY_TYPES.ULTIMATE,
-      slot: 3,
-      unlockLevel: 15,
-      manaCost: 50,
+      slot: 4,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_4,
+      manaCost: 35,
       cooldown: 5,
       targetType: TARGET_TYPES.SELF,
-      icon: '🛡️✨',
       effect: {
         type: 'redirect',
         damageReduction: 0.5,
@@ -86,11 +93,10 @@ export const ABILITIES = {
       description: 'Strike twice with your weapon. Builds Flow State stacks.',
       type: ABILITY_TYPES.BASIC,
       slot: 1,
-      unlockLevel: 1,
-      manaCost: 0,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_1,
+      manaCost: 10,
       cooldown: 0,
       targetType: TARGET_TYPES.ENEMY,
-      icon: '⚔️',
       effect: {
         type: 'damage',
         formula: 'strength * 4',
@@ -104,11 +110,10 @@ export const ABILITIES = {
       description: 'Gain 5 mana and increase crit chance by 20% for 3 turns',
       type: ABILITY_TYPES.UTILITY,
       slot: 2,
-      unlockLevel: 3,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_2,
       manaCost: 0,
       cooldown: 0,
       targetType: TARGET_TYPES.SELF,
-      icon: '💪',
       effect: {
         type: 'buff',
         manaGain: 5,
@@ -120,18 +125,18 @@ export const ABILITIES = {
     cyclone: {
       id: 'cyclone',
       name: 'Cyclone',
-      description: 'Unleash 6 devastating strikes',
+      description: 'Unleash 6 devastating strikes (does not trigger Flow)',
       type: ABILITY_TYPES.ULTIMATE,
-      slot: 3,
-      unlockLevel: 15,
-      manaCost: 40,
+      slot: 4,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_4,
+      manaCost: 20,
       cooldown: 5,
       targetType: TARGET_TYPES.ENEMY,
-      icon: '🌪️',
       effect: {
         type: 'damage',
         formula: 'strength * 2',
-        hits: 6
+        hits: 6,
+        buildsFlow: false
       }
     }
   },
@@ -144,11 +149,10 @@ export const ABILITIES = {
       description: 'Quick shot combining agility and strength',
       type: ABILITY_TYPES.BASIC,
       slot: 1,
-      unlockLevel: 1,
-      manaCost: 0,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_1,
+      manaCost: 10,
       cooldown: 0,
       targetType: TARGET_TYPES.ENEMY,
-      icon: '🏹',
       effect: {
         type: 'damage',
         formula: '(agility * 3) + strength'
@@ -160,11 +164,10 @@ export const ABILITIES = {
       description: 'Increase team crit chance by 20% for 3 turns',
       type: ABILITY_TYPES.UTILITY,
       slot: 2,
-      unlockLevel: 3,
-      manaCost: 20,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_2,
+      manaCost: 15,
       cooldown: 0,
       targetType: TARGET_TYPES.ALL_ALLIES,
-      icon: '🦅',
       effect: {
         type: 'buff',
         stat: 'critChance',
@@ -177,12 +180,11 @@ export const ABILITIES = {
       name: 'Arrow Rain',
       description: 'Massive damage with guaranteed stun',
       type: ABILITY_TYPES.ULTIMATE,
-      slot: 3,
-      unlockLevel: 15,
-      manaCost: 50,
+      slot: 4,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_4,
+      manaCost: 25,
       cooldown: 5,
       targetType: TARGET_TYPES.ENEMY,
-      icon: '🏹☄️',
       effect: {
         type: 'damage',
         formula: 'agility * 10',
@@ -199,11 +201,10 @@ export const ABILITIES = {
       description: 'Hurl a bolt of fire at your enemy',
       type: ABILITY_TYPES.BASIC,
       slot: 1,
-      unlockLevel: 1,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_1,
       manaCost: 40,
       cooldown: 0,
       targetType: TARGET_TYPES.ENEMY,
-      icon: '🔥',
       effect: {
         type: 'damage',
         formula: 'mindPower * 10'
@@ -215,11 +216,10 @@ export const ABILITIES = {
       description: 'Sacrifice 10% HP to gain 40 mana',
       type: ABILITY_TYPES.UTILITY,
       slot: 2,
-      unlockLevel: 3,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_2,
       manaCost: 0,
       cooldown: 0,
       targetType: TARGET_TYPES.SELF,
-      icon: '🔋',
       effect: {
         type: 'conversion',
         hpCost: 0.1,
@@ -231,12 +231,11 @@ export const ABILITIES = {
       name: 'Black Hole',
       description: 'Massive damage that warps time - both you and enemy skip next turn',
       type: ABILITY_TYPES.ULTIMATE,
-      slot: 3,
-      unlockLevel: 15,
-      manaCost: 60,
+      slot: 4,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_4,
+      manaCost: 80,
       cooldown: 5,
       targetType: TARGET_TYPES.ENEMY,
-      icon: '🌑',
       effect: {
         type: 'damage',
         formula: 'mindPower * 20',
@@ -253,11 +252,10 @@ export const ABILITIES = {
       description: 'Restore health to an ally',
       type: ABILITY_TYPES.BASIC,
       slot: 1,
-      unlockLevel: 1,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_1,
       manaCost: 30,
       cooldown: 0,
       targetType: TARGET_TYPES.ALLY,
-      icon: '✨',
       effect: {
         type: 'heal',
         formula: 'mindPower * 6'
@@ -269,11 +267,10 @@ export const ABILITIES = {
       description: 'Damage to target is split among all party members',
       type: ABILITY_TYPES.UTILITY,
       slot: 2,
-      unlockLevel: 3,
-      manaCost: 35,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_2,
+      manaCost: 20,
       cooldown: 0,
       targetType: TARGET_TYPES.ALLY,
-      icon: '👼',
       effect: {
         type: 'shield',
         splitDamage: true,
@@ -285,12 +282,11 @@ export const ABILITIES = {
       name: 'Resurrection',
       description: 'Revive a fallen ally at 50% HP',
       type: ABILITY_TYPES.ULTIMATE,
-      slot: 3,
-      unlockLevel: 15,
-      manaCost: 80,
+      slot: 4,
+      unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_4,
+      manaCost: 50,
       cooldown: 5,
       targetType: TARGET_TYPES.ALLY,
-      icon: '✨💫',
       effect: {
         type: 'revive',
         hpPercent: 0.5
@@ -313,4 +309,23 @@ export function getUnlockedAbilities(characterClass, level) {
 // Helper function to check if ability is unlocked
 export function isAbilityUnlocked(ability, level) {
   return ability.unlockLevel <= level;
+}
+
+// Build the equippedAbilities object for a class at a given level
+// Returns { slot1: 'abilityId', slot2: 'abilityId'|null, slot3: null, slot4: 'abilityId'|null }
+export function getEquippedAbilitiesForLevel(characterClass, level) {
+  const classAbilities = getClassAbilities(characterClass);
+  const equipped = { slot1: null, slot2: null, slot3: null, slot4: null };
+
+  for (const ability of Object.values(classAbilities)) {
+    if (ability.unlockLevel <= level) {
+      const slotKey = `slot${ability.slot}`;
+      // First ability found for this slot wins (only 1 per slot for now)
+      if (!equipped[slotKey]) {
+        equipped[slotKey] = ability.id;
+      }
+    }
+  }
+
+  return equipped;
 }

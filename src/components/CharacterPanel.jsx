@@ -2,6 +2,7 @@ import './CharacterPanel.css';
 import { CLASS_CONFIG } from '../config/classes';
 import { getEquipmentDisplayInfo } from '../config/equipment';
 import { CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+import { getClassAbilities, ABILITY_UNLOCK_LEVELS } from '../config/abilities';
 import PaperDollPreview from './PaperDollPreview';
 
 export default function CharacterPanel({ isOpen, onClose, playerStats, onAllocateStat }) {
@@ -22,6 +23,23 @@ export default function CharacterPanel({ isOpen, onClose, playerStats, onAllocat
 
   const dollSize = window.innerHeight < 580 ? 128 : 160;
   const pts = playerStats.unspentStatPoints || 0;
+
+  // Build ability slot display
+  const classAbilities = getClassAbilities(playerStats.characterClass);
+  const equipped = playerStats.equippedAbilities || {};
+  const slotConfig = [
+    { key: 'slot1', label: 'Basic', unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_1 },
+    { key: 'slot2', label: 'Utility', unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_2 },
+    { key: 'slot3', label: 'Flex', unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_3 },
+    { key: 'slot4', label: 'Ultimate', unlockLevel: ABILITY_UNLOCK_LEVELS.SLOT_4 },
+  ];
+  const abilitySlots = slotConfig.map(slot => {
+    const abilityId = equipped[slot.key];
+    const ability = abilityId ? Object.values(classAbilities).find(a => a.id === abilityId) : null;
+    const unlocked = playerStats.level >= slot.unlockLevel;
+    const isFlex = slot.key === 'slot3';
+    return { ...slot, ability, unlocked, isFlex };
+  });
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -127,6 +145,30 @@ export default function CharacterPanel({ isOpen, onClose, playerStats, onAllocat
               <button className="stat-plus-btn" onClick={() => onAllocateStat('mindPower')} title="+1 MIND">+</button>
             )}
           </div>
+        </div>
+
+        <div className="rpg-divider" />
+
+        {/* Ability Slots */}
+        <div className="ability-slots-row">
+          {abilitySlots.map(slot => (
+            <div
+              key={slot.key}
+              className={`ability-slot ${slot.unlocked ? 'ability-slot--unlocked' : 'ability-slot--locked'}`}
+              title={slot.ability ? `${slot.ability.name}: ${slot.ability.description}` : slot.isFlex ? 'Coming soon' : `Unlocks at Lv ${slot.unlockLevel}`}
+            >
+              <span className="ability-slot-type">{slot.label}</span>
+              {slot.ability ? (
+                <span className="ability-slot-name">{slot.ability.name}</span>
+              ) : slot.isFlex ? (
+                <span className="ability-slot-locked-text">TBD</span>
+              ) : slot.unlocked ? (
+                <span className="ability-slot-locked-text">--</span>
+              ) : (
+                <span className="ability-slot-locked-text">Lv {slot.unlockLevel}</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
