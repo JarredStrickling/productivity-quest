@@ -4,7 +4,7 @@ import { getEquipmentDisplayInfo } from '../config/equipment';
 import { CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
 import PaperDollPreview from './PaperDollPreview';
 
-export default function CharacterPanel({ isOpen, onClose, playerStats }) {
+export default function CharacterPanel({ isOpen, onClose, playerStats, onAllocateStat }) {
   if (!isOpen) return null;
 
   const classData = CLASS_CONFIG[playerStats.characterClass];
@@ -20,8 +20,8 @@ export default function CharacterPanel({ isOpen, onClose, playerStats }) {
   const appearance = playerStats.appearance
     || CLASS_DEFAULT_APPEARANCE[playerStats.characterClass];
 
-  // Shrink doll on very short screens
   const dollSize = window.innerHeight < 580 ? 128 : 160;
+  const pts = playerStats.unspentStatPoints || 0;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -77,6 +77,9 @@ export default function CharacterPanel({ isOpen, onClose, playerStats }) {
                 {playerStats.stats.hp} / {playerStats.stats.maxHp}
               </span>
             </div>
+            {pts > 0 && (
+              <button className="stat-plus-btn" onClick={() => onAllocateStat('hp')} title="+50 HP">+</button>
+            )}
           </div>
           <div className="cpanel-bar-group">
             <span className="cpanel-bar-label">MP</span>
@@ -94,19 +97,35 @@ export default function CharacterPanel({ isOpen, onClose, playerStats }) {
 
         <div className="rpg-divider" />
 
+        {/* Unspent Points Banner */}
+        {pts > 0 && (
+          <div className="stat-points-banner">
+            {pts} stat point{pts !== 1 ? 's' : ''} available
+          </div>
+        )}
+
         {/* Stats Row */}
         <div className="stats-row">
           <div className="stat-badge">
             <span className="stat-badge-value">{playerStats.stats.strength}</span>
             <span className="stat-badge-label">STR</span>
+            {pts > 0 && (
+              <button className="stat-plus-btn" onClick={() => onAllocateStat('strength')} title="+1 STR">+</button>
+            )}
           </div>
           <div className="stat-badge">
             <span className="stat-badge-value">{playerStats.stats.agility}</span>
             <span className="stat-badge-label">AGI</span>
+            {pts > 0 && (
+              <button className="stat-plus-btn" onClick={() => onAllocateStat('agility')} title="+1 AGI">+</button>
+            )}
           </div>
           <div className="stat-badge">
             <span className="stat-badge-value">{playerStats.stats.mindPower}</span>
             <span className="stat-badge-label">MIND</span>
+            {pts > 0 && (
+              <button className="stat-plus-btn" onClick={() => onAllocateStat('mindPower')} title="+1 MIND">+</button>
+            )}
           </div>
         </div>
       </div>

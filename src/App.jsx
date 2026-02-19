@@ -59,7 +59,10 @@ function App() {
     },
 
     // Combat
-    equippedAbilities: []
+    equippedAbilities: [],
+
+    // Stat allocation
+    unspentStatPoints: 0
   })
 
   useEffect(() => {
@@ -137,12 +140,17 @@ function App() {
       result.xp
     );
 
-    // Preserve all existing stats and only update level/xp
+    // Award 2 stat points per level gained
+    const levelsGained = newLevel - playerStats.level
+    const pointsAwarded = levelsGained * 2
+
+    // Preserve all existing stats and only update level/xp/points
     const newStats = {
       ...playerStats,
       level: newLevel,
       xp: remainingXp,
-      xpToNextLevel
+      xpToNextLevel,
+      unspentStatPoints: (playerStats.unspentStatPoints || 0) + pointsAwarded
     }
 
     setPlayerStats(newStats)
@@ -156,6 +164,34 @@ function App() {
     }
 
     // Save to current save slot
+    const slotKey = `saveSlot${currentSaveSlot || 1}`
+    localStorage.setItem(slotKey, JSON.stringify(newStats))
+  }
+
+  const handleAllocateStat = (statKey) => {
+    if ((playerStats.unspentStatPoints || 0) <= 0) return
+
+    const newStats = {
+      ...playerStats,
+      unspentStatPoints: playerStats.unspentStatPoints - 1,
+      stats: { ...playerStats.stats }
+    }
+
+    if (statKey === 'hp') {
+      newStats.stats.maxHp += 50
+      newStats.stats.hp += 50 // Also heal the added HP
+    } else {
+      newStats.stats[statKey] += 1
+      // Recalculate mana if mind power changed
+      if (statKey === 'mindPower') {
+        newStats.stats.maxMana = newStats.stats.mindPower * 10
+        newStats.stats.mana = newStats.stats.maxMana
+      }
+    }
+
+    setPlayerStats(newStats)
+
+    // Save immediately
     const slotKey = `saveSlot${currentSaveSlot || 1}`
     localStorage.setItem(slotKey, JSON.stringify(newStats))
   }
@@ -197,6 +233,11 @@ function App() {
         }
       }
 
+      // Backfill unspentStatPoints for old saves
+      if (data.unspentStatPoints === undefined) {
+        data.unspentStatPoints = 0
+      }
+
       setCurrentSaveSlot(slot.slotId)
       setPlayerStats(data)
       setShowMainMenu(false)
@@ -232,7 +273,8 @@ function App() {
         offHand: defaultEquipment.offHand,
         armor: defaultEquipment.armor,
       },
-      equippedAbilities: []
+      equippedAbilities: [],
+      unspentStatPoints: 0
     }
 
     setPlayerStats(newStats)
@@ -352,6 +394,7 @@ function App() {
         isOpen={showCharacterPanel}
         onClose={() => setShowCharacterPanel(false)}
         playerStats={playerStats}
+        onAllocateStat={handleAllocateStat}
       />
 
       <BattleModal
