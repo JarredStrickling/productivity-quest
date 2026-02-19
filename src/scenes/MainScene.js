@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
-import { MS_PATH, getAllSpriteSheets, getAppearanceTextureKeys, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+import { MS_PATH, getDefaultSpriteSheets, getSheetsForAppearance, getAppearanceTextureKeys, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
 
 // ── Mana Seed Paper Doll Configuration ──────────────────────────────
 const MS_FRAME = { frameWidth: 64, frameHeight: 64 };
 
-// All sprite sheets for full character customization support
-const MS_SHEETS = getAllSpriteSheets();
+// Only preload sheets for class default appearances (~12 sheets)
+// Custom player sheets are loaded on-demand to save mobile GPU memory
+const MS_SHEETS = getDefaultSpriteSheets();
 
 // Page 1 frame layout (512x512 sheet, 64x64 cells, 8 cols × 8 rows)
 // Rows 0-3: stand/push/pull/jump (directions: down, up, left, right)
@@ -166,8 +167,29 @@ export default class MainScene extends Phaser.Scene {
       if (classChanged && this.player) {
         const appearance = stats.appearance || CLASS_DEFAULT_APPEARANCE[stats.characterClass];
         const effective = getEffectiveAppearance(appearance, stats.equipment);
-        this.applyAppearanceLayers(effective);
-        this.syncPlayerLayers();
+
+        // Dynamically load any sheets not already in the preloaded defaults
+        const needed = getSheetsForAppearance(effective);
+        const missing = {};
+        for (const [key, path] of Object.entries(needed)) {
+          if (!this.textures.exists(key)) {
+            missing[key] = path;
+          }
+        }
+
+        if (Object.keys(missing).length > 0) {
+          for (const [key, path] of Object.entries(missing)) {
+            this.load.spritesheet(key, `${MS_PATH}/${path}`, MS_FRAME);
+          }
+          this.load.once('complete', () => {
+            this.applyAppearanceLayers(effective);
+            this.syncPlayerLayers();
+          });
+          this.load.start();
+        } else {
+          this.applyAppearanceLayers(effective);
+          this.syncPlayerLayers();
+        }
       }
     });
 

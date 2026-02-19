@@ -89,7 +89,31 @@ export function getAppearanceTextureKeys(appearance) {
   };
 }
 
-// Generate ALL sprite sheets needed for preloading
+// Generate sprite sheets for a single appearance (3-4 sheets)
+export function getSheetsForAppearance(appearance) {
+  if (!appearance) return {};
+  const outfitStyle = appearance.outfitStyle || 'fstr';
+  const sheets = {};
+  sheets[`ms_base_${appearance.skin}`] = `char_a_p1/char_a_p1_0bas_humn_${appearance.skin}.png`;
+  sheets[`ms_out_${outfitStyle}_${appearance.outfit}`] = `char_a_p1/1out/char_a_p1_1out_${outfitStyle}_${appearance.outfit}.png`;
+  sheets[`ms_hair_${appearance.hairStyle}_${appearance.hairColor}`] = `char_a_p1/4har/char_a_p1_4har_${appearance.hairStyle}_${appearance.hairColor}.png`;
+  if (appearance.hatStyle) {
+    sheets[`ms_hat_${appearance.hatStyle}_${appearance.hatColor}`] = `char_a_p1/5hat/char_a_p1_5hat_${appearance.hatStyle}_${appearance.hatColor}.png`;
+  }
+  return sheets;
+}
+
+// Generate sprite sheets for all class default appearances (~12 unique sheets)
+// Used by Phaser preload so arena AI teammates render correctly
+export function getDefaultSpriteSheets() {
+  const sheets = {};
+  for (const appearance of Object.values(CLASS_DEFAULT_APPEARANCE)) {
+    Object.assign(sheets, getSheetsForAppearance(appearance));
+  }
+  return sheets;
+}
+
+// Generate ALL sprite sheets (every combination) - used only by non-Phaser contexts if needed
 export function getAllSpriteSheets() {
   const sheets = {};
 
