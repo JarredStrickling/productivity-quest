@@ -12,6 +12,7 @@ import WeeklyQuestsModal from './components/WeeklyQuestsModal'
 import ArenaModal from './components/ArenaModal'
 import DungeonConfirm from './components/DungeonConfirm'
 import { getXpForNextLevel, calculateLevelUp } from './config/levelingSystem'
+import { CLASS_DEFAULT_EQUIPMENT } from './config/equipment'
 import './App.css'
 
 function App() {
@@ -49,12 +50,12 @@ function App() {
       mindPower: 0
     },
 
-    // Inventory (for future use)
+    // Inventory & Equipment
     inventory: [],
     equipment: {
       weapon: null,
-      armor: null,
-      accessory: null
+      offHand: null,
+      armor: null
     },
 
     // Combat
@@ -180,19 +181,35 @@ function App() {
 
   const handleLoadGame = (slot) => {
     if (slot && slot.data) {
-      // Load existing save
+      let data = { ...slot.data }
+
+      // Migrate old equipment shape (accessory -> offHand)
+      if (data.equipment && 'accessory' in data.equipment && !('offHand' in data.equipment)) {
+        data.equipment = { weapon: data.equipment.weapon, offHand: null, armor: data.equipment.armor }
+      }
+
+      // Backfill default equipment for old saves with all-null equipment
+      if (data.characterClass && data.equipment &&
+          !data.equipment.weapon && !data.equipment.offHand && !data.equipment.armor) {
+        const defaults = CLASS_DEFAULT_EQUIPMENT[data.characterClass]
+        if (defaults) {
+          data.equipment = { weapon: defaults.weapon, offHand: defaults.offHand, armor: defaults.armor }
+        }
+      }
+
       setCurrentSaveSlot(slot.slotId)
-      setPlayerStats(slot.data)
+      setPlayerStats(data)
       setShowMainMenu(false)
 
       if (gameInstanceRef.current) {
-        gameInstanceRef.current.events.emit('update-stats', slot.data)
+        gameInstanceRef.current.events.emit('update-stats', data)
       }
     }
   }
 
   const handleCharacterCreation = ({ username, characterClass, stats, appearance }) => {
     const maxMana = stats.mindPower * 10
+    const defaultEquipment = CLASS_DEFAULT_EQUIPMENT[characterClass]
     const newStats = {
       username,
       characterClass,
@@ -210,7 +227,11 @@ function App() {
         mindPower: stats.mindPower
       },
       inventory: [],
-      equipment: { weapon: null, armor: null, accessory: null },
+      equipment: {
+        weapon: defaultEquipment.weapon,
+        offHand: defaultEquipment.offHand,
+        armor: defaultEquipment.armor,
+      },
       equippedAbilities: []
     }
 
@@ -291,8 +312,8 @@ function App() {
               inventory: [],
               equipment: {
                 weapon: null,
-                armor: null,
-                accessory: null
+                offHand: null,
+                armor: null
               },
               equippedAbilities: []
             })

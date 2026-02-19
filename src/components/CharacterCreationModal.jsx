@@ -52,8 +52,13 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
 
   const handleClassConfirm = () => {
     if (!selectedClass) return;
-    // Pre-fill appearance with class defaults
-    setAppearance({ ...CLASS_DEFAULT_APPEARANCE[selectedClass] });
+    const defaultAppearance = { ...CLASS_DEFAULT_APPEARANCE[selectedClass] };
+    // Non-mage classes cannot wear hats
+    if (selectedClass !== 'mage') {
+      defaultAppearance.hatStyle = null;
+      defaultAppearance.hatColor = 'v01';
+    }
+    setAppearance(defaultAppearance);
     setStage('customize');
   };
 
@@ -196,7 +201,8 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
                   </div>
                 </div>
 
-                {/* Hat Style */}
+                {/* Hat Style - Mage only */}
+                {selectedClass === 'mage' && (
                 <div className="option-row">
                   <span className="option-label">Hat</span>
                   <div className="option-control">
@@ -205,9 +211,10 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
                     <button className="cycle-btn" onClick={() => updateAppearance('hatStyle', cycleObj(HAT_STYLES, appearance.hatStyle, 1))}>&#9654;</button>
                   </div>
                 </div>
+                )}
 
-                {/* Hat Color (only if hat is selected) */}
-                {appearance.hatStyle && (
+                {/* Hat Color (only if hat is selected AND mage) */}
+                {selectedClass === 'mage' && appearance.hatStyle && (
                   <div className="option-row">
                     <span className="option-label">Hat Color</span>
                     <div className="option-control">

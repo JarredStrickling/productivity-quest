@@ -30,3 +30,13 @@ uploads/
 *.njsproj
 *.sln
 *.sw?
+
+# Mana Seed source packs (large asset archives)
+*.zip
+public/assets/sprites/manaseed/Bow_Combat_3.2/
+public/assets/sprites/manaseed/Character_Base_2.5c/
+public/assets/sprites/manaseed/FREE_Demo_2.0/
+public/assets/sprites/manaseed/Hairstyle_Pack_0.5.3/
+public/assets/sprites/manaseed/Spear_Combat_3.3/
+public/assets/sprites/manaseed/Sword_Shield_Combat_2.3a/
+public/assets/sprites/manaseed/Twin_Blade_Sword/

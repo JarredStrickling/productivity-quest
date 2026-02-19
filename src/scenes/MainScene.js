@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { MS_PATH, getAllSpriteSheets, getAppearanceTextureKeys, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+import { MS_PATH, getAllSpriteSheets, getAppearanceTextureKeys, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
 
 // ── Mana Seed Paper Doll Configuration ──────────────────────────────
 const MS_FRAME = { frameWidth: 64, frameHeight: 64 };
@@ -162,9 +162,11 @@ export default class MainScene extends Phaser.Scene {
       this.playerClass = stats.characterClass;
 
       // Apply paper doll layers from player's custom appearance (or class defaults)
+      // Merge equipment into appearance so armor drives the outfit sprite
       if (classChanged && this.player) {
         const appearance = stats.appearance || CLASS_DEFAULT_APPEARANCE[stats.characterClass];
-        this.applyAppearanceLayers(appearance);
+        const effective = getEffectiveAppearance(appearance, stats.equipment);
+        this.applyAppearanceLayers(effective);
         this.syncPlayerLayers();
       }
     });

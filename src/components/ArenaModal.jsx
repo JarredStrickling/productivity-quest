@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import './BattleModal.css';
 import { CLASS_CONFIG } from '../config/classes';
 import { getClassAbilities, isAbilityUnlocked } from '../config/abilities';
-import { MS_PATH, getAppearancePaths, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+import { MS_PATH, getAppearancePaths, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+import { CLASS_DEFAULT_EQUIPMENT } from '../config/equipment';
 
 // Floor marker positions (% of arena container)
 const PARTY_SLOTS = [
@@ -16,10 +17,12 @@ const ENEMY_SLOT = { left: 48, top: 38 };
 
 // Renders a Mana Seed paper doll character (stacked layers)
 // Accepts either a full appearance object or falls back to class defaults
-function SpriteFrame({ characterClass, appearance, maxSize = 220 }) {
-  const effectiveAppearance = appearance || CLASS_DEFAULT_APPEARANCE[characterClass];
-  if (!effectiveAppearance) return null;
+function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
+  const baseAppearance = appearance || CLASS_DEFAULT_APPEARANCE[characterClass];
+  if (!baseAppearance) return null;
 
+  const effectiveEquipment = equipment || CLASS_DEFAULT_EQUIPMENT[characterClass] || null;
+  const effectiveAppearance = getEffectiveAppearance(baseAppearance, effectiveEquipment);
   const paths = getAppearancePaths(effectiveAppearance);
   const scale = maxSize / 64;
   const sheetPx = Math.round(512 * scale);
@@ -72,12 +75,13 @@ function generateArenaTeam(playerStats) {
     : playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
   const playerMaxMana = playerStats.stats.maxMana || (playerStats.stats.mindPower * 10);
 
-  // Add player (carry custom appearance for rendering)
+  // Add player (carry custom appearance + equipment for rendering)
   const playerCombat = {
     id: 'player',
     name: playerStats.username,
     characterClass: playerClass,
     appearance: playerStats.appearance || null,
+    equipment: playerStats.equipment || null,
     isAI: false,
     stats: {
       ...playerStats.stats,
@@ -467,7 +471,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                     <span className="sprite-bar-text">{member.stats.mana}</span>
                   </div>
                 </div>
-                <SpriteFrame characterClass={member.characterClass} appearance={member.appearance} />
+                <SpriteFrame characterClass={member.characterClass} appearance={member.appearance} equipment={member.equipment} />
               </div>
             );
           })}

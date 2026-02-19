@@ -1,10 +1,14 @@
 import './CharacterPanel.css';
 import { CLASS_CONFIG } from '../config/classes';
+import { getEquipmentDisplayInfo } from '../config/equipment';
 
 export default function CharacterPanel({ isOpen, onClose, playerStats }) {
   if (!isOpen) return null;
 
   const classData = CLASS_CONFIG[playerStats.characterClass];
+  const weaponInfo = getEquipmentDisplayInfo(playerStats.equipment?.weapon);
+  const offHandInfo = getEquipmentDisplayInfo(playerStats.equipment?.offHand);
+  const armorInfo = getEquipmentDisplayInfo(playerStats.equipment?.armor);
 
   if (!classData) {
     return null; // Safety check
@@ -102,28 +106,28 @@ export default function CharacterPanel({ isOpen, onClose, playerStats }) {
           <h3>Equipment</h3>
           <div className="equipment-grid">
             <div className="equipment-slot">
-              <div className="slot-icon">⚔️</div>
+              <div className="slot-icon">{weaponInfo ? weaponInfo.icon : '⚔️'}</div>
               <div className="slot-label">Weapon</div>
-              {playerStats.equipment.weapon ? (
-                <div className="equipped-item">{playerStats.equipment.weapon}</div>
+              {weaponInfo ? (
+                <div className="equipped-item">{weaponInfo.name}</div>
               ) : (
                 <div className="empty-slot">Empty</div>
               )}
             </div>
             <div className="equipment-slot">
-              <div className="slot-icon">🛡️</div>
+              <div className="slot-icon">{offHandInfo ? offHandInfo.icon : '🛡️'}</div>
+              <div className="slot-label">Off-Hand</div>
+              {offHandInfo ? (
+                <div className="equipped-item">{offHandInfo.name}</div>
+              ) : (
+                <div className="empty-slot">Empty</div>
+              )}
+            </div>
+            <div className="equipment-slot">
+              <div className="slot-icon">{armorInfo ? armorInfo.icon : '👕'}</div>
               <div className="slot-label">Armor</div>
-              {playerStats.equipment.armor ? (
-                <div className="equipped-item">{playerStats.equipment.armor}</div>
-              ) : (
-                <div className="empty-slot">Empty</div>
-              )}
-            </div>
-            <div className="equipment-slot">
-              <div className="slot-icon">💍</div>
-              <div className="slot-label">Accessory</div>
-              {playerStats.equipment.accessory ? (
-                <div className="equipped-item">{playerStats.equipment.accessory}</div>
+              {armorInfo ? (
+                <div className="equipped-item">{armorInfo.name}</div>
               ) : (
                 <div className="empty-slot">Empty</div>
               )}

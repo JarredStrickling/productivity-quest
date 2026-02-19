@@ -1,5 +1,5 @@
 import './SimpleHUD.css';
-import { MS_PATH, getAppearancePaths, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+import { MS_PATH, getAppearancePaths, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
 
 // Build the CSS for a single paper doll layer showing frame 0 (standing down)
 // Zoomed into the face: shows a ~32x32 region from the top-center of the 64x64 cell
@@ -35,7 +35,8 @@ export default function SimpleHUD({ playerStats, onClick }) {
   const portraitSize = 36;
   // Use player's custom appearance, fall back to class defaults for old saves
   const appearance = playerStats.appearance || CLASS_DEFAULT_APPEARANCE[playerStats.characterClass];
-  const paths = appearance ? getAppearancePaths(appearance) : null;
+  const effective = appearance ? getEffectiveAppearance(appearance, playerStats.equipment) : null;
+  const paths = effective ? getAppearancePaths(effective) : null;
 
   // Build stacked paper doll layers for the portrait
   const layers = [];
