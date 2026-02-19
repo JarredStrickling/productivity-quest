@@ -746,7 +746,7 @@
 /* Arena battle log positioning */
 .arena-modal .battle-log {
   position: absolute;
-  bottom: 120px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   width: 80%;
@@ -837,7 +837,7 @@
   }
 
   .arena-modal .battle-log {
-    bottom: 90px;
+    top: 10px;
     width: 90%;
   }
 }
