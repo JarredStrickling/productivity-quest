@@ -13,7 +13,7 @@ const PARTY_SLOTS = [
   { left: 15, top: 60 },
 ];
 
-const ENEMY_SLOT = { left: 78, top: 62 };
+const ENEMY_SLOT = { left: 78, top: 70 };
 
 // Renders a Mana Seed paper doll in combat idle pose (right-facing with weapon)
 function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
