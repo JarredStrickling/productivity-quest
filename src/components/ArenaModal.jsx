@@ -7,13 +7,13 @@ import { CLASS_DEFAULT_EQUIPMENT, EQUIPMENT_DATABASE, COMBAT_PAGE_MAP } from '..
 
 // Side-view layout: party on left facing right, boss on right facing left
 const PARTY_SLOTS = [
-  { left: 22, top: 80 },
-  { left: 16, top: 66 },
-  { left: 26, top: 54 },
-  { left: 18, top: 42 },
+  { left: 20, top: 82 },
+  { left: 13, top: 74 },
+  { left: 24, top: 67 },
+  { left: 15, top: 60 },
 ];
 
-const ENEMY_SLOT = { left: 78, top: 52 };
+const ENEMY_SLOT = { left: 78, top: 62 };
 
 // Renders a Mana Seed paper doll in combat idle pose (right-facing with weapon)
 function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
@@ -453,7 +453,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
   const enemyHpPercent = (enemy.hp / enemy.maxHp) * 100;
 
   return (
-    <div className="modal-overlay battle-overlay" onClick={handleClose}>
+    <div className="modal-overlay battle-overlay arena-overlay" onClick={handleClose}>
       <div className="modal-content battle-modal arena-modal" onClick={e => e.stopPropagation()}>
         {/* Battle Arena with background */}
         <div className="battle-arena arena-background">
