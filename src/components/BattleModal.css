@@ -740,7 +740,7 @@
   width: 750px;
   image-rendering: pixelated;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
-  transform: scaleX(-1);
+  transform: scaleX(1);
 }
 
 /* Arena battle log positioning */
