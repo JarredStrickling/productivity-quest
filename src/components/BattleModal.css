@@ -648,8 +648,9 @@
 }
 
 .arena-background {
-  background-image: url('/assets/sprites/Arenawithfloormarkers.png');
-  background-size: 100% 100%;
+  background-image: url('/assets/sprites/ARENA1background.png');
+  background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
 }
 
@@ -729,11 +730,12 @@
   line-height: 14px;
 }
 
-/* Arena enemy image */
+/* Arena enemy image - flipped to face left toward party */
 .arena-enemy-img {
   width: 250px;
   image-rendering: pixelated;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
+  transform: scaleX(-1);
 }
 
 /* Arena battle log positioning */

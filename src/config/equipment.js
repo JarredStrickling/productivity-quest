@@ -139,6 +139,14 @@ export const CLASS_DEFAULT_EQUIPMENT = {
   },
 };
 
+// ── COMBAT PAGE MAPPING ───────────────────────────────────────────
+// Maps weapon combatType to the Mana Seed combat idle page
+export const COMBAT_PAGE_MAP = {
+  sword: 'pONE2', // sword, twin blade, axe, mace
+  bow:   'pBOW2',
+  spear: 'pPOL2',
+};
+
 // ── HELPERS ────────────────────────────────────────────────────────
 
 export function getEquipmentDisplayInfo(equipped) {
@@ -146,4 +154,11 @@ export function getEquipmentDisplayInfo(equipped) {
   const item = EQUIPMENT_DATABASE[equipped.itemId];
   if (!item) return null;
   return { ...item, equippedColor: equipped.color };
+}
+
+// Get the combat page for a weapon item
+export function getCombatPageForWeapon(weaponItemId) {
+  const item = EQUIPMENT_DATABASE[weaponItemId];
+  if (!item) return null;
+  return COMBAT_PAGE_MAP[item.combatType] || null;
 }

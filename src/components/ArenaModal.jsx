@@ -2,31 +2,52 @@ import { useState, useEffect } from 'react';
 import './BattleModal.css';
 import { CLASS_CONFIG } from '../config/classes';
 import { getClassAbilities, isAbilityUnlocked } from '../config/abilities';
-import { MS_PATH, getAppearancePaths, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
-import { CLASS_DEFAULT_EQUIPMENT } from '../config/equipment';
+import { MS_PATH, getCombatAppearancePaths, getAppearancePaths, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
+import { CLASS_DEFAULT_EQUIPMENT, EQUIPMENT_DATABASE, COMBAT_PAGE_MAP } from '../config/equipment';
 
-// Floor marker positions (% of arena container)
+// Side-view layout: party on left facing right, boss on right facing left
 const PARTY_SLOTS = [
-  { left: 20, top: 78 },
-  { left: 70, top: 76 },
-  { left: 25, top: 60 },
-  { left: 65, top: 58 },
+  { left: 22, top: 80 },
+  { left: 16, top: 66 },
+  { left: 26, top: 54 },
+  { left: 18, top: 42 },
 ];
 
-const ENEMY_SLOT = { left: 48, top: 38 };
+const ENEMY_SLOT = { left: 78, top: 52 };
 
-// Renders a Mana Seed paper doll character (stacked layers)
-// Accepts either a full appearance object or falls back to class defaults
+// Renders a Mana Seed paper doll in combat idle pose (right-facing with weapon)
 function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
   const baseAppearance = appearance || CLASS_DEFAULT_APPEARANCE[characterClass];
   if (!baseAppearance) return null;
 
   const effectiveEquipment = equipment || CLASS_DEFAULT_EQUIPMENT[characterClass] || null;
-  const effectiveAppearance = getEffectiveAppearance(baseAppearance, effectiveEquipment);
-  const paths = getAppearancePaths(effectiveAppearance);
+
+  // Determine combat page from equipped weapon
+  let combatPage = null;
+  if (effectiveEquipment?.weapon) {
+    const weaponItem = EQUIPMENT_DATABASE[effectiveEquipment.weapon.itemId];
+    if (weaponItem) {
+      combatPage = COMBAT_PAGE_MAP[weaponItem.combatType];
+    }
+  }
+
+  // Use combat page sprites with weapons, or fall back to walking page
+  let paths;
+  let layerOrder;
+  if (combatPage) {
+    paths = getCombatAppearancePaths(baseAppearance, effectiveEquipment, combatPage);
+    layerOrder = ['base', 'outfit', 'hair', 'hat', 'weapon', 'offHand'];
+  } else {
+    const effective = getEffectiveAppearance(baseAppearance, effectiveEquipment);
+    paths = getAppearancePaths(effective);
+    layerOrder = ['base', 'outfit', 'hair', 'hat'];
+  }
+  if (!paths) return null;
+
   const scale = maxSize / 64;
   const sheetPx = Math.round(512 * scale);
-  const layerOrder = ['base', 'outfit', 'hair', 'hat'];
+  // Right-facing idle = row 2 (down=0, up=1, right=2, left=3)
+  const yOffset = -2 * maxSize;
 
   return (
     <div style={{ position: 'relative', width: maxSize, height: maxSize }}>
@@ -44,7 +65,7 @@ function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220 }) {
               height: maxSize,
               backgroundImage: `url(${MS_PATH}/${path})`,
               backgroundSize: `${sheetPx}px ${sheetPx}px`,
-              backgroundPosition: '0px 0px',
+              backgroundPosition: `0px ${yOffset}px`,
               backgroundRepeat: 'no-repeat',
               imageRendering: 'pixelated',
             }}

@@ -113,6 +113,65 @@ export function getDefaultSpriteSheets() {
   return sheets;
 }
 
+// ── COMBAT SPRITE HELPERS ─────────────────────────────────────────
+// Combat pages only have bob1 & dap1 hair. Map all styles to nearest.
+const COMBAT_HAIR_FALLBACK = {
+  dap1: 'dap1', bob1: 'bob1',
+  bob2: 'bob1', flat: 'dap1', fro1: 'dap1', pon1: 'bob1', spk2: 'dap1',
+};
+
+// pONE2 has fstr/pfpn outfits; pBOW2/pPOL2 only have boxr
+const COMBAT_OUTFIT_PAGES = { pONE2: true };
+
+// Build sprite sheet file paths for a combat idle page (right-facing with weapon)
+// combatPage: 'pONE2', 'pBOW2', or 'pPOL2'
+export function getCombatAppearancePaths(appearance, equipment, combatPage) {
+  if (!appearance || !combatPage) return null;
+  const skin = appearance.skin;
+  const hairStyle = COMBAT_HAIR_FALLBACK[appearance.hairStyle] || 'dap1';
+  const hairColor = appearance.hairColor;
+
+  // Outfit: use armor equipment if on a page that supports it, else boxr
+  let outfitStyle = 'boxr';
+  let outfitColor = 'v01';
+  if (COMBAT_OUTFIT_PAGES[combatPage] && equipment?.armor) {
+    outfitStyle = equipment.armor.itemId;
+    outfitColor = equipment.armor.color;
+  } else if (COMBAT_OUTFIT_PAGES[combatPage]) {
+    outfitStyle = appearance.outfitStyle || 'fstr';
+    outfitColor = appearance.outfit || 'v01';
+  }
+
+  const page = `char_a_${combatPage}`;
+  const paths = {
+    base:   `${page}/${page}_0bas_humn_${skin}.png`,
+    outfit: `${page}/1out/${page}_1out_${outfitStyle}_${outfitColor}.png`,
+    hair:   `${page}/4har/${page}_4har_${hairStyle}_${hairColor}.png`,
+    weapon: null,
+    offHand: null,
+    hat: null,
+  };
+
+  // Weapon layer (6tla)
+  if (equipment?.weapon) {
+    const wep = equipment.weapon;
+    paths.weapon = `${page}/6tla/${page}_6tla_${wep.itemId}_${wep.color}.png`;
+  }
+
+  // Off-hand layer (7tlb) - shields on pONE2, quivers on pBOW2, none on pPOL2
+  if (equipment?.offHand) {
+    const oh = equipment.offHand;
+    paths.offHand = `${page}/7tlb/${page}_7tlb_${oh.itemId}_${oh.color}.png`;
+  }
+
+  // Hat layer (5hat) - only on pONE2
+  if (COMBAT_OUTFIT_PAGES[combatPage] && appearance.hatStyle) {
+    paths.hat = `${page}/5hat/${page}_5hat_${appearance.hatStyle}_${appearance.hatColor}.png`;
+  }
+
+  return paths;
+}
+
 // Generate ALL sprite sheets (every combination) - used only by non-Phaser contexts if needed
 export function getAllSpriteSheets() {
   const sheets = {};
