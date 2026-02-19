@@ -1,13 +1,15 @@
+/* Weekly Quests Modal — RPG Parchment Theme */
+
 .weekly-quests-modal {
-  max-width: 600px;
+  max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
 }
 
 .quests-intro {
-  color: #94a3b8;
-  font-size: 14px;
-  margin-bottom: 20px;
+  color: #7a5c3a;
+  font-size: 13px;
+  margin-bottom: 16px;
   text-align: center;
   font-style: italic;
 }
@@ -15,85 +17,87 @@
 .quests-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .quest-card {
-  background: rgba(30, 41, 59, 0.5);
-  border: 2px solid #475569;
-  border-radius: 12px;
-  padding: 16px;
+  background: rgba(212, 196, 160, 0.3);
+  border: 2px solid #a08050;
+  border-radius: 4px;
+  padding: 14px;
   transition: all 0.2s;
 }
 
 .quest-card:hover {
-  border-color: #64748b;
-  background: rgba(30, 41, 59, 0.7);
+  border-color: #8b6f3a;
+  background: rgba(212, 196, 160, 0.45);
 }
 
 .quest-card.completed {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-  opacity: 0.8;
+  border-color: #6b7a45;
+  background: rgba(107, 122, 69, 0.1);
+  opacity: 0.85;
 }
 
 .quest-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .quest-header h3 {
   margin: 0;
-  color: #f1f5f9;
-  font-size: 18px;
+  color: #3b2415;
+  font-size: 15px;
 }
 
 .completed-badge {
-  background: #10b981;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+  background: linear-gradient(145deg, #6b7a45, #556535);
+  color: #f4e4c1;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 11px;
   font-weight: bold;
+  border: 1px solid #3a4520;
 }
 
 .quest-description {
-  color: #cbd5e1;
-  font-size: 14px;
-  margin: 8px 0 12px 0;
+  color: #5c3d24;
+  font-size: 13px;
+  margin: 6px 0 10px 0;
 }
 
 .quest-progress {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 12px 0;
+  gap: 10px;
+  margin: 10px 0;
 }
 
-.progress-bar {
+/* Quest-scoped progress bar — avoids conflict with shared .progress-bar */
+.quest-progress .progress-bar {
   flex: 1;
-  height: 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
+  height: 14px;
+  background: #4a3a20;
+  border-radius: 2px;
   overflow: hidden;
-  border: 1px solid #475569;
+  border: 1.5px solid #6b5030;
 }
 
-.progress-fill {
+.quest-progress .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  background: linear-gradient(90deg, #8b6f3a, #b08830);
   transition: width 0.3s ease;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  box-shadow: none;
 }
 
 .progress-text {
-  color: #94a3b8;
-  font-size: 14px;
+  color: #5c3d24;
+  font-size: 12px;
   font-weight: bold;
-  min-width: 60px;
+  min-width: 50px;
   text-align: right;
 }
 
@@ -101,60 +105,63 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #475569;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #c4a265;
 }
 
 .reward-label {
-  color: #94a3b8;
-  font-size: 13px;
+  color: #7a5c3a;
+  font-size: 12px;
 }
 
 .reward-value {
-  color: #fbbf24;
+  color: #6b5030;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .quests-footer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  padding-top: 16px;
-  border-top: 2px solid #475569;
+  padding-top: 14px;
+  border-top: 1px solid #a08050;
 }
 
 .reset-timer {
-  color: #94a3b8;
-  font-size: 13px;
+  color: #7a5c3a;
+  font-size: 12px;
   font-style: italic;
 }
 
 .close-modal-btn {
-  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-  border: 2px solid #334155;
-  color: white;
-  padding: 12px 32px;
-  border-radius: 8px;
-  font-size: 16px;
+  background: linear-gradient(145deg, #8b7355, #6b5335);
+  border: 2px solid #4a3a20;
+  color: #f4e4c1;
+  padding: 10px 28px;
+  border-radius: 4px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  box-shadow: 0 3px 0 #3a2a15;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .close-modal-btn:hover {
-  background: linear-gradient(135deg, #475569 0%, #334155 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, #9b8365, #7b6345);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #3a2a15;
 }
 
 .close-modal-btn:active {
-  transform: translateY(0);
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #3a2a15;
 }
 
-/* Mobile Responsive */
+/* Mobile */
 @media (max-width: 640px) {
   .weekly-quests-modal {
     max-width: 90vw;
@@ -162,15 +169,15 @@
   }
 
   .quest-header h3 {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .quest-description {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .progress-text {
-    font-size: 12px;
-    min-width: 50px;
+    font-size: 11px;
+    min-width: 45px;
   }
 }

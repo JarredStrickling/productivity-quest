@@ -1,3 +1,5 @@
+/* Simple HUD — RPG Parchment Theme */
+
 .simple-hud {
   position: fixed;
   top: 10px;
@@ -5,13 +7,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 2px solid #475569;
-  border-radius: 8px;
+  background:
+    linear-gradient(170deg, #f4e4c1 0%, #e8d5a3 60%, #dcc896 100%);
+  border: 2px solid #a08050;
+  border-radius: 4px;
   padding: 5px 10px 5px 5px;
   cursor: pointer;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 0 0 12px rgba(139, 111, 58, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.4);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -26,9 +31,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #f59e0b;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid #8b6f3a;
+  border-radius: 3px;
+  background: rgba(212, 196, 160, 0.4);
   flex-shrink: 0;
 }
 
@@ -47,7 +52,7 @@
 }
 
 .hud-name {
-  color: #e2e8f0;
+  color: #3b2415;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -57,7 +62,7 @@
 }
 
 .hud-level {
-  color: #fbbf24;
+  color: #6b5030;
   font-weight: bold;
   font-size: 11px;
   white-space: nowrap;
@@ -65,17 +70,16 @@
 
 .hud-xp-bar {
   height: 8px;
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid #334155;
-  border-radius: 4px;
+  background: #4a3a20;
+  border: 1px solid #6b5030;
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .hud-xp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
-  border-radius: 3px;
+  background: linear-gradient(90deg, #8b6f3a, #b08830);
+  border-radius: 1px;
   transition: width 0.3s ease;
 }
 

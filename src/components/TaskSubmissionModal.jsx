@@ -119,8 +119,8 @@ export default function TaskSubmissionModal({ isOpen, onClose, onSubmit }) {
         onKeyUp={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h2>📋 Submit Your Achievement</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <h2>Submit Achievement</h2>
+          <button className="close-btn" onClick={onClose}>X</button>
         </div>
 
         {stage === 'description' && (
@@ -166,7 +166,7 @@ export default function TaskSubmissionModal({ isOpen, onClose, onSubmit }) {
             </div>
 
             <button onClick={handleGetVerification} className="submit-btn" disabled={isSubmitting}>
-              {isSubmitting ? 'Generating...' : '📸 Get Verification Request'}
+              {isSubmitting ? 'Generating...' : 'Get Verification Request'}
             </button>
           </div>
         )}
@@ -174,7 +174,7 @@ export default function TaskSubmissionModal({ isOpen, onClose, onSubmit }) {
         {stage === 'photo' && (
           <div className="task-form">
             <div className="verification-request">
-              <h3>📸 Photo Verification Required</h3>
+              <h3>Photo Verification Required</h3>
               <p>{verificationRequest}</p>
             </div>
 
@@ -194,7 +194,7 @@ export default function TaskSubmissionModal({ isOpen, onClose, onSubmit }) {
                     <img src={imagePreview} alt="Preview" className="image-preview" />
                   ) : (
                     <div className="upload-placeholder">
-                      <span>📷</span>
+                      <span>[ ]</span>
                       <p>Take photo with verification</p>
                       <small>Show {taskDescription} with the required verification</small>
                     </div>
@@ -204,7 +204,7 @@ export default function TaskSubmissionModal({ isOpen, onClose, onSubmit }) {
             </div>
 
             <button onClick={handleSubmit} className="submit-btn" disabled={!image || isSubmitting}>
-              {isSubmitting ? 'Evaluating...' : '⚔️ Submit for Evaluation'}
+              {isSubmitting ? 'Evaluating...' : 'Submit for Evaluation'}
             </button>
           </div>
         )}
@@ -218,7 +218,7 @@ export default function TaskSubmissionModal({ isOpen, onClose, onSubmit }) {
             </div>
 
             <button onClick={() => { handleReset(); onClose(); }} className="submit-btn">
-              ✨ Submit Another Task
+              Submit Another Task
             </button>
           </div>
         )}

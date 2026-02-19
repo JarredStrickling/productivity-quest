@@ -48,9 +48,9 @@ export default function SaveSlotSelection({ onBack, onSelectSlot }) {
                     <span className="slot-number">Slot {slot.slotId}</span>
                     <span
                       className="slot-class-icon"
-                      style={{ color: CLASS_CONFIG[slot.data.characterClass]?.color || '#fff' }}
+                      style={{ color: CLASS_CONFIG[slot.data.characterClass]?.color || '#3b2415' }}
                     >
-                      {CLASS_CONFIG[slot.data.characterClass]?.icon || '❓'}
+                      {CLASS_CONFIG[slot.data.characterClass]?.icon || '?'}
                     </span>
                   </div>
                   <div className="slot-info">
@@ -58,7 +58,7 @@ export default function SaveSlotSelection({ onBack, onSelectSlot }) {
                     <div className="slot-details">
                       <span
                         className="slot-class"
-                        style={{ color: CLASS_CONFIG[slot.data.characterClass]?.color || '#fff' }}
+                        style={{ color: CLASS_CONFIG[slot.data.characterClass]?.color || '#3b2415' }}
                       >
                         {CLASS_CONFIG[slot.data.characterClass]?.name || 'Unknown'}
                       </span>
@@ -72,7 +72,7 @@ export default function SaveSlotSelection({ onBack, onSelectSlot }) {
                     <span className="slot-number">Slot {slot.slotId}</span>
                   </div>
                   <div className="slot-empty-content">
-                    <div className="slot-empty-icon">✨</div>
+                    <div className="slot-empty-icon">- -</div>
                     <div className="slot-empty-text">Empty Slot</div>
                   </div>
                 </>
@@ -82,7 +82,7 @@ export default function SaveSlotSelection({ onBack, onSelectSlot }) {
         </div>
 
         <button className="back-btn" onClick={onBack}>
-          ← Back to Menu
+          Back to Menu
         </button>
       </div>
     </div>

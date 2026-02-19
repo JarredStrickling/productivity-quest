@@ -39,8 +39,8 @@ export default function WeeklyQuestsModal({ isOpen, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content weekly-quests-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>📜 Weekly Quests</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <h2>Weekly Quests</h2>
+          <button className="close-btn" onClick={onClose}>X</button>
         </div>
 
         <div className="quests-container">
@@ -56,7 +56,7 @@ export default function WeeklyQuestsModal({ isOpen, onClose }) {
               >
                 <div className="quest-header">
                   <h3>{quest.title}</h3>
-                  {quest.completed && <span className="completed-badge">✓ Done</span>}
+                  {quest.completed && <span className="completed-badge">Done</span>}
                 </div>
 
                 <p className="quest-description">{quest.description}</p>

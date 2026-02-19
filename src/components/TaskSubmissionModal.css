@@ -1,3 +1,9 @@
+/* ═══════════════════════════════════════════════════════════
+   Shared Modal Base Styles — RPG Parchment Theme
+   Used by: TaskSubmissionModal, DungeonConfirm,
+            WeeklyQuestsModal, CharacterCreationModal
+   ═══════════════════════════════════════════════════════════ */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -13,85 +19,103 @@
 }
 
 .modal-content {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  border: 4px solid #3b82f6;
-  border-radius: 12px;
-  padding: 30px;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 111, 58, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 111, 58, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(139, 111, 58, 0.05) 0%, transparent 50%),
+    linear-gradient(170deg, #f4e4c1 0%, #e8d5a3 40%, #dcc896 70%, #e8d5a3 100%);
+  border: 3px solid #a08050;
+  border-radius: 4px;
+  padding: 24px;
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 0 0 30px rgba(139, 111, 58, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(59, 36, 21, 0.3);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #3b82f6;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #a08050;
 }
 
 .modal-header h2 {
-  color: white;
+  color: #3b2415;
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .close-btn {
-  background: #ef4444;
-  border: none;
-  color: white;
-  font-size: 24px;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  cursor: pointer;
+  background: linear-gradient(145deg, #8b7355, #6b5335);
+  border: 2px solid #4a3a20;
+  color: #f4e4c1;
+  font-size: 14px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  line-height: 1;
 }
 
 .close-btn:hover {
-  background: #dc2626;
-  transform: scale(1.1);
+  background: linear-gradient(145deg, #9b8365, #7b6345);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Task Submission Modal — Specific Styles
+   ═══════════════════════════════════════════════════════════ */
 
 .task-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-group label {
-  color: white;
+  color: #3b2415;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .form-group textarea {
-  padding: 12px;
-  border: 2px solid #475569;
-  border-radius: 8px;
-  background: #0f172a;
-  color: white;
+  padding: 10px;
+  border: 2px solid #a08050;
+  border-radius: 4px;
+  background: rgba(244, 228, 193, 0.5);
+  color: #3b2415;
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
 }
 
+.form-group textarea::placeholder {
+  color: #a08050;
+}
+
 .form-group textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: #6b5030;
+  box-shadow: 0 0 0 2px rgba(107, 80, 48, 0.2);
 }
 
 .image-upload-area input[type="file"] {
@@ -101,199 +125,211 @@
 .upload-label {
   display: block;
   cursor: pointer;
-  border: 3px dashed #475569;
-  border-radius: 8px;
-  padding: 20px;
+  border: 2px dashed #a08050;
+  border-radius: 4px;
+  padding: 16px;
   text-align: center;
   transition: all 0.2s;
-  background: #0f172a;
+  background: rgba(212, 196, 160, 0.3);
 }
 
 .upload-label:hover {
-  border-color: #3b82f6;
-  background: #1e293b;
+  border-color: #6b5030;
+  background: rgba(212, 196, 160, 0.5);
 }
 
 .upload-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .upload-placeholder span {
-  font-size: 48px;
+  font-size: 32px;
+  color: #8b6f3a;
 }
 
 .upload-placeholder p {
   margin: 0;
-  color: white;
+  color: #3b2415;
   font-weight: bold;
+  font-size: 14px;
 }
 
 .upload-placeholder small {
-  color: #94a3b8;
+  color: #7a5c3a;
+  font-size: 12px;
 }
 
 .image-preview {
   width: 100%;
-  max-height: 300px;
+  max-height: 250px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
+/* XP Tiers Box */
 .xp-tiers-info {
-  background: rgba(59, 130, 246, 0.1);
-  border: 2px solid #3b82f6;
-  border-radius: 8px;
-  padding: 15px;
+  background: rgba(160, 128, 80, 0.12);
+  border: 2px solid #a08050;
+  border-radius: 4px;
+  padding: 12px;
 }
 
 .xp-tiers-info h3 {
-  margin: 0 0 10px 0;
-  color: white;
-  font-size: 16px;
+  margin: 0 0 8px 0;
+  color: #3b2415;
+  font-size: 14px;
 }
 
 .tier-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
 .tier {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px;
-  border-radius: 6px;
-  border: 2px solid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1.5px solid;
 }
 
 .tier.common {
-  background: rgba(156, 163, 175, 0.1);
-  border-color: #9ca3af;
+  background: rgba(160, 128, 80, 0.08);
+  border-color: #b8a880;
 }
 
 .tier.strong {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+  background: rgba(107, 80, 48, 0.1);
+  border-color: #8b6f3a;
 }
 
 .tier.busting {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: #8b5cf6;
+  background: rgba(120, 80, 160, 0.08);
+  border-color: #8b6fa0;
 }
 
 .tier.legendary {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: #f59e0b;
+  background: rgba(180, 140, 40, 0.12);
+  border-color: #b08830;
 }
 
 .tier-badge {
   font-weight: bold;
-  color: white;
-  font-size: 12px;
-}
-
-.tier-xp {
-  color: #4ade80;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.tier small {
-  color: #94a3b8;
+  color: #3b2415;
   font-size: 11px;
 }
 
+.tier-xp {
+  color: #5a7a30;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.tier small {
+  color: #7a5c3a;
+  font-size: 10px;
+}
+
+/* Submit Button — RPG Style */
 .submit-btn {
-  padding: 15px 30px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: 12px 24px;
+  background: linear-gradient(145deg, #8b7355, #6b5335);
+  color: #f4e4c1;
+  border: 2px solid #4a3a20;
+  border-radius: 4px;
+  font-size: 15px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 0 #1e40af;
+  transition: all 0.15s;
+  box-shadow: 0 3px 0 #3a2a15;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #1e40af;
+  background: linear-gradient(145deg, #9b8365, #7b6345);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #3a2a15;
 }
 
 .submit-btn:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #1e40af;
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #3a2a15;
 }
 
 .submit-btn:disabled {
-  background: #475569;
+  background: #b8a880;
+  border-color: #a09070;
+  color: #d4c4a0;
   cursor: not-allowed;
   box-shadow: none;
+  text-shadow: none;
 }
 
+/* Verification Request Box */
 .verification-request {
-  background: #fef3c7;
-  border: 2px solid #f59e0b;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
+  background: rgba(180, 140, 40, 0.15);
+  border: 2px solid #b08830;
+  border-radius: 4px;
+  padding: 14px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .verification-request h3 {
-  color: #92400e;
-  margin: 0 0 8px 0;
-  font-size: 18px;
+  color: #6b5030;
+  margin: 0 0 6px 0;
+  font-size: 16px;
 }
 
 .verification-request p {
-  color: #78350f;
-  font-size: 16px;
+  color: #3b2415;
+  font-size: 14px;
   font-weight: 600;
   margin: 0;
 }
 
+/* Result Display */
 .result-display {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(160, 128, 80, 0.1);
   border: 3px solid;
-  border-radius: 12px;
-  padding: 30px;
+  border-radius: 4px;
+  padding: 24px;
   text-align: center;
 }
 
 .result-display h3 {
-  font-size: 32px;
-  margin: 0 0 10px 0;
+  font-size: 26px;
+  margin: 0 0 8px 0;
   font-weight: bold;
 }
 
 .result-display .xp-gained {
-  font-size: 48px;
+  font-size: 40px;
   font-weight: bold;
-  color: #4ade80;
-  margin: 10px 0;
+  color: #5a7a30;
+  margin: 8px 0;
 }
 
 .result-display .explanation {
-  color: #cbd5e1;
-  font-size: 16px;
-  margin: 15px 0 0 0;
+  color: #5c3d24;
+  font-size: 14px;
+  margin: 12px 0 0 0;
   line-height: 1.5;
 }
 
-/* Mobile responsiveness */
+/* Mobile */
 @media (max-width: 640px) {
   .modal-content {
-    padding: 20px;
+    padding: 18px;
   }
 
   .modal-header h2 {
-    font-size: 20px;
+    font-size: 17px;
   }
 
   .tier-list {
@@ -301,26 +337,26 @@
   }
 
   .verification-request {
-    padding: 12px;
+    padding: 10px;
   }
 
   .verification-request h3 {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .verification-request p {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .result-display h3 {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .result-display .xp-gained {
-    font-size: 36px;
+    font-size: 32px;
   }
 
   .result-display .explanation {
-    font-size: 14px;
+    font-size: 13px;
   }
 }
