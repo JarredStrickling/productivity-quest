@@ -857,3 +857,22 @@
     width: 90%;
   }
 }
+
+/* Stun badge on character name */
+.stun-badge {
+  color: #fbbf24;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(251, 191, 36, 0.2);
+  padding: 0 4px;
+  border-radius: 2px;
+  margin-left: 2px;
+  animation: stun-pulse 1s ease-in-out infinite;
+}
+
+@keyframes stun-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

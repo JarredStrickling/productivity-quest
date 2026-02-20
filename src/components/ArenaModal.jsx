@@ -154,13 +154,43 @@ const ORC_SPRITES = {
   hurt: '/assets/sprites/orcgettinghit.png',
 };
 
+const ORC_ABILITIES = [
+  {
+    id: 'instaslam',
+    name: 'Instaslam',
+    damage: 50,
+    manaCost: 10,
+    target: 'single',
+    description: 'A brutal slam on one target.',
+  },
+  {
+    id: 'shreddit',
+    name: 'Shreddit',
+    damage: 25,
+    manaCost: 20,
+    target: 'single',
+    stuns: true,
+    description: 'Shreds a target, stunning them for one turn.',
+  },
+  {
+    id: 'tiktok_pipe_bomb',
+    name: 'TikTok Pipe Bomb',
+    damage: 30,
+    manaCost: 30,
+    target: 'all',
+    description: 'Explosive blast that hits the entire party.',
+  },
+];
+
 const ORC_ENEMY = {
   name: 'Orc Warrior',
   maxHp: 800,
   hp: 800,
+  mana: 50,
+  maxMana: 50,
   icon: '🐗',
   agility: 5,
-  damage: 45, // Base damage per attack
+  damage: 15, // Basic melee when out of mana
 };
 
 function generateArenaTeam(playerStats) {
@@ -291,6 +321,35 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
         .filter(ability => isAbilityUnlocked(ability, currentCharacter.isAI ? 1 : playerLevel))
         .sort((a, b) => a.slot - b.slot)
     : [];
+
+  // ── STUN SKIP: if current character is stunned, skip their turn ────
+  useEffect(() => {
+    if (battleState !== 'active' || !currentCharacter || animating) return;
+    if (currentCharacter.stunned && currentCharacter.alive && currentCharacter.stats.hp > 0) {
+      setAnimating(true);
+      addLog(`${currentCharacter.name} is stunned and can't act!`);
+
+      // Clear the stun
+      setParty(prev => {
+        const newParty = [...prev];
+        const ci = newParty.findIndex(p => p.id === currentCharacter.id);
+        if (ci >= 0) newParty[ci] = { ...newParty[ci], stunned: false };
+        return newParty;
+      });
+
+      // After a brief pause, move to next turn
+      setTimeout(() => {
+        if (!currentCharacter.isAI) {
+          // Player was stunned — run AI turns then enemy
+          executeAITurns();
+        } else {
+          // AI was stunned — continue to next in the AI chain
+          setAnimating(false);
+          setCurrentTurn(prev => (prev + 1) % party.length);
+        }
+      }, 800);
+    }
+  }, [currentTurn, battleState, party]);
 
   // ── PLAYER ATTACK ──────────────────────────────────────────────────
   const handleAttack = () => {
@@ -509,6 +568,53 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     setTimeout(() => setEnemyAnim('idle'), duration);
   };
 
+  // ── INTELLIGENT ENEMY AI ─────────────────────────────────────────────
+  // Picks an ability based on mana, party state, and weighted randomness.
+  // Returns an ability object or null (basic melee fallback).
+  const pickOrcAbility = (currentEnemy, aliveMembers) => {
+    const affordable = ORC_ABILITIES.filter(a => currentEnemy.mana >= a.manaCost);
+    if (affordable.length === 0) return null;
+
+    // Build weighted scores for each affordable ability
+    const scored = affordable.map(ability => {
+      let weight = 10; // base weight
+
+      if (ability.target === 'all') {
+        // AoE is better with more targets alive
+        weight += aliveMembers.length * 6;
+        // Extra weight if several members are low-ish HP
+        const lowHpCount = aliveMembers.filter(m => m.stats.hp < m.stats.maxHp * 0.4).length;
+        if (lowHpCount >= 2) weight += 10;
+      }
+
+      if (ability.stuns) {
+        // Prefer stunning un-stunned, high-threat targets
+        const unstunned = aliveMembers.filter(m => !m.stunned);
+        if (unstunned.length > 0) weight += 12;
+        // Less valuable if most are already stunned
+        const stunnedCount = aliveMembers.filter(m => m.stunned).length;
+        weight -= stunnedCount * 4;
+      }
+
+      if (ability.id === 'instaslam') {
+        // Great for finishing off low-HP targets
+        const finishable = aliveMembers.filter(m => m.stats.hp <= ability.damage);
+        if (finishable.length > 0) weight += 15;
+        // Cheap — mild bonus when mana is low
+        if (currentEnemy.mana <= 20) weight += 8;
+      }
+
+      // Add randomness (±30% swing) so it's not perfectly predictable
+      weight *= 0.7 + Math.random() * 0.6;
+
+      return { ability, weight };
+    });
+
+    // Pick the highest scored ability
+    scored.sort((a, b) => b.weight - a.weight);
+    return scored[0].ability;
+  };
+
   // ── ENEMY ATTACK PHASE ──────────────────────────────────────────────
   const executeEnemyAttack = (nextPlayerIndex) => {
     setAnimating(true);
@@ -519,7 +625,6 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
       setEnemyAnim('attack');
 
       setTimeout(() => {
-        // Pick a random alive party member to hit
         const aliveMembers = party.filter(m => m.alive && m.stats.hp > 0);
         if (aliveMembers.length === 0) {
           setEnemyAnim('idle');
@@ -527,39 +632,103 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
           return;
         }
 
-        const target = aliveMembers[Math.floor(Math.random() * aliveMembers.length)];
-        const damage = enemy.damage + Math.floor(Math.random() * 10 - 5); // ±5 variance
+        const chosenAbility = pickOrcAbility(enemy, aliveMembers);
 
-        // Flash hurt on the targeted member
-        setHurtMemberId(target.id);
+        if (chosenAbility && chosenAbility.target === 'all') {
+          // ── AoE: TikTok Pipe Bomb ──
+          const dmg = chosenAbility.damage + Math.floor(Math.random() * 6 - 3); // ±3
 
-        setParty(prev => {
-          const newParty = [...prev];
-          const ti = newParty.findIndex(p => p.id === target.id);
-          if (ti >= 0) {
-            newParty[ti] = {
-              ...newParty[ti],
-              stats: {
-                ...newParty[ti].stats,
-                hp: Math.max(0, newParty[ti].stats.hp - damage)
+          // Deduct mana
+          setEnemy(prev => ({ ...prev, mana: prev.mana - chosenAbility.manaCost }));
+
+          // Flash hurt on all members (we'll flash them sequentially via a brief stagger)
+          setHurtMemberId('all');
+
+          setParty(prev => {
+            const newParty = [...prev];
+            newParty.forEach((m, i) => {
+              if (m.alive && m.stats.hp > 0) {
+                newParty[i] = {
+                  ...m,
+                  stats: { ...m.stats, hp: Math.max(0, m.stats.hp - dmg) }
+                };
+                if (newParty[i].stats.hp <= 0) newParty[i].alive = false;
               }
-            };
-            // Mark as dead if HP reaches 0
-            if (newParty[ti].stats.hp <= 0) {
-              newParty[ti].alive = false;
-            }
+            });
+            return newParty;
+          });
+
+          addLog(`${enemy.name} used ${chosenAbility.name}! Hit everyone for ${dmg} damage!`);
+
+        } else if (chosenAbility) {
+          // ── Single-target ability (Instaslam or Shreddit) ──
+          let target;
+          if (chosenAbility.stuns) {
+            // Prefer stunning un-stunned targets; pick randomly among them
+            const unstunned = aliveMembers.filter(m => !m.stunned);
+            const pool = unstunned.length > 0 ? unstunned : aliveMembers;
+            target = pool[Math.floor(Math.random() * pool.length)];
+          } else if (chosenAbility.id === 'instaslam') {
+            // Prefer finishing off low-HP targets
+            const finishable = aliveMembers.filter(m => m.stats.hp <= chosenAbility.damage);
+            const pool = finishable.length > 0 ? finishable : aliveMembers;
+            target = pool[Math.floor(Math.random() * pool.length)];
+          } else {
+            target = aliveMembers[Math.floor(Math.random() * aliveMembers.length)];
           }
-          return newParty;
-        });
 
-        addLog(`${enemy.name} attacks ${target.name}! Dealt ${damage} damage!`);
+          const dmg = chosenAbility.damage + Math.floor(Math.random() * 6 - 3);
 
-        // Check if all party dead
+          // Deduct mana
+          setEnemy(prev => ({ ...prev, mana: prev.mana - chosenAbility.manaCost }));
+
+          setHurtMemberId(target.id);
+
+          setParty(prev => {
+            const newParty = [...prev];
+            const ti = newParty.findIndex(p => p.id === target.id);
+            if (ti >= 0) {
+              newParty[ti] = {
+                ...newParty[ti],
+                stats: { ...newParty[ti].stats, hp: Math.max(0, newParty[ti].stats.hp - dmg) },
+                stunned: chosenAbility.stuns ? true : newParty[ti].stunned,
+              };
+              if (newParty[ti].stats.hp <= 0) newParty[ti].alive = false;
+            }
+            return newParty;
+          });
+
+          const stunMsg = chosenAbility.stuns ? ` ${target.name} is stunned!` : '';
+          addLog(`${enemy.name} used ${chosenAbility.name} on ${target.name}! ${dmg} damage!${stunMsg}`);
+
+        } else {
+          // ── Basic melee (out of mana) ──
+          const target = aliveMembers[Math.floor(Math.random() * aliveMembers.length)];
+          const dmg = enemy.damage + Math.floor(Math.random() * 6 - 3);
+
+          setHurtMemberId(target.id);
+
+          setParty(prev => {
+            const newParty = [...prev];
+            const ti = newParty.findIndex(p => p.id === target.id);
+            if (ti >= 0) {
+              newParty[ti] = {
+                ...newParty[ti],
+                stats: { ...newParty[ti].stats, hp: Math.max(0, newParty[ti].stats.hp - dmg) }
+              };
+              if (newParty[ti].stats.hp <= 0) newParty[ti].alive = false;
+            }
+            return newParty;
+          });
+
+          addLog(`${enemy.name} attacks ${target.name}! ${dmg} damage!`);
+        }
+
+        // Check party wipe after damage resolves
         setTimeout(() => {
           setEnemyAnim('idle');
           setHurtMemberId(null);
 
-          // Check actual party state for defeat
           setParty(prev => {
             const anyAlive = prev.some(m => m.stats.hp > 0);
             if (!anyAlive) {
@@ -590,6 +759,8 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     setBattleLog([]);
     setBattleState('intro');
     setAnimating(false);
+    setShowAbilityMenu(false);
+    setShowAbilityInfo(null);
     setAttackingMemberId(null);
     setEnemyAnim('idle');
     setHurtMemberId(null);
@@ -612,8 +783,9 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
             const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
             const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
             const isActive = index === currentTurn;
+            const isHurt = hurtMemberId === member.id || hurtMemberId === 'all';
             const memberAnim = attackingMemberId === member.id ? 'attack'
-              : hurtMemberId === member.id ? 'hurt' : 'idle';
+              : isHurt ? 'hurt' : 'idle';
 
             return (
               <div
@@ -626,7 +798,10 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                 }}
               >
                 <div className="arena-floating-bars">
-                  <div className="sprite-name">{member.name}</div>
+                  <div className="sprite-name">
+                    {member.name}
+                    {member.stunned && <span className="stun-badge"> STUN</span>}
+                  </div>
                   <div className="sprite-bar hp-bar">
                     <div
                       className="sprite-bar-fill hp-bar-fill"
@@ -669,6 +844,13 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                   style={{ width: `${enemyHpPercent}%` }}
                 />
                 <span className="sprite-bar-text">{enemy.hp} / {enemy.maxHp}</span>
+              </div>
+              <div className="sprite-bar mana-bar">
+                <div
+                  className="sprite-bar-fill mana-bar-fill"
+                  style={{ width: `${(enemy.mana / enemy.maxMana) * 100}%` }}
+                />
+                <span className="sprite-bar-text">{enemy.mana}</span>
               </div>
             </div>
             <img
