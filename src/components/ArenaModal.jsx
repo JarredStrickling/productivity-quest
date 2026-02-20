@@ -357,41 +357,44 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     setAnimating(true);
     setShowAbilityMenu(false);
 
-    // Play attack animation
-    const cType = getCombatTypeForCharacter(currentCharacter);
-    const duration = getAttackDuration(cType);
-    setAttackingMemberId(currentCharacter.id);
-
-    // Apply damage when animation finishes
+    // 2-second pause after selection so the player can register the action
     setTimeout(() => {
-      setAttackingMemberId(null);
+      // Play attack animation
+      const cType = getCombatTypeForCharacter(currentCharacter);
+      const duration = getAttackDuration(cType);
+      setAttackingMemberId(currentCharacter.id);
 
-      const baseDamage = Math.floor(
-        currentCharacter.stats.strength + (currentCharacter.stats.agility * 0.5)
-      );
-      const newEnemy = { ...enemy };
-      newEnemy.hp = Math.max(0, newEnemy.hp - baseDamage);
-      setEnemy(newEnemy);
-      flashEnemyHurt();
-      addLog(`${currentCharacter.name} attacked! Dealt ${baseDamage} damage!`);
-
-      if (newEnemy.hp <= 0) {
-        setTimeout(() => {
-          setBattleState('victory');
-          addLog('Victory! The Orc Warrior has been defeated!');
-          setAnimating(false);
-        }, 1000);
-        return;
-      }
-
+      // Apply damage when animation finishes
       setTimeout(() => {
-        if (!currentCharacter.isAI) {
-          executeAITurns();
-        } else {
-          setAnimating(false);
+        setAttackingMemberId(null);
+
+        const baseDamage = Math.floor(
+          currentCharacter.stats.strength + (currentCharacter.stats.agility * 0.5)
+        );
+        const newEnemy = { ...enemy };
+        newEnemy.hp = Math.max(0, newEnemy.hp - baseDamage);
+        setEnemy(newEnemy);
+        flashEnemyHurt();
+        addLog(`${currentCharacter.name} attacked! Dealt ${baseDamage} damage!`);
+
+        if (newEnemy.hp <= 0) {
+          setTimeout(() => {
+            setBattleState('victory');
+            addLog('Victory! The Orc Warrior has been defeated!');
+            setAnimating(false);
+          }, 1000);
+          return;
         }
-      }, 500);
-    }, duration);
+
+        setTimeout(() => {
+          if (!currentCharacter.isAI) {
+            executeAITurns();
+          } else {
+            setAnimating(false);
+          }
+        }, 500);
+      }, duration);
+    }, 2000);
   };
 
   // ── PLAYER ABILITY ─────────────────────────────────────────────────
@@ -400,57 +403,60 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     setAnimating(true);
     setShowAbilityMenu(false);
 
-    // Play attack animation
-    const cType = getCombatTypeForCharacter(currentCharacter);
-    const duration = getAttackDuration(cType);
-    setAttackingMemberId(currentCharacter.id);
-
+    // 2-second pause after selection so the player can register the action
     setTimeout(() => {
-      setAttackingMemberId(null);
-
-      const newParty = [...party];
-      const charIndex = party.findIndex(p => p.id === currentCharacter.id);
-      newParty[charIndex].stats.mana -= ability.manaCost;
-
-      if (ability.effect.type === 'damage') {
-        const baseDamage = calculateDamage(ability, currentCharacter.stats);
-        const hits = ability.effect.hits || 1;
-        const totalDamage = baseDamage * hits;
-
-        const newEnemy = { ...enemy };
-        newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
-        setEnemy(newEnemy);
-        flashEnemyHurt();
-        addLog(`${currentCharacter.name} used ${ability.name}! Dealt ${totalDamage} damage!`);
-
-        if (newEnemy.hp <= 0) {
-          setTimeout(() => {
-            setBattleState('victory');
-            addLog('Victory! The Orc Warrior has been defeated!');
-            setAnimating(false);
-          }, 1000);
-          setParty(newParty);
-          return;
-        }
-      } else if (ability.effect.type === 'heal') {
-        const healAmount = calculateDamage(ability, currentCharacter.stats);
-        newParty[charIndex].stats.hp = Math.min(
-          newParty[charIndex].stats.maxHp,
-          newParty[charIndex].stats.hp + healAmount
-        );
-        addLog(`${currentCharacter.name} used ${ability.name}! Restored ${healAmount} HP!`);
-      }
-
-      setParty(newParty);
+      // Play attack animation
+      const cType = getCombatTypeForCharacter(currentCharacter);
+      const duration = getAttackDuration(cType);
+      setAttackingMemberId(currentCharacter.id);
 
       setTimeout(() => {
-        if (!currentCharacter.isAI) {
-          executeAITurns();
-        } else {
-          setAnimating(false);
+        setAttackingMemberId(null);
+
+        const newParty = [...party];
+        const charIndex = party.findIndex(p => p.id === currentCharacter.id);
+        newParty[charIndex].stats.mana -= ability.manaCost;
+
+        if (ability.effect.type === 'damage') {
+          const baseDamage = calculateDamage(ability, currentCharacter.stats);
+          const hits = ability.effect.hits || 1;
+          const totalDamage = baseDamage * hits;
+
+          const newEnemy = { ...enemy };
+          newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
+          setEnemy(newEnemy);
+          flashEnemyHurt();
+          addLog(`${currentCharacter.name} used ${ability.name}! Dealt ${totalDamage} damage!`);
+
+          if (newEnemy.hp <= 0) {
+            setTimeout(() => {
+              setBattleState('victory');
+              addLog('Victory! The Orc Warrior has been defeated!');
+              setAnimating(false);
+            }, 1000);
+            setParty(newParty);
+            return;
+          }
+        } else if (ability.effect.type === 'heal') {
+          const healAmount = calculateDamage(ability, currentCharacter.stats);
+          newParty[charIndex].stats.hp = Math.min(
+            newParty[charIndex].stats.maxHp,
+            newParty[charIndex].stats.hp + healAmount
+          );
+          addLog(`${currentCharacter.name} used ${ability.name}! Restored ${healAmount} HP!`);
         }
-      }, 500);
-    }, duration);
+
+        setParty(newParty);
+
+        setTimeout(() => {
+          if (!currentCharacter.isAI) {
+            executeAITurns();
+          } else {
+            setAnimating(false);
+          }
+        }, 500);
+      }, duration);
+    }, 2000);
   };
 
   // ── AI TURNS ───────────────────────────────────────────────────────
