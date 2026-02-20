@@ -1,7 +1,7 @@
 export const CLASS_CONFIG = {
   paladin: {
     name: 'Paladin',
-    description: 'Heavily armored tank with high HP and defense',
+    description: 'Tank',
     color: '#f59e0b', // Gold
     icon: '🛡️',
     // 20 points total: 1 point = 50 HP or 1 stat point
@@ -14,7 +14,7 @@ export const CLASS_CONFIG = {
   },
   warrior: {
     name: 'Warrior',
-    description: 'Fierce melee fighter with devastating strength',
+    description: 'DPS',
     color: '#dc2626', // Red
     icon: '⚔️',
     baseStats: {
@@ -26,7 +26,7 @@ export const CLASS_CONFIG = {
   },
   mage: {
     name: 'Mage',
-    description: 'Powerful spellcaster with immense mind power',
+    description: 'DPS',
     color: '#3b82f6', // Blue
     icon: '🔮',
     baseStats: {
@@ -38,7 +38,7 @@ export const CLASS_CONFIG = {
   },
   archer: {
     name: 'Archer',
-    description: 'Swift ranged attacker with deadly precision',
+    description: 'Utility',
     color: '#10b981', // Green
     icon: '🏹',
     baseStats: {
@@ -50,7 +50,7 @@ export const CLASS_CONFIG = {
   },
   cleric: {
     name: 'Cleric',
-    description: 'Holy support with healing and balanced stats',
+    description: 'Support',
     color: '#8b5cf6', // Purple
     icon: '✨',
     baseStats: {

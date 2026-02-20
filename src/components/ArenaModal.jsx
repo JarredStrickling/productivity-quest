@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './BattleModal.css';
 import { CLASS_CONFIG } from '../config/classes';
-import { getClassAbilities, isAbilityUnlocked } from '../config/abilities';
+import { getClassAbilities, isAbilityUnlocked, getEquippedAbilitiesForLevel } from '../config/abilities';
 import { MS_PATH, getCombatAppearancePaths, getAppearancePaths, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
 import { CLASS_DEFAULT_EQUIPMENT, EQUIPMENT_DATABASE, COMBAT_PAGE_MAP } from '../config/equipment';
 
@@ -158,7 +158,7 @@ const ORC_ABILITIES = [
   {
     id: 'instaslam',
     name: 'Instaslam',
-    damage: 50,
+    damage: 75,
     manaCost: 10,
     target: 'single',
     description: 'A brutal slam on one target.',
@@ -166,7 +166,7 @@ const ORC_ABILITIES = [
   {
     id: 'shreddit',
     name: 'Shreddit',
-    damage: 25,
+    damage: 38,
     manaCost: 20,
     target: 'single',
     stuns: true,
@@ -175,7 +175,7 @@ const ORC_ABILITIES = [
   {
     id: 'tiktok_pipe_bomb',
     name: 'TikTok Pipe Bomb',
-    damage: 30,
+    damage: 45,
     manaCost: 30,
     target: 'all',
     description: 'Explosive blast that hits the entire party.',
@@ -184,18 +184,28 @@ const ORC_ABILITIES = [
 
 const ORC_ENEMY = {
   name: 'Orc Warrior',
-  maxHp: 800,
-  hp: 800,
+  maxHp: 8000,
+  hp: 8000,
   mana: 50,
   maxMana: 50,
   icon: '🐗',
   agility: 5,
-  damage: 15, // Basic melee when out of mana
+  damage: 23, // Basic melee when out of mana (was 15, 1.5x)
+};
+
+// Stat allocation priorities per class (AI will spend points in this order)
+const AI_STAT_PRIORITY = {
+  paladin:  ['hp', 'strength', 'hp', 'strength', 'mindPower', 'agility'],
+  warrior:  ['strength', 'strength', 'agility', 'strength', 'hp', 'strength'],
+  mage:     ['mindPower', 'mindPower', 'mindPower', 'hp', 'mindPower', 'agility'],
+  archer:   ['agility', 'agility', 'strength', 'agility', 'hp', 'agility'],
+  cleric:   ['mindPower', 'mindPower', 'hp', 'mindPower', 'agility', 'mindPower'],
 };
 
 function generateArenaTeam(playerStats) {
   const party = [];
   const playerClass = playerStats.characterClass;
+  const playerLevel = playerStats.level || 1;
 
   const playerMana = playerStats.stats.mana !== undefined
     ? playerStats.stats.mana
@@ -218,44 +228,67 @@ function generateArenaTeam(playerStats) {
   };
   party.push(playerCombat);
 
-  const requiredClasses = ['paladin', 'cleric'];
-  const neededClasses = requiredClasses.filter(c => c !== playerClass);
+  // Build pool of classes excluding player's class (one of each, no duplicates)
+  const usedClasses = new Set([playerClass]);
 
-  neededClasses.forEach((className, index) => {
-    party.push(generateAITeammate(index + 1, className));
+  // Always include paladin and cleric if player isn't one
+  const requiredClasses = ['paladin', 'cleric'].filter(c => c !== playerClass);
+  requiredClasses.forEach((className, index) => {
+    usedClasses.add(className);
+    party.push(generateAITeammate(index + 1, className, playerLevel));
   });
 
-  const availableClasses = ['warrior', 'mage', 'archer'];
-  if (!neededClasses.includes('paladin')) availableClasses.push('paladin');
-  if (!neededClasses.includes('cleric')) availableClasses.push('cleric');
+  // Fill remaining slots from unused classes
+  const allClasses = ['paladin', 'warrior', 'mage', 'archer', 'cleric'];
+  const availableClasses = allClasses.filter(c => !usedClasses.has(c));
 
-  while (party.length < 4) {
-    const randomClass = availableClasses[Math.floor(Math.random() * availableClasses.length)];
-    party.push(generateAITeammate(party.length, randomClass));
+  while (party.length < 4 && availableClasses.length > 0) {
+    const idx = Math.floor(Math.random() * availableClasses.length);
+    const picked = availableClasses.splice(idx, 1)[0];
+    usedClasses.add(picked);
+    party.push(generateAITeammate(party.length, picked, playerLevel));
   }
 
   party.sort((a, b) => b.stats.agility - a.stats.agility);
   return party;
 }
 
-function generateAITeammate(index, characterClass) {
+function generateAITeammate(index, characterClass, level) {
   const classData = CLASS_CONFIG[characterClass];
-  const maxMana = classData.baseStats.mindPower * 10;
+
+  // Start with base stats, then allocate 2 points per level gained (same as player)
+  const stats = {
+    hp: classData.baseStats.hp,
+    maxHp: classData.baseStats.hp,
+    strength: classData.baseStats.strength,
+    agility: classData.baseStats.agility,
+    mindPower: classData.baseStats.mindPower,
+  };
+
+  const totalPoints = (level - 1) * 2;
+  const priority = AI_STAT_PRIORITY[characterClass] || ['strength', 'agility', 'mindPower', 'hp'];
+
+  for (let i = 0; i < totalPoints; i++) {
+    const stat = priority[i % priority.length];
+    if (stat === 'hp') {
+      stats.hp += 50;
+      stats.maxHp += 50;
+    } else {
+      stats[stat] += 1;
+    }
+  }
+
+  const maxMana = stats.mindPower * 10;
+  stats.mana = maxMana;
+  stats.maxMana = maxMana;
 
   return {
     id: `ai_${index}`,
     name: `${classData.name} Ally`,
     characterClass,
     isAI: true,
-    stats: {
-      hp: classData.baseStats.hp,
-      maxHp: classData.baseStats.hp,
-      mana: maxMana,
-      maxMana: maxMana,
-      strength: classData.baseStats.strength,
-      agility: classData.baseStats.agility,
-      mindPower: classData.baseStats.mindPower
-    },
+    level,
+    stats,
     alive: true
   };
 }
@@ -318,7 +351,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
   const playerLevel = playerStats.level || 1;
   const currentAbilities = currentCharacter
     ? Object.values(getClassAbilities(currentCharacter.characterClass))
-        .filter(ability => isAbilityUnlocked(ability, currentCharacter.isAI ? 1 : playerLevel))
+        .filter(ability => isAbilityUnlocked(ability, currentCharacter.isAI ? (currentCharacter.level || 1) : playerLevel))
         .sort((a, b) => a.slot - b.slot)
     : [];
 
@@ -504,7 +537,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
 
           // AI picks ability or basic attack
           const charAbilities = Object.values(getClassAbilities(character.characterClass))
-            .filter(ab => isAbilityUnlocked(ab, 1)) // AI teammates use level 1 abilities
+            .filter(ab => isAbilityUnlocked(ab, character.level || 1))
             .sort((a, b) => a.slot - b.slot);
           const availableAbility = charAbilities.find(ab => character.stats.mana >= ab.manaCost);
           const baseDamage = Math.floor(character.stats.strength + (character.stats.agility * 0.5));
