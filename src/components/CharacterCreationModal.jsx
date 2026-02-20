@@ -3,7 +3,7 @@ import './CharacterCreationModal.css';
 import { CLASS_CONFIG } from '../config/classes';
 import {
   SKIN_TONES, HAIR_STYLES, HAIR_COLORS, OUTFIT_COLORS,
-  HAT_STYLES, HAT_COLORS, CLASS_DEFAULT_APPEARANCE
+  HAT_STYLES, HAT_COLORS, CLASS_DEFAULT_APPEARANCE, CLASS_REQUIRED_HATS
 } from '../config/appearance';
 import PaperDollPreview from './PaperDollPreview';
 
@@ -53,8 +53,8 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
   const handleClassConfirm = () => {
     if (!selectedClass) return;
     const defaultAppearance = { ...CLASS_DEFAULT_APPEARANCE[selectedClass] };
-    // Non-mage classes cannot wear hats
-    if (selectedClass !== 'mage') {
+    // Classes without a required hat get no hat
+    if (!CLASS_REQUIRED_HATS[selectedClass]) {
       defaultAppearance.hatStyle = null;
       defaultAppearance.hatColor = 'v01';
     }
@@ -201,20 +201,18 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
                   </div>
                 </div>
 
-                {/* Hat Style - Mage only */}
-                {selectedClass === 'mage' && (
+                {/* Hat Style - classes with required hats (locked to their hat type) */}
+                {CLASS_REQUIRED_HATS[selectedClass] && (
                 <div className="option-row">
                   <span className="option-label">Hat</span>
                   <div className="option-control">
-                    <button className="cycle-btn" onClick={() => updateAppearance('hatStyle', cycleObj(HAT_STYLES, appearance.hatStyle, -1))}>&#9664;</button>
                     <span className="option-value">{hatStyleObj?.name || 'None'}</span>
-                    <button className="cycle-btn" onClick={() => updateAppearance('hatStyle', cycleObj(HAT_STYLES, appearance.hatStyle, 1))}>&#9654;</button>
                   </div>
                 </div>
                 )}
 
-                {/* Hat Color (only if hat is selected AND mage) */}
-                {selectedClass === 'mage' && appearance.hatStyle && (
+                {/* Hat Color (only if hat is equipped) */}
+                {CLASS_REQUIRED_HATS[selectedClass] && appearance.hatStyle && (
                   <div className="option-row">
                     <span className="option-label">Hat Color</span>
                     <div className="option-control">

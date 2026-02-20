@@ -103,7 +103,7 @@ export default class MainScene extends Phaser.Scene {
     const TILE_SIZE = 32;
     const TILES_ACROSS = 14;
     let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
-    zoom = zoom * 0.625; // Zoom level tuned for closer view of town
+    zoom = zoom * 0.53; // Zoom level tuned for town overview
 
     // Round to nearest 0.5 increment for crisp pixel rendering
     zoom = Math.round(zoom * 2) / 2;
@@ -117,7 +117,7 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = newZoom * 0.625;
+      newZoom = newZoom * 0.53;
 
       // Round to nearest 0.5 increment for crisp pixel rendering
       newZoom = Math.round(newZoom * 2) / 2;

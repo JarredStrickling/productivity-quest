@@ -42,13 +42,19 @@ export const HAT_STYLES = [
 
 export const HAT_COLORS = ['v01', 'v02', 'v03', 'v04', 'v05'];
 
-// Suggested starting appearance per class (hats only for mage)
+// Suggested starting appearance per class
 export const CLASS_DEFAULT_APPEARANCE = {
   paladin: { skin: 'v01', hairStyle: 'dap1', hairColor: 'v01', outfit: 'v04', hatStyle: null, hatColor: 'v01' },
   warrior: { skin: 'v01', hairStyle: 'bob1', hairColor: 'v05', outfit: 'v01', hatStyle: null, hatColor: 'v01' },
   mage:    { skin: 'v01', hairStyle: 'dap1', hairColor: 'v08', outfit: 'v02', hatStyle: 'pnty', hatColor: 'v03' },
-  archer:  { skin: 'v01', hairStyle: 'bob1', hairColor: 'v09', outfit: 'v05', hatStyle: null, hatColor: 'v01' },
+  archer:  { skin: 'v01', hairStyle: 'bob1', hairColor: 'v09', outfit: 'v05', hatStyle: 'pfht', hatColor: 'v01' },
   cleric:  { skin: 'v01', hairStyle: 'dap1', hairColor: 'v11', outfit: 'v03', hatStyle: null, hatColor: 'v01' },
+};
+
+// Classes that are required to wear a specific hat (cannot remove it)
+export const CLASS_REQUIRED_HATS = {
+  mage: 'pnty',   // Must wear Wizard hat
+  archer: 'pfht',  // Must wear Ranger hat
 };
 
 // Merge equipment into appearance for rendering
