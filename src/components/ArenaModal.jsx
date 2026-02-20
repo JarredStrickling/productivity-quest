@@ -197,13 +197,13 @@ const ORC_ENEMY = {
   damage: 23, // Basic melee when out of mana (was 15, 1.5x)
 };
 
-// Stat allocation priorities per class (AI will spend points in this order)
-const AI_STAT_PRIORITY = {
-  paladin:  ['hp', 'strength', 'hp', 'strength', 'mindPower', 'agility'],
-  warrior:  ['strength', 'strength', 'agility', 'strength', 'hp', 'strength'],
-  mage:     ['mindPower', 'mindPower', 'mindPower', 'hp', 'mindPower', 'agility'],
-  archer:   ['agility', 'agility', 'strength', 'agility', 'hp', 'agility'],
-  cleric:   ['mindPower', 'mindPower', 'hp', 'mindPower', 'agility', 'mindPower'],
+// Primary stat per class (AI gets 1 point here + 1 random per level gained)
+const AI_PRIMARY_STAT = {
+  paladin:  'hp',
+  warrior:  'strength',
+  mage:     'mindPower',
+  archer:   'agility',
+  cleric:   'mindPower',
 };
 
 function generateArenaTeam(playerStats) {
@@ -269,16 +269,25 @@ function generateAITeammate(index, characterClass, level) {
     mindPower: classData.baseStats.mindPower,
   };
 
-  const totalPoints = (level - 1) * 2;
-  const priority = AI_STAT_PRIORITY[characterClass] || ['strength', 'agility', 'mindPower', 'hp'];
+  const levelsGained = level - 1;
+  const primaryStat = AI_PRIMARY_STAT[characterClass] || 'strength';
+  const allStats = ['hp', 'strength', 'agility', 'mindPower'];
 
-  for (let i = 0; i < totalPoints; i++) {
-    const stat = priority[i % priority.length];
-    if (stat === 'hp') {
+  for (let i = 0; i < levelsGained; i++) {
+    // 1 point to primary stat
+    if (primaryStat === 'hp') {
       stats.hp += 50;
       stats.maxHp += 50;
     } else {
-      stats[stat] += 1;
+      stats[primaryStat] += 1;
+    }
+    // 1 point to a random stat (can include primary)
+    const randomStat = allStats[Math.floor(Math.random() * allStats.length)];
+    if (randomStat === 'hp') {
+      stats.hp += 50;
+      stats.maxHp += 50;
+    } else {
+      stats[randomStat] += 1;
     }
   }
 
