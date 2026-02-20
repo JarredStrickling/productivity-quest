@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './BattleModal.css';
 import { CLASS_CONFIG } from '../config/classes';
-import { getClassAbilities, isAbilityUnlocked, getEquippedAbilitiesForLevel } from '../config/abilities';
+import { getClassAbilities, isAbilityUnlocked } from '../config/abilities';
 import { MS_PATH, getCombatAppearancePaths, getAppearancePaths, getEffectiveAppearance, CLASS_DEFAULT_APPEARANCE } from '../config/appearance';
 import { CLASS_DEFAULT_EQUIPMENT, EQUIPMENT_DATABASE, COMBAT_PAGE_MAP } from '../config/equipment';
 
@@ -25,6 +25,10 @@ function getAnimConfig(animation, combatType) {
     }
     // pONE3/pPOL3 top-left: 4-frame slash, right-facing = row 2
     return { page: 3, row: 2, frames: [0,1,2,3], timings: [160,65,65,200], loop: false };
+  }
+  if (animation === 'dead') {
+    // Page 1: col 7 = knockdown (lying down), hold on that frame
+    return { page: 1, row: 2, frames: [7], timings: [1000], loop: true };
   }
   if (animation === 'hurt') {
     // Page 1: col 5 = hurt, cols 6-7 = knockdown, right-facing = row 2
@@ -330,6 +334,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
   const [attackingMemberId, setAttackingMemberId] = useState(null);
   const [enemyAnim, setEnemyAnim] = useState('idle');
   const [hurtMemberId, setHurtMemberId] = useState(null);
+  const [allyTargetAbility, setAllyTargetAbility] = useState(null); // pending ability needing ally target
 
   // Initialize battle
   useEffect(() => {
@@ -355,10 +360,25 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
         .sort((a, b) => a.slot - b.slot)
     : [];
 
-  // ── STUN SKIP: if current character is stunned, skip their turn ────
+  // ── DEAD/STUN SKIP: if current character is dead or stunned, skip turn ──
   useEffect(() => {
     if (battleState !== 'active' || !currentCharacter || animating) return;
-    if (currentCharacter.stunned && currentCharacter.alive && currentCharacter.stats.hp > 0) {
+
+    // Dead character — skip silently
+    if (!currentCharacter.alive || currentCharacter.stats.hp <= 0) {
+      if (!currentCharacter.isAI) {
+        // Player is dead — run AI turns then enemy
+        setAnimating(true);
+        setTimeout(() => executeAITurns(), 300);
+      } else {
+        // Dead AI — advance to next
+        setCurrentTurn(prev => (prev + 1) % party.length);
+      }
+      return;
+    }
+
+    // Stunned character — skip with message
+    if (currentCharacter.stunned) {
       setAnimating(true);
       addLog(`${currentCharacter.name} is stunned and can't act!`);
 
@@ -370,13 +390,10 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
         return newParty;
       });
 
-      // After a brief pause, move to next turn
       setTimeout(() => {
         if (!currentCharacter.isAI) {
-          // Player was stunned — run AI turns then enemy
           executeAITurns();
         } else {
-          // AI was stunned — continue to next in the AI chain
           setAnimating(false);
           setCurrentTurn(prev => (prev + 1) % party.length);
         }
@@ -433,12 +450,24 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
   // ── PLAYER ABILITY ─────────────────────────────────────────────────
   const useAbility = (ability) => {
     if (animating || !currentCharacter || currentCharacter.stats.mana < ability.manaCost) return;
+
+    // Heal and Revive need ally targeting — show selection UI first
+    if (ability.effect.type === 'heal' || ability.effect.type === 'revive') {
+      setShowAbilityMenu(false);
+      setAllyTargetAbility(ability);
+      return;
+    }
+
+    executeAbilityOnEnemy(ability);
+  };
+
+  // Execute an ability that targets the enemy (damage, etc.)
+  const executeAbilityOnEnemy = (ability) => {
     setAnimating(true);
     setShowAbilityMenu(false);
 
-    // 2-second pause after selection so the player can register the action
+    // 2-second pause after selection
     setTimeout(() => {
-      // Play attack animation
       const cType = getCombatTypeForCharacter(currentCharacter);
       const duration = getAttackDuration(cType);
       setAttackingMemberId(currentCharacter.id);
@@ -470,13 +499,6 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
             setParty(newParty);
             return;
           }
-        } else if (ability.effect.type === 'heal') {
-          const healAmount = calculateDamage(ability, currentCharacter.stats);
-          newParty[charIndex].stats.hp = Math.min(
-            newParty[charIndex].stats.maxHp,
-            newParty[charIndex].stats.hp + healAmount
-          );
-          addLog(`${currentCharacter.name} used ${ability.name}! Restored ${healAmount} HP!`);
         }
 
         setParty(newParty);
@@ -492,6 +514,49 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     }, 2000);
   };
 
+  // Execute a heal or revive on a chosen ally
+  const executeAllyTargetAbility = (ability, targetId) => {
+    setAllyTargetAbility(null);
+    setAnimating(true);
+
+    setTimeout(() => {
+      const newParty = [...party];
+      const charIndex = party.findIndex(p => p.id === currentCharacter.id);
+      const targetIndex = newParty.findIndex(p => p.id === targetId);
+      newParty[charIndex].stats.mana -= ability.manaCost;
+
+      if (ability.effect.type === 'heal') {
+        const healAmount = calculateDamage(ability, currentCharacter.stats);
+        const target = newParty[targetIndex];
+        const newHp = Math.min(target.stats.maxHp, target.stats.hp + healAmount);
+        newParty[targetIndex] = {
+          ...target,
+          stats: { ...target.stats, hp: newHp }
+        };
+        addLog(`${currentCharacter.name} healed ${target.name} for ${healAmount} HP!`);
+      } else if (ability.effect.type === 'revive') {
+        const target = newParty[targetIndex];
+        const reviveHp = Math.floor(target.stats.maxHp * (ability.effect.hpPercent || 0.5));
+        newParty[targetIndex] = {
+          ...target,
+          alive: true,
+          stats: { ...target.stats, hp: reviveHp }
+        };
+        addLog(`${currentCharacter.name} used ${ability.name}! ${target.name} revived with ${reviveHp} HP!`);
+      }
+
+      setParty(newParty);
+
+      setTimeout(() => {
+        if (!currentCharacter.isAI) {
+          executeAITurns();
+        } else {
+          setAnimating(false);
+        }
+      }, 500);
+    }, 1000);
+  };
+
   // ── AI TURNS ───────────────────────────────────────────────────────
   const executeAITurns = () => {
     if (!currentCharacter || currentCharacter.isAI) return;
@@ -501,7 +566,10 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
       const nextIndex = (currentTurn + i) % party.length;
       const character = party[nextIndex];
       if (character && character.isAI) {
-        aiTurns.push({ character, index: nextIndex });
+        // Skip dead or stunned AI (stunned will be cleared by the effect)
+        if (character.alive && character.stats.hp > 0) {
+          aiTurns.push({ character, index: nextIndex });
+        }
       } else {
         break;
       }
@@ -539,49 +607,96 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
           const charAbilities = Object.values(getClassAbilities(character.characterClass))
             .filter(ab => isAbilityUnlocked(ab, character.level || 1))
             .sort((a, b) => a.slot - b.slot);
-          const availableAbility = charAbilities.find(ab => character.stats.mana >= ab.manaCost);
           const baseDamage = Math.floor(character.stats.strength + (character.stats.agility * 0.5));
 
-          if (availableAbility) {
-            const abilityDamage = calculateDamage(availableAbility, character.stats);
-            const hits = availableAbility.effect.hits || 1;
-            const totalDamage = abilityDamage * hits;
+          // AI support logic: cleric heals/revives allies
+          const reviveAbility = charAbilities.find(ab => ab.effect.type === 'revive' && character.stats.mana >= ab.manaCost);
+          const healAbility = charAbilities.find(ab => ab.effect.type === 'heal' && character.stats.mana >= ab.manaCost);
 
-            setParty(prev => {
-              const newParty = [...prev];
-              const ci = newParty.findIndex(p => p.id === character.id);
-              if (ci >= 0) newParty[ci].stats.mana -= availableAbility.manaCost;
-              return newParty;
-            });
+          // Check for dead allies to revive
+          let usedSupportAbility = false;
+          if (reviveAbility) {
+            const deadAllies = party.filter(m => m.id !== character.id && (!m.alive || m.stats.hp <= 0));
+            if (deadAllies.length > 0) {
+              const target = deadAllies[0];
+              const reviveHp = Math.floor(target.stats.maxHp * (reviveAbility.effect.hpPercent || 0.5));
+              setParty(prev => {
+                const np = [...prev];
+                const ci = np.findIndex(p => p.id === character.id);
+                const ti = np.findIndex(p => p.id === target.id);
+                if (ci >= 0) np[ci] = { ...np[ci], stats: { ...np[ci].stats, mana: np[ci].stats.mana - reviveAbility.manaCost } };
+                if (ti >= 0) np[ti] = { ...np[ti], alive: true, stats: { ...np[ti].stats, hp: reviveHp } };
+                return np;
+              });
+              addLog(`${character.name} used ${reviveAbility.name}! ${target.name} revived with ${reviveHp} HP!`);
+              usedSupportAbility = true;
+            }
+          }
 
-            flashEnemyHurt();
-            setEnemy(prev => {
-              const newHp = Math.max(0, prev.hp - totalDamage);
-              if (newHp <= 0) {
-                setTimeout(() => {
-                  setBattleState('victory');
-                  addLog('Victory! The Orc Warrior has been defeated!');
-                  setAnimating(false);
-                }, 1000);
-              }
-              return { ...prev, hp: newHp };
-            });
+          // Heal lowest HP ally if someone is below 50%
+          if (!usedSupportAbility && healAbility) {
+            const hurtAllies = party.filter(m => m.id !== character.id && m.alive && m.stats.hp > 0 && m.stats.hp < m.stats.maxHp * 0.5);
+            if (hurtAllies.length > 0) {
+              const target = hurtAllies.sort((a, b) => a.stats.hp - b.stats.hp)[0];
+              const healAmount = calculateDamage(healAbility, character.stats);
+              setParty(prev => {
+                const np = [...prev];
+                const ci = np.findIndex(p => p.id === character.id);
+                const ti = np.findIndex(p => p.id === target.id);
+                if (ci >= 0) np[ci] = { ...np[ci], stats: { ...np[ci].stats, mana: np[ci].stats.mana - healAbility.manaCost } };
+                if (ti >= 0) np[ti] = { ...np[ti], stats: { ...np[ti].stats, hp: Math.min(np[ti].stats.maxHp, np[ti].stats.hp + healAmount) } };
+                return np;
+              });
+              addLog(`${character.name} healed ${target.name} for ${healAmount} HP!`);
+              usedSupportAbility = true;
+            }
+          }
 
-            addLog(`${character.name} used ${availableAbility.name}! Dealt ${totalDamage} damage!`);
-          } else {
-            flashEnemyHurt();
-            setEnemy(prev => {
-              const newHp = Math.max(0, prev.hp - baseDamage);
-              if (newHp <= 0) {
-                setTimeout(() => {
-                  setBattleState('victory');
-                  addLog('Victory! The Orc Warrior has been defeated!');
-                  setAnimating(false);
-                }, 1000);
-              }
-              return { ...prev, hp: newHp };
-            });
-            addLog(`${character.name} attacked! Dealt ${baseDamage} damage!`);
+          if (!usedSupportAbility) {
+            // Damage ability or basic attack
+            const damageAbility = charAbilities.find(ab => ab.effect.type === 'damage' && character.stats.mana >= ab.manaCost);
+
+            if (damageAbility) {
+              const abilityDamage = calculateDamage(damageAbility, character.stats);
+              const hits = damageAbility.effect.hits || 1;
+              const totalDamage = abilityDamage * hits;
+
+              setParty(prev => {
+                const newParty = [...prev];
+                const ci = newParty.findIndex(p => p.id === character.id);
+                if (ci >= 0) newParty[ci].stats.mana -= damageAbility.manaCost;
+                return newParty;
+              });
+
+              flashEnemyHurt();
+              setEnemy(prev => {
+                const newHp = Math.max(0, prev.hp - totalDamage);
+                if (newHp <= 0) {
+                  setTimeout(() => {
+                    setBattleState('victory');
+                    addLog('Victory! The Orc Warrior has been defeated!');
+                    setAnimating(false);
+                  }, 1000);
+                }
+                return { ...prev, hp: newHp };
+              });
+
+              addLog(`${character.name} used ${damageAbility.name}! Dealt ${totalDamage} damage!`);
+            } else {
+              flashEnemyHurt();
+              setEnemy(prev => {
+                const newHp = Math.max(0, prev.hp - baseDamage);
+                if (newHp <= 0) {
+                  setTimeout(() => {
+                    setBattleState('victory');
+                    addLog('Victory! The Orc Warrior has been defeated!');
+                    setAnimating(false);
+                  }, 1000);
+                }
+                return { ...prev, hp: newHp };
+              });
+              addLog(`${character.name} attacked! Dealt ${baseDamage} damage!`);
+            }
           }
 
           // Next AI after brief pause
@@ -800,6 +915,7 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     setAnimating(false);
     setShowAbilityMenu(false);
     setShowAbilityInfo(null);
+    setAllyTargetAbility(null);
     setAttackingMemberId(null);
     setEnemyAnim('idle');
     setHurtMemberId(null);
@@ -822,8 +938,10 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
             const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
             const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
             const isActive = index === currentTurn;
+            const isDead = !member.alive || member.stats.hp <= 0;
             const isHurt = hurtMemberId === member.id || hurtMemberId === 'all';
-            const memberAnim = attackingMemberId === member.id ? 'attack'
+            const memberAnim = isDead ? 'dead'
+              : attackingMemberId === member.id ? 'attack'
               : isHurt ? 'hurt' : 'idle';
 
             return (
@@ -907,8 +1025,9 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
           ))}
         </div>
 
-        {/* Action Menu */}
-        {battleState === 'active' && isPlayerTurn && !showAbilityMenu && (
+        {/* Action Menu — only for living player */}
+        {battleState === 'active' && isPlayerTurn && !showAbilityMenu && !allyTargetAbility
+          && currentCharacter?.alive && currentCharacter?.stats.hp > 0 && (
           <div className="action-menu">
             <button
               className="menu-btn attack-btn"
@@ -975,6 +1094,61 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Ally Target Selection (for Heal / Resurrection) */}
+        {battleState === 'active' && isPlayerTurn && allyTargetAbility && (
+          <div className="ability-submenu">
+            <div className="submenu-header">
+              <span>
+                {allyTargetAbility.effect.type === 'revive'
+                  ? 'Revive who?'
+                  : 'Heal who?'}
+              </span>
+              <button
+                className="back-btn"
+                onClick={() => setAllyTargetAbility(null)}
+              >
+                ← Back
+              </button>
+            </div>
+            <div className="ability-grid">
+              {party
+                .filter(m => {
+                  if (allyTargetAbility.effect.type === 'revive') {
+                    return !m.alive || m.stats.hp <= 0;
+                  }
+                  // Heal: alive allies (not self, or self if desired — let's allow any alive ally)
+                  return m.alive && m.stats.hp > 0;
+                })
+                .map(member => {
+                  const hpText = allyTargetAbility.effect.type === 'revive'
+                    ? 'DEAD'
+                    : `${member.stats.hp}/${member.stats.maxHp}`;
+                  return (
+                    <button
+                      key={member.id}
+                      className="ability-option"
+                      onClick={() => executeAllyTargetAbility(allyTargetAbility, member.id)}
+                    >
+                      <span className="ability-icon">
+                        {CLASS_CONFIG[member.characterClass]?.icon || '?'}
+                      </span>
+                      <span className="ability-name">{member.name}</span>
+                      <span className="ability-cost">{hpText}</span>
+                    </button>
+                  );
+                })}
+              {party.filter(m => {
+                if (allyTargetAbility.effect.type === 'revive') return !m.alive || m.stats.hp <= 0;
+                return m.alive && m.stats.hp > 0;
+              }).length === 0 && (
+                <div style={{ color: '#cbd5e1', textAlign: 'center', padding: '12px' }}>
+                  No valid targets
+                </div>
+              )}
             </div>
           </div>
         )}
