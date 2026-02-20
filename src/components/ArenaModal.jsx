@@ -148,12 +148,19 @@ function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220, ani
 }
 
 // ── BATTLE CONFIG ────────────────────────────────────────────────────
+const ORC_SPRITES = {
+  idle: '/assets/sprites/Baddiearena1.png',
+  attack: '/assets/sprites/orchitting.png',
+  hurt: '/assets/sprites/orcgettinghit.png',
+};
+
 const ORC_ENEMY = {
   name: 'Orc Warrior',
   maxHp: 800,
   hp: 800,
   icon: '🐗',
-  agility: 5
+  agility: 5,
+  damage: 45, // Base damage per attack
 };
 
 function generateArenaTeam(playerStats) {
@@ -258,6 +265,8 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
   const [showAbilityMenu, setShowAbilityMenu] = useState(false);
   const [showAbilityInfo, setShowAbilityInfo] = useState(null);
   const [attackingMemberId, setAttackingMemberId] = useState(null);
+  const [enemyAnim, setEnemyAnim] = useState('idle');
+  const [hurtMemberId, setHurtMemberId] = useState(null);
 
   // Initialize battle
   useEffect(() => {
@@ -304,12 +313,13 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
       const newEnemy = { ...enemy };
       newEnemy.hp = Math.max(0, newEnemy.hp - baseDamage);
       setEnemy(newEnemy);
+      flashEnemyHurt();
       addLog(`${currentCharacter.name} attacked! Dealt ${baseDamage} damage!`);
 
       if (newEnemy.hp <= 0) {
         setTimeout(() => {
           setBattleState('victory');
-          addLog('🎉 Victory! The Orc Warrior has been defeated!');
+          addLog('Victory! The Orc Warrior has been defeated!');
           setAnimating(false);
         }, 1000);
         return;
@@ -351,12 +361,13 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
         const newEnemy = { ...enemy };
         newEnemy.hp = Math.max(0, newEnemy.hp - totalDamage);
         setEnemy(newEnemy);
+        flashEnemyHurt();
         addLog(`${currentCharacter.name} used ${ability.name}! Dealt ${totalDamage} damage!`);
 
         if (newEnemy.hp <= 0) {
           setTimeout(() => {
             setBattleState('victory');
-            addLog('🎉 Victory! The Orc Warrior has been defeated!');
+            addLog('Victory! The Orc Warrior has been defeated!');
             setAnimating(false);
           }, 1000);
           setParty(newParty);
@@ -409,8 +420,8 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     const executeNextAI = () => {
       if (currentAIIndex >= aiTurns.length) {
         const nextPlayerIndex = (aiTurns[aiTurns.length - 1].index + 1) % party.length;
-        setCurrentTurn(nextPlayerIndex);
-        setAnimating(false);
+        // Enemy attacks after all party members have acted
+        executeEnemyAttack(nextPlayerIndex);
         return;
       }
 
@@ -445,12 +456,13 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
               return newParty;
             });
 
+            flashEnemyHurt();
             setEnemy(prev => {
               const newHp = Math.max(0, prev.hp - totalDamage);
               if (newHp <= 0) {
                 setTimeout(() => {
                   setBattleState('victory');
-                  addLog('🎉 Victory! The Orc Warrior has been defeated!');
+                  addLog('Victory! The Orc Warrior has been defeated!');
                   setAnimating(false);
                 }, 1000);
               }
@@ -459,12 +471,13 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
 
             addLog(`${character.name} used ${availableAbility.name}! Dealt ${totalDamage} damage!`);
           } else {
+            flashEnemyHurt();
             setEnemy(prev => {
               const newHp = Math.max(0, prev.hp - baseDamage);
               if (newHp <= 0) {
                 setTimeout(() => {
                   setBattleState('victory');
-                  addLog('🎉 Victory! The Orc Warrior has been defeated!');
+                  addLog('Victory! The Orc Warrior has been defeated!');
                   setAnimating(false);
                 }, 1000);
               }
@@ -490,6 +503,82 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     executeNextAI();
   };
 
+  // ── FLASH ORC HURT ────────────────────────────────────────────────
+  const flashEnemyHurt = (duration = 600) => {
+    setEnemyAnim('hurt');
+    setTimeout(() => setEnemyAnim('idle'), duration);
+  };
+
+  // ── ENEMY ATTACK PHASE ──────────────────────────────────────────────
+  const executeEnemyAttack = (nextPlayerIndex) => {
+    setAnimating(true);
+
+    // Brief pause before enemy acts
+    setTimeout(() => {
+      // Show orc attack animation
+      setEnemyAnim('attack');
+
+      setTimeout(() => {
+        // Pick a random alive party member to hit
+        const aliveMembers = party.filter(m => m.alive && m.stats.hp > 0);
+        if (aliveMembers.length === 0) {
+          setEnemyAnim('idle');
+          setAnimating(false);
+          return;
+        }
+
+        const target = aliveMembers[Math.floor(Math.random() * aliveMembers.length)];
+        const damage = enemy.damage + Math.floor(Math.random() * 10 - 5); // ±5 variance
+
+        // Flash hurt on the targeted member
+        setHurtMemberId(target.id);
+
+        setParty(prev => {
+          const newParty = [...prev];
+          const ti = newParty.findIndex(p => p.id === target.id);
+          if (ti >= 0) {
+            newParty[ti] = {
+              ...newParty[ti],
+              stats: {
+                ...newParty[ti].stats,
+                hp: Math.max(0, newParty[ti].stats.hp - damage)
+              }
+            };
+            // Mark as dead if HP reaches 0
+            if (newParty[ti].stats.hp <= 0) {
+              newParty[ti].alive = false;
+            }
+          }
+          return newParty;
+        });
+
+        addLog(`${enemy.name} attacks ${target.name}! Dealt ${damage} damage!`);
+
+        // Check if all party dead
+        setTimeout(() => {
+          setEnemyAnim('idle');
+          setHurtMemberId(null);
+
+          // Check actual party state for defeat
+          setParty(prev => {
+            const anyAlive = prev.some(m => m.stats.hp > 0);
+            if (!anyAlive) {
+              setTimeout(() => {
+                setBattleState('defeat');
+                addLog('Your party has been defeated...');
+                setAnimating(false);
+              }, 500);
+            } else {
+              setCurrentTurn(nextPlayerIndex);
+              setAnimating(false);
+            }
+            return prev;
+          });
+        }, 800);
+      }, 600); // Attack animation duration
+    }, 400); // Pre-attack pause
+  };
+
   const addLog = (message) => {
     setBattleLog(prev => [message, ...prev].slice(0, 5));
   };
@@ -502,6 +591,8 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
     setBattleState('intro');
     setAnimating(false);
     setAttackingMemberId(null);
+    setEnemyAnim('idle');
+    setHurtMemberId(null);
     onClose();
   };
 
@@ -521,7 +612,8 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
             const hpPercent = (member.stats.hp / member.stats.maxHp) * 100;
             const manaPercent = (member.stats.mana / member.stats.maxMana) * 100;
             const isActive = index === currentTurn;
-            const memberAnim = attackingMemberId === member.id ? 'attack' : 'idle';
+            const memberAnim = attackingMemberId === member.id ? 'attack'
+              : hurtMemberId === member.id ? 'hurt' : 'idle';
 
             return (
               <div
@@ -580,9 +672,9 @@ export default function ArenaModal({ isOpen, onClose, playerStats }) {
               </div>
             </div>
             <img
-              src="/assets/sprites/Baddiearena1.png"
+              src={ORC_SPRITES[enemyAnim]}
               alt="Orc Warrior"
-              className="arena-enemy-img"
+              className={`arena-enemy-img ${enemyAnim !== 'idle' ? 'arena-enemy-' + enemyAnim : ''}`}
             />
           </div>
         </div>
