@@ -737,11 +737,12 @@
 
 /* Arena enemy image - flipped to face left toward party */
 .arena-enemy-img {
-  width: 750px;
+  height: 500px;
+  width: auto;
   image-rendering: pixelated;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
   transform: scaleX(1);
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
 .arena-enemy-attack {
@@ -812,7 +813,8 @@
   }
 
   .arena-enemy-img {
-    width: 540px;
+    height: 350px;
+    width: auto;
   }
 
   .arena-floating-bars {

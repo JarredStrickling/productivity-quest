@@ -149,7 +149,7 @@ function SpriteFrame({ characterClass, appearance, equipment, maxSize = 220, ani
 
 // ── BATTLE CONFIG ────────────────────────────────────────────────────
 const ORC_SPRITES = {
-  idle: '/assets/sprites/Baddiearena1.png',
+  idle: '/assets/sprites/idleorc.png',
   attack: '/assets/sprites/orchitting.png',
   hurt: '/assets/sprites/orcgettinghit.png',
 };
