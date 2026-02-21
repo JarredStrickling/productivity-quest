@@ -679,9 +679,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
-  margin-bottom: 2px;
-  min-width: 80px;
+  gap: 2px;
+  margin-bottom: -4px;
+  min-width: 120px;
 }
 
 .arena-floating-bars .sprite-name {
@@ -704,8 +704,8 @@
 }
 
 .arena-floating-bars .sprite-bar {
-  height: 8px;
-  width: 80px;
+  height: 24px;
+  width: 120px;
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid #475569;
   border-radius: 5px;
@@ -718,21 +718,21 @@
   width: 100%;
   text-align: center;
   color: white;
-  font-size: 7px;
+  font-size: 12px;
   font-weight: bold;
-  line-height: 8px;
+  line-height: 24px;
   z-index: 1;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .arena-floating-bars .boss-hp {
-  width: 160px;
-  height: 14px;
+  width: 220px;
+  height: 28px;
 }
 
 .arena-floating-bars .boss-hp .sprite-bar-text {
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 14px;
+  line-height: 28px;
 }
 
 /* Arena enemy image - flipped to face left toward party */
@@ -818,24 +818,24 @@
   }
 
   .arena-floating-bars {
-    min-width: 60px;
-    gap: 0px;
-    margin-bottom: 1px;
+    min-width: 90px;
+    gap: 1px;
+    margin-bottom: -2px;
   }
 
   .arena-floating-bars .sprite-bar {
-    width: 60px;
-    height: 6px;
+    width: 90px;
+    height: 18px;
   }
 
   .arena-floating-bars .sprite-bar-text {
-    font-size: 6px;
-    line-height: 6px;
+    font-size: 10px;
+    line-height: 18px;
   }
 
   .arena-floating-bars .boss-hp {
-    width: 100px;
-    height: 8px;
+    width: 160px;
+    height: 22px;
   }
 
   .arena-floating-bars .sprite-name {
