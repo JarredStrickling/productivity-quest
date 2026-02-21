@@ -546,30 +546,62 @@ export default class MainScene extends Phaser.Scene {
   }
 
   createCollisionBarriers() {
-    // Create a group for all collision barriers
     this.barriers = this.physics.add.staticGroup();
 
-    // Water barriers (right side river)
-    this.barriers.create(900, 300, null).setSize(250, 600).setVisible(false);
+    // Set true to visualize barrier boxes for debugging
+    const DEBUG_SHOW = false;
 
-    // Houses (approximate positions based on typical town layout)
-    // Bottom-left houses
-    this.barriers.create(120, 350, null).setSize(100, 80).setVisible(false);
-    this.barriers.create(120, 500, null).setSize(100, 80).setVisible(false);
+    const addBarrier = (x, y, w, h) => {
+      this.barriers.create(x, y, null).setSize(w, h).setVisible(false);
+      if (DEBUG_SHOW) {
+        this.add.rectangle(x, y, w, h, 0xff0000, 0.3).setDepth(100);
+      }
+    };
 
-    // Bottom-right houses
-    this.barriers.create(900, 500, null).setSize(100, 80).setVisible(false);
-    this.barriers.create(900, 650, null).setSize(100, 80).setVisible(false);
+    // === BUILDINGS ===
+    // Red house (upper area, left of main path)
+    addBarrier(300, 310, 190, 110);
+    // Blue house (middle-left)
+    addBarrier(200, 540, 175, 100);
+    // Green shop (middle-right, "SHOP" sign)
+    addBarrier(710, 485, 170, 115);
+    // Large green house (lower center)
+    addBarrier(500, 845, 225, 110);
+    // Farm fence and plot (bottom-right)
+    addBarrier(630, 1045, 200, 100);
 
-    // Top area structures
-    this.barriers.create(150, 200, null).setSize(120, 100).setVisible(false);
-    this.barriers.create(800, 200, null).setSize(100, 80).setVisible(false);
+    // === RIVER & WATERFALL ===
+    // Waterfall cliff face (top-right)
+    addBarrier(920, 80, 260, 160);
+    // River above bridge
+    addBarrier(890, 220, 200, 80);
+    // River below bridge (south-flowing)
+    addBarrier(855, 370, 180, 180);
+    // River lower section
+    addBarrier(870, 500, 160, 100);
 
-    // Center buildings/obstacles
-    this.barriers.create(300, 250, null).setSize(80, 70).setVisible(false);
-    this.barriers.create(650, 300, null).setSize(90, 75).setVisible(false);
+    // === FOREST BORDERS ===
+    // Top forest — left portion (gap at x~480-580 for dungeon path)
+    addBarrier(220, 50, 440, 100);
+    // Top forest — right portion
+    addBarrier(810, 50, 430, 100);
+    // Left forest edge
+    addBarrier(30, 500, 60, 1000);
+    addBarrier(40, 1200, 80, 500);
+    // Right forest edge (below river)
+    addBarrier(995, 700, 60, 700);
+    // Bottom forest edge
+    addBarrier(512, 1500, 1024, 80);
 
-    // Add collision between player and barriers
+    // === PROMINENT TREES / ROCKS ===
+    // Large tree cluster bottom-left
+    addBarrier(140, 970, 110, 90);
+    // Rock formation upper-left
+    addBarrier(115, 200, 70, 50);
+    // Trees flanking upper path
+    addBarrier(195, 240, 60, 50);
+    addBarrier(440, 230, 60, 50);
+
     this.physics.add.collider(this.player, this.barriers);
   }
 
