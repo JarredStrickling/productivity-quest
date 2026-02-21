@@ -7,10 +7,10 @@ import { CLASS_DEFAULT_EQUIPMENT, EQUIPMENT_DATABASE, COMBAT_PAGE_MAP } from '..
 
 // Side-view layout: party on left facing right, boss on right facing left
 const PARTY_SLOTS = [
-  { left: 20, top: 82 },
-  { left: 13, top: 74 },
-  { left: 24, top: 67 },
-  { left: 15, top: 60 },
+  { left: 22, top: 88 },
+  { left: 13, top: 78 },
+  { left: 26, top: 68 },
+  { left: 15, top: 58 },
 ];
 
 const ENEMY_SLOT = { left: 78, top: 70 };
