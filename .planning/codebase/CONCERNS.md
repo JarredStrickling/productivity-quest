@@ -10,23 +10,44 @@
 - Impact: Bug fixes must be applied to both files, features added twice, maintenance burden increases exponentially
 - Fix approach: Extract shared battle logic into `src/hooks/useBattle.ts` or `src/utils/battleEngine.js` with pluggable enemy configs. Create single BattleModal component that accepts enemy type.
 
-**Hardcoded Magic Numbers Throughout:**
-- Issue: Zoom levels, animation timings, interaction distances, damage formulas scattered across files without clear constants
-- Files: `src/scenes/MainScene.js` (zoom 0.53, tile 14/32), `src/components/ArenaModal.jsx` (animation timings 180, 100, 400ms), `src/config/abilities.js` (damage multipliers as inline numbers)
-- Impact: Tuning gameplay balance requires hunting through multiple files; easy to introduce inconsistencies
-- Fix approach: Create `src/config/gameBalance.js` with centralized constants for zoom, timings, distances, and damage formulas
+**Hardcoded Cache Bust Version:**
+- Issue: Static cache bust string `?v=24` used instead of dynamic timestamp or build hash
+- Files: `src/scenes/MainScene.js` (line 63)
+- Impact: Asset updates require manual code change and redeploy; easy to forget and ship stale assets to users
+- Fix approach: Implement dynamic cache busting using build timestamp, git hash, or environment variable (e.g., `import.meta.env.VITE_BUILD_HASH`)
 
-**Loose Type Safety:**
-- Issue: No TypeScript used; ability effects, battle states, and equipment are plain objects with no validation
-- Files: `src/config/abilities.js`, `src/config/equipment.js`, battle modals
-- Impact: Easy to pass wrong shape of data; runtime errors when ability properties are missing; refactoring requires manual grep
-- Fix approach: Gradually introduce TypeScript interfaces for key data structures (Ability, BattleCharacter, Equipment) starting with battle system
+**Placeholder Asset Fallbacks:**
+- Issue: Multiple NPC/object sprites (taskmaster, taskboard, dungeon, quest giver, test dummy) create runtime placeholder graphics instead of loading proper assets
+- Files: `src/scenes/MainScene.js` (lines 247-280, 379-424, 426-473, 475-511, 513-546)
+- Impact: NPCs appear as colored circles/squares instead of intended sprites; impacts visual polish and immersion
+- Fix approach: Verify all asset paths in public/assets/sprites/; ensure sprite files exist before release; consider preload check with clear error messaging
+
+**Collision Barriers Disabled:**
+- Issue: Collision barriers completely removed with placeholder empty group in `src/scenes/MainScene.js` line 549 with comment "Barriers removed — will revisit with a proper tilemap later"
+- Files: `src/scenes/MainScene.js` (lines 548-552)
+- Impact: Player can walk through buildings and world objects; breaks game world consistency
+- Fix approach: Implement proper tilemap-based collision system; load collision layer from map editor
+
+**Hardcoded Magic Numbers Throughout:**
+- Issue: Zoom calculations, tile sizes, party slot positions, animation timings hardcoded throughout without clear constants
+- Files:
+  - `src/scenes/MainScene.js` (lines 103-113: zoom calculation with magic 0.53 multiplier)
+  - `src/components/ArenaModal.jsx` (lines 9-16: party slot positions, lines 24-44: animation frame timings)
+  - `src/scenes/MainScene.js` (lines 613, 629, 645, 661: interaction distances 60-70 pixels)
+- Impact: Difficult to adjust responsive design or animation timing; requires code changes across multiple files
+- Fix approach: Extract to config constants; create `src/config/gameBalance.js` for these values
 
 **Event System Relies on String Keys:**
 - Issue: React-Phaser communication uses `game.events.emit/on` with magic string event names ('update-stats', 'xp-gained', 'open-task-modal', etc.)
 - Files: `src/App.jsx`, `src/scenes/MainScene.js`
 - Impact: Easy to typo event names; no IDE support for refactoring; unclear what events exist
 - Fix approach: Create `src/config/eventNames.ts` with exported constants; use TypeScript for type safety
+
+**Loose Type Safety:**
+- Issue: No TypeScript used; ability effects, battle states, and equipment are plain objects with no validation
+- Files: `src/config/abilities.js`, `src/config/equipment.js`, battle modals
+- Impact: Easy to pass wrong shape of data; runtime errors when ability properties are missing; refactoring requires manual grep
+- Fix approach: Gradually introduce TypeScript interfaces for key data structures (Ability, BattleCharacter, Equipment) starting with battle system
 
 ## Known Bugs
 
@@ -52,6 +73,20 @@
 - Workaround: Current code checks `anyAlive` but setTimeout can prevent the check from running
 - Impact: Game UI becomes unresponsive if this edge case triggers
 - Fix approach: Add explicit checks in useEffect that monitors party state independently of complex setTimeout chain
+
+**Save Data Migration Vulnerability:**
+- Symptoms: Old save format errors could silently fail and delete playerStats key
+- Files: `src/App.jsx` (lines 314-329)
+- Trigger: Loading app with old `playerStats` localStorage key and corrupted JSON
+- Current state: Has try-catch but silently removes old key even on parse failure
+- Improvement: Better error logging and user notification if save migration fails
+
+**Modal Open State Race Condition:**
+- Symptoms: Game input processing continues briefly if modal closes during pending operation
+- Files: `src/scenes/MainScene.js` (lines 564-567, 684, 694, 734, 784)
+- Trigger: User rapidly closes modal while animation frame is queued
+- Mitigation: `isModalOpen` flag checked in update loop, but animation state not guaranteed to sync
+- Improvement: Add debouncing or queuing for modal state transitions
 
 ## Security Considerations
 
@@ -101,6 +136,12 @@
 - Cause: Layered timeouts for visual feedback
 - Impact: Battle animations skip frames on mobile; unresponsive controls during animations
 - Improvement path: (1) Use Framer Motion or React Spring for frame-based animation, (2) Consolidate setTimeout chains into cancellable animation system, (3) Use requestAnimationFrame for smoother timing
+
+**Particle Effect Memory Leak:**
+- Problem: Particle emitter created and destroyed for each XP gain without guaranteed cleanup
+- Files: `src/scenes/MainScene.js` (lines 859-872)
+- Cause: Delayed destroy call (1000ms) may overlap across multiple rapid XP gains
+- Improvement: Pool particle emitters or use destroy queue with deduplication
 
 **localStorage Writes on Every Stat Change:**
 - Problem: `handleAllocateStat` immediately calls `localStorage.setItem()` for every stat point spent
@@ -152,6 +193,12 @@
 - Limit: 20+ entities would cause noticeable UI lag from constant party filtering/iteration
 - Scaling path: (1) Use Set or Map for turn management, (2) Implement entity component system (ECS) for large battles, (3) Batch state updates
 
+**Max Level Cap:**
+- Current capacity: Level 50 hardcoded as max
+- Files: `src/config/levelingSystem.js` (lines 62, 82, 90)
+- Limit: Changing max level requires updates in 3 places (XP_TABLE, level cap checks, ability unlock logic)
+- Scaling path: Extract max level to constant; add ability unlock entries for higher levels in `src/config/abilities.js`
+
 ## Dependencies at Risk
 
 **Phaser 3 Browser Compatibility:**
@@ -199,6 +246,27 @@
 - Blocks: New users understand the game loop
 - Why it matters: TitleScreen exists but MainMenu doesn't explain "drag to move, tap NPC to submit tasks"
 
+**No Audio Settings/Mute Option:**
+- Problem: Background music plays automatically; no volume control or mute button
+- Files: `src/scenes/MainScene.js` (music initialization)
+- Blocks: Mobile users cannot silence game without browser volume; no accessibility option
+- Why it matters: Accessibility and user control
+- Recommendation: Add settings menu with volume slider; persist to localStorage
+
+**No Character Respec/Reset:**
+- Problem: Once stat points allocated, cannot change build; locks player into suboptimal decisions
+- Files: `src/components/CharacterPanel.jsx`
+- Blocks: Players who make wrong stat choices must restart
+- Why it matters: User retention and forgiveness
+- Recommendation: Add respec feature (cost gold or one-time free) or separate skill loadout system
+
+**No Persistence of Weekly Quests Progress:**
+- Problem: Weekly quests modal exists but quest completion state not saved
+- Files: `src/components/WeeklyQuestsModal.jsx`
+- Blocks: Weekly quest system non-functional
+- Why it matters: Missing gameplay loop
+- Recommendation: Implement quest state tracking in playerStats; add completion checks and reward tracking
+
 ## Test Coverage Gaps
 
 **No Unit Tests for Game Logic:**
@@ -224,6 +292,24 @@
 - Files: `src/scenes/MainScene.js`, `src/components/ArenaModal.jsx` SpriteFrame
 - Risk: Sprite direction changes go unnoticed until players report visual bugs
 - Priority: MEDIUM - requires screenshot comparison tools
+
+**No Tests for API Communication:**
+- What's not tested: Network failures, timeout handling, malformed responses, rate limiting
+- Files: `server.js`, `src/components/TaskSubmissionModal.jsx`
+- Risk: Failed requests cause unhandled errors; user data loss on network issues
+- Priority: HIGH - user-facing feature
+
+**No Phaser Game Tests:**
+- What's not tested: Sprite loading, animation states, player movement, NPC interaction zones
+- Files: `src/scenes/MainScene.js`
+- Risk: Asset loading failures, collision/interaction detection bugs only found in manual testing
+- Priority: MEDIUM - core gameplay; difficult to test in jest; consider Phaser test utilities
+
+**No React Component Tests:**
+- What's not tested: Modal open/close state, form validation, error handling, loading states
+- Files: `src/components/*.jsx`
+- Risk: UI breaks silently; users see broken forms or missing feedback
+- Priority: MEDIUM - could use React Testing Library or Vitest
 
 ---
 
