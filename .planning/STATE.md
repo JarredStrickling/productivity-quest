@@ -11,27 +11,27 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 
 Phase: 2 of 7 (Firestore Cloud Saves)
 Plan: 2 of 5 in current phase
-Status: In progress — Plan 02-02 complete
-Last activity: 2026-02-22 — Plan 02-02 complete (Session Lock + Connection Monitoring)
+Status: In progress — Plans 02-01 and 02-02 complete
+Last activity: 2026-02-22 — Plan 02-01 complete (Firestore Data Layer: saveManager + security rules)
 
 Progress: [███░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 2.3 min
-- Total execution time: 0.11 hours
+- Total plans completed: 4
+- Average duration: 3 min
+- Total execution time: 0.20 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-firebase-auth | 2 | 5 min | 2.5 min |
-| 02-firestore-cloud-saves | 1 | 2 min | 2 min |
+| 02-firestore-cloud-saves | 2 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min (01-01), 2 min (01-02), 2 min (02-02)
+- Last 5 plans: 3 min (01-01), 2 min (01-02), 2 min (02-02), 5 min (02-01)
 - Trend: -
 
 *Updated after each plan completion*
@@ -56,6 +56,10 @@ Recent decisions affecting current work:
 - [Phase 01-03]: Auth gate uses early-return pattern (Splash->AuthModal->Game) for clean stage boundaries — no game DOM rendered during auth stages
 - [Phase 01-03]: Phaser useEffect depends on [currentUser] not [] — init only after auth resolves with authenticated user, destroying on logout
 - [Phase 01-03]: splashMinTimeElapsed (1.5s timeout) ensures minimum splash display for both fresh load and auto-login returning users
+- [02-01]: XP cap set to 200 (Legendary tier max 150 XP + 50 buffer) — corrected from research suggestion of 500
+- [02-01]: saveCharacter uses return (not await) for fire-and-forget pattern — prevents hanging offline in event handlers
+- [02-01]: saveWithRetry uses setTimeout recursion (not async/await sleep) to keep retry chain non-blocking
+- [02-01]: Full overwrite (no merge: true) prevents stale field drift when always writing complete playerStats
 - [02-02]: releaseLock not called on beforeunload — deleteDoc is unreliable in beforeunload; heartbeat timeout handles tab-close expiry
 - [02-02]: deviceId generated via crypto.randomUUID() at module load — stable for tab lifetime, unique per tab
 - [02-02]: Heartbeat stored in useRef (not useState) to avoid re-renders on interval ticks
@@ -74,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 02-02-PLAN.md (Session Lock + Connection Monitoring)
+Stopped at: Completed 02-01-PLAN.md (Firestore Data Layer: saveManager + security rules)
 Resume file: .planning/phases/02-firestore-cloud-saves/02-03-PLAN.md
