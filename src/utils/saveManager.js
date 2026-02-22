@@ -67,7 +67,8 @@ export function saveWithRetry(uid, slotId, stats, onWarning, attempt = 0) {
     .then(() => {
       onWarning(false);
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error(`[saveWithRetry] slot=${slotId} attempt=${attempt}`, err.code || err.message, err);
       if (attempt < 3) {
         const delay = Math.pow(2, attempt) * 1000;
         setTimeout(() => {

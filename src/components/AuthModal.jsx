@@ -14,7 +14,7 @@ export default function AuthModal({ isOpen, onAuthSuccess }) {
   const { register, login, resetPassword, getAuthErrorMessage } = useAuth();
 
   const [view, setView] = useState('login'); // 'login' | 'register' | 'forgot'
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(() => localStorage.getItem('rememberedUsername') || '');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -115,6 +115,7 @@ export default function AuthModal({ isOpen, onAuthSuccess }) {
 
     try {
       await login(username, password);
+      localStorage.setItem('rememberedUsername', username);
       onAuthSuccess();
     } catch (error) {
       setIsSubmitting(false);
