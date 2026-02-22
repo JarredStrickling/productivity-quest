@@ -2,24 +2,19 @@ import { useState } from 'react';
 import './MainMenu.css';
 import SaveSlotSelection from './SaveSlotSelection';
 
-const MAX_SLOTS = 2;
-
-function areSlotsFullFn() {
-  for (let i = 1; i <= MAX_SLOTS; i++) {
-    if (!localStorage.getItem(`saveSlot${i}`)) return false;
-  }
-  return true;
-}
-
-export default function MainMenu({ onNewGame, onLoadGame }) {
+export default function MainMenu({ onNewGame, onLoadGame, saveSlots, uid }) {
   const [showSaveSlots, setShowSaveSlots] = useState(false);
-  const [slotsFull, setSlotsFull] = useState(areSlotsFullFn);
+
+  // Derive slotsFull from the saveSlots prop — no localStorage reads
+  const slotsFull = saveSlots
+    ? Object.values(saveSlots).every(s => s !== null)
+    : false;
 
   if (showSaveSlots) {
     return (
       <SaveSlotSelection
+        uid={uid}
         onBack={() => {
-          setSlotsFull(areSlotsFullFn());
           setShowSaveSlots(false);
         }}
         onSelectSlot={(slot) => {

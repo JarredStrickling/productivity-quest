@@ -1,45 +1,92 @@
 import { useEffect, useState } from 'react';
 import './SaveSlotSelection.css';
 import { CLASS_CONFIG } from '../config/classes';
+import { loadCharacterSlots, deleteCharacterSlot } from '../utils/saveManager';
 
 const MAX_SLOTS = 2;
 
-export default function SaveSlotSelection({ onBack, onSelectSlot }) {
+export default function SaveSlotSelection({ onBack, onSelectSlot, uid }) {
   const [saveSlots, setSaveSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const loadSlots = () => {
-    const slots = [];
-    for (let i = 1; i <= MAX_SLOTS; i++) {
-      const slotKey = `saveSlot${i}`;
-      const savedData = localStorage.getItem(slotKey);
-      if (savedData) {
-        try {
-          slots.push({ slotId: i, data: JSON.parse(savedData) });
-        } catch (e) {
-          slots.push({ slotId: i, data: null });
-        }
-      } else {
-        slots.push({ slotId: i, data: null });
+  const loadSlots = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const slotsObj = await loadCharacterSlots(uid);
+      // Convert { 1: data|null, 2: data|null } to [{ slotId, data }] array
+      const slotsArray = [];
+      for (let i = 1; i <= MAX_SLOTS; i++) {
+        slotsArray.push({ slotId: i, data: slotsObj[i] || null });
       }
+      setSaveSlots(slotsArray);
+    } catch (err) {
+      console.error('Failed to load save slots:', err);
+      setError('Failed to load save slots. Check your connection and try again.');
+    } finally {
+      setLoading(false);
     }
-    setSaveSlots(slots);
   };
 
   useEffect(() => {
     loadSlots();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid]);
 
   const handleSlotClick = (slot) => {
     onSelectSlot({ slotId: slot.slotId, data: slot.data });
   };
 
-  const handleDelete = (e, slot) => {
+  const handleDelete = async (e, slot) => {
     e.stopPropagation();
     const confirmed = window.confirm(`Delete ${slot.data.username}? This cannot be undone.`);
     if (!confirmed) return;
-    localStorage.removeItem(`saveSlot${slot.slotId}`);
-    loadSlots();
+    try {
+      await deleteCharacterSlot(uid, slot.slotId);
+      await loadSlots();
+    } catch (err) {
+      console.error('Failed to delete character:', err);
+      alert('Failed to delete character. Please try again.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="save-slot-selection">
+        <div className="menu-background" />
+        <div className="slot-content">
+          <h2 className="slot-title">Select Save Slot</h2>
+          <div className="slot-loading">
+            <p className="slot-loading-text">Loading saves...</p>
+          </div>
+          <button className="back-btn" onClick={onBack}>
+            Back to Menu
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="save-slot-selection">
+        <div className="menu-background" />
+        <div className="slot-content">
+          <h2 className="slot-title">Select Save Slot</h2>
+          <div className="slot-error">
+            <p className="slot-error-text">{error}</p>
+            <button className="slot-retry-btn" onClick={loadSlots}>
+              Retry
+            </button>
+          </div>
+          <button className="back-btn" onClick={onBack}>
+            Back to Menu
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="save-slot-selection">
