@@ -49,12 +49,12 @@ Plans:
   3. A user who logs in from a different device sees the same character saves they left on their first device
   4. A user with existing localStorage saves sees those characters imported to their Firestore account on first login (data is not silently lost)
   5. Firestore security rules prevent a logged-in player from writing arbitrary XP or level values via devtools
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: `useSaveData` hook, Firestore data structure, and security rules
-- [ ] 02-02: LocalStorage-to-Firestore migration on first login
-- [ ] 02-03: Wire save/load into existing character slot UI
+- [ ] 02-01-PLAN.md — Firestore data layer: saveManager utility (save/load/delete/retry) + security rules
+- [ ] 02-02-PLAN.md — Session lock hook (acquire/release/heartbeat) + connection monitor hook + ConnectionOverlay
+- [ ] 02-03-PLAN.md — Rewire SaveSlotSelection, MainMenu, and App.jsx from localStorage to Firestore + integration
 
 ### Phase 3: Combat Consolidation
 **Goal**: BattleModal and ArenaModal are replaced by a single combat system with no duplicated logic
