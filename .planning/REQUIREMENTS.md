@@ -9,9 +9,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### User Accounts
 
-- [ ] **ACCT-01**: User can create an account with a unique username and password
-- [ ] **ACCT-02**: User can log in and stay logged in across browser sessions
-- [ ] **ACCT-03**: User can log out from any screen
+- [x] **ACCT-01**: User can create an account with a unique username and password
+- [x] **ACCT-02**: User can log in and stay logged in across browser sessions
+- [x] **ACCT-03**: User can log out from any screen
 - [ ] **ACCT-04**: User's 3 character save slots are stored in Firestore (cloud), not localStorage
 - [ ] **ACCT-05**: User can access their saves from any device by logging in
 
@@ -81,9 +81,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ACCT-01 | Phase 1 | Pending |
-| ACCT-02 | Phase 1 | Pending |
-| ACCT-03 | Phase 1 | Pending |
+| ACCT-01 | Phase 1 | Complete |
+| ACCT-02 | Phase 1 | Complete |
+| ACCT-03 | Phase 1 | Complete |
 | ACCT-04 | Phase 2 | Pending |
 | ACCT-05 | Phase 2 | Pending |
 | CMBT-01 | Phase 3 | Pending |

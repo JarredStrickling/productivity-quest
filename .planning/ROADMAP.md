@@ -145,7 +145,7 @@ Note: Phase 3 (Combat Consolidation) has no Firebase dependency and can begin in
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Firebase Auth | 1/3 | In progress | - |
+| 1. Firebase Auth | 2/3 | In Progress|  |
 | 2. Firestore Cloud Saves | 0/3 | Not started | - |
 | 3. Combat Consolidation | 0/3 | Not started | - |
 | 4. Status Effects | 0/3 | Not started | - |

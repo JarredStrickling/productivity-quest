@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 1 of 7 (Firebase Auth)
-Plan: 1 of 3 in current phase
-Status: In progress — Plan 01-01 complete
-Last activity: 2026-02-22 — Plan 01-01 complete (Firebase SDK singleton + useAuth hook)
+Plan: 2 of 3 in current phase
+Status: In progress — Plan 01-02 complete
+Last activity: 2026-02-22 — Plan 01-02 complete (Auth UI: SplashScreen + AuthModal)
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [██░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 3 min
-- Total execution time: 0.05 hours
+- Total plans completed: 2
+- Average duration: 2.5 min
+- Total execution time: 0.08 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-firebase-auth | 1 | 3 min | 3 min |
+| 01-firebase-auth | 2 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min (01-01)
+- Last 5 plans: 3 min (01-01), 2 min (01-02)
 - Trend: -
 
 *Updated after each plan completion*
@@ -49,6 +49,9 @@ Recent decisions affecting current work:
 - [01-01] Used initializeAuth + browserLocalPersistence instead of getAuth() to fix Vite session-restore bug (firebase-js-sdk #8626)
 - [01-01] useAuth hook uses .jsx extension (not .js) — Vite requires .jsx for JSX syntax
 - [01-01] Username stored lowercased under /usernames/{usernameLower} for O(1) lookup; login resolves username -> email -> signIn
+- [Phase 01-02]: AuthModal imports useAuth from '../hooks/useAuth' without extension — Vite resolves .jsx automatically
+- [Phase 01-02]: SplashScreen is purely presentational with no auth dependency — parent controls visibility via auth state
+- [Phase 01-02]: Login view shows username only (no email) — matches username-first auth from 01-01
 
 ### Pending Todos
 
@@ -63,5 +66,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 01-01-PLAN.md (Firebase Auth Foundation)
-Resume file: .planning/phases/01-firebase-auth/01-02-PLAN.md
+Stopped at: Completed 01-02-PLAN.md (Auth UI: SplashScreen + AuthModal)
+Resume file: .planning/phases/01-firebase-auth/01-03-PLAN.md
