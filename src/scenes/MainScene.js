@@ -103,13 +103,12 @@ export default class MainScene extends Phaser.Scene {
     const TILE_SIZE = 32;
     const TILES_ACROSS = 14;
     let zoom = this.scale.width / (TILES_ACROSS * TILE_SIZE);
-    zoom = zoom * 0.53; // Zoom level tuned for town overview
+    zoom = zoom * 0.32; // Zoomed out ~40% from previous 0.53
 
     // Round to nearest 0.5 increment for crisp pixel rendering
     zoom = Math.round(zoom * 2) / 2;
 
-    // Clamp zoom: min 1.0 so mobile doesn't get too zoomed out
-    zoom = Phaser.Math.Clamp(zoom, 1.0, 2.0);
+    zoom = Phaser.Math.Clamp(zoom, 0.5, 2.0);
     this.cameras.main.setZoom(zoom);
 
     // Handle screen rotation and resize
@@ -117,12 +116,12 @@ export default class MainScene extends Phaser.Scene {
       const TILE_SIZE = 32;
       const TILES_ACROSS = 14;
       let newZoom = gameSize.width / (TILES_ACROSS * TILE_SIZE);
-      newZoom = newZoom * 0.53;
+      newZoom = newZoom * 0.32;
 
       // Round to nearest 0.5 increment for crisp pixel rendering
       newZoom = Math.round(newZoom * 2) / 2;
 
-      newZoom = Phaser.Math.Clamp(newZoom, 1.0, 2.0);
+      newZoom = Phaser.Math.Clamp(newZoom, 0.5, 2.0);
       this.cameras.main.setZoom(newZoom);
     });
 
