@@ -12,7 +12,11 @@ import ArenaModal from './components/ArenaModal'
 import DungeonConfirm from './components/DungeonConfirm'
 import SplashScreen from './components/SplashScreen'
 import AuthModal from './components/AuthModal'
+import ConnectionOverlay from './components/ConnectionOverlay'
 import { useAuth } from './hooks/useAuth'
+import { useSessionLock } from './hooks/useSessionLock'
+import { useConnection } from './hooks/useConnection'
+import { saveWithRetry, loadCharacterSlots } from './utils/saveManager'
 import { getXpForNextLevel, calculateLevelUp } from './config/levelingSystem'
 import { CLASS_DEFAULT_EQUIPMENT } from './config/equipment'
 import { getEquippedAbilitiesForLevel } from './config/abilities'
@@ -37,6 +41,15 @@ function App() {
   const [showTransition, setShowTransition] = useState(false)
   const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+
+  // Session lock and connection state
+  const { isBlocked, isCheckingLock, releaseLock } = useSessionLock(currentUser?.uid)
+  const isOnline = useConnection()
+
+  // Cloud save state
+  const [saveSlots, setSaveSlots] = useState({ 1: null, 2: null })
+  const [saveWarning, setSaveWarning] = useState(false)
+  const [slotsLoaded, setSlotsLoaded] = useState(false)
 
   // Game UI state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -92,6 +105,36 @@ function App() {
     }, 1500)
     return () => clearTimeout(timer)
   }, [])
+
+  // Load save slots from Firestore on login and clean up old localStorage data
+  useEffect(() => {
+    if (!currentUser) {
+      setSaveSlots({ 1: null, 2: null })
+      setSlotsLoaded(false)
+      return
+    }
+
+    // Clean up legacy localStorage save data — cloud is the source of truth now
+    localStorage.removeItem('saveSlot1')
+    localStorage.removeItem('saveSlot2')
+    localStorage.removeItem('playerStats')
+
+    let cancelled = false
+    async function load() {
+      try {
+        const slots = await loadCharacterSlots(currentUser.uid)
+        if (!cancelled) {
+          setSaveSlots(slots)
+          setSlotsLoaded(true)
+        }
+      } catch (err) {
+        console.error('Failed to load save slots:', err)
+        if (!cancelled) setSlotsLoaded(true) // Show UI even on error — slots will appear empty
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [currentUser])
 
   // Phaser initialization — only after auth resolves AND user is authenticated.
   // This fixes the race condition where Phaser inited before onAuthStateChanged fired.
@@ -208,8 +251,7 @@ function App() {
       })
     }
 
-    const slotKey = `saveSlot${currentSaveSlot || 1}`
-    localStorage.setItem(slotKey, JSON.stringify(newStats))
+    saveWithRetry(currentUser.uid, currentSaveSlot || 1, newStats, setSaveWarning)
   }
 
   // Keep ref in sync so Phaser event listeners always call the latest version
@@ -237,8 +279,7 @@ function App() {
 
     setPlayerStats(newStats)
 
-    const slotKey = `saveSlot${currentSaveSlot || 1}`
-    localStorage.setItem(slotKey, JSON.stringify(newStats))
+    saveWithRetry(currentUser.uid, currentSaveSlot || 1, newStats, setSaveWarning)
   }
 
   const handleNewGame = (slotId = null) => {
@@ -246,9 +287,7 @@ function App() {
     if (!slotToUse) {
       slotToUse = 1
       for (let i = 1; i <= 2; i++) {
-        const slotKey = `saveSlot${i}`
-        const savedData = localStorage.getItem(slotKey)
-        if (!savedData) {
+        if (!saveSlots[i]) {
           slotToUse = i
           break
         }
@@ -328,8 +367,10 @@ function App() {
 
     setPlayerStats(newStats)
 
-    const slotKey = `saveSlot${currentSaveSlot || 1}`
-    localStorage.setItem(slotKey, JSON.stringify(newStats))
+    saveWithRetry(currentUser.uid, currentSaveSlot || 1, newStats, setSaveWarning)
+
+    // Update saveSlots state so MainMenu immediately reflects the new character
+    setSaveSlots(prev => ({ ...prev, [currentSaveSlot || 1]: newStats }))
 
     setShowCharacterCreation(false)
 
@@ -338,7 +379,7 @@ function App() {
     }
   }
 
-  // Logout handler — confirm dialog, then call useAuth logout, reset game state
+  // Logout handler — release session lock, then sign out, then reset game state
   const handleLogout = async () => {
     const confirmed = window.confirm('Are you sure you want to log out?')
     if (!confirmed) return
@@ -363,28 +404,14 @@ function App() {
     setCurrentSaveSlot(null)
     setShowSettings(false)
 
-    // logout() from useAuth signs out and clears localStorage save slots.
+    // Release the session lock immediately so other devices can play
+    await releaseLock()
+
+    // logout() from useAuth signs out.
     // onAuthStateChanged then fires with null -> currentUser becomes null ->
     // the Phaser destroy effect runs -> splash screen renders.
     await logout()
   }
-
-  // Migrate old save data to new slot system on first load
-  useEffect(() => {
-    const oldSaveData = localStorage.getItem('playerStats')
-    if (oldSaveData && !localStorage.getItem('saveSlot1')) {
-      try {
-        const parsed = JSON.parse(oldSaveData)
-        if (parsed.username && parsed.characterClass) {
-          localStorage.setItem('saveSlot1', oldSaveData)
-          localStorage.removeItem('playerStats')
-        }
-      } catch (error) {
-        console.error('Failed to migrate old save data:', error)
-        localStorage.removeItem('playerStats')
-      }
-    }
-  }, [])
 
   // Update game when player stats change (only with valid class)
   useEffect(() => {
@@ -418,9 +445,35 @@ function App() {
     )
   }
 
+  // Stage 1.5: Session lock check — show while checking lock status
+  if (isCheckingLock) {
+    return <SplashScreen />
+  }
+
+  // Stage 1.6: Session blocked — another device is active
+  if (isBlocked) {
+    return (
+      <div className="session-blocked">
+        <div className="session-blocked-content">
+          <h2>Session Active Elsewhere</h2>
+          <p>You're playing on another device. Log out there first.</p>
+          <button className="session-blocked-logout" onClick={handleLogout}>
+            Log Out Here
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // Stage 3: Full game UI — auth resolved and user is authenticated
   return (
     <div className="app-container">
+      <ConnectionOverlay visible={!isOnline} />
+
+      {saveWarning && (
+        <div className="save-warning">Cloud save unavailable — progress may not be saved</div>
+      )}
+
       <div className="game-header">
         <h1>Scrolls of Doom</h1>
         <p>A 2D RPG where real-life achievements power your adventure!</p>
@@ -516,6 +569,8 @@ function App() {
         <MainMenu
           onNewGame={handleNewGame}
           onLoadGame={handleLoadGame}
+          saveSlots={saveSlots}
+          uid={currentUser?.uid}
         />
       )}
     </div>

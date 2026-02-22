@@ -239,6 +239,69 @@ body {
   color: #fbbf24;
 }
 
+/* Session blocked — another device holds the session lock */
+.session-blocked {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #1a0e08;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.session-blocked-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 400px;
+}
+
+.session-blocked-content h2 {
+  color: #f4e4c1;
+  font-family: 'Georgia', serif;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.session-blocked-content p {
+  color: #a08050;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.session-blocked-logout {
+  background: #8b3030;
+  color: #f4e4c1;
+  border: 2px solid #a08050;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-family: 'Georgia', serif;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.session-blocked-logout:hover {
+  background: #a03838;
+}
+
+/* Save warning banner — non-blocking, shown when cloud save retries are exhausted */
+.save-warning {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(139, 48, 48, 0.9);
+  color: #f4e4c1;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  z-index: 9000;
+  pointer-events: none;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 850px) {
   html, body {
