@@ -244,7 +244,7 @@ function App() {
     let slotToUse = slotId
     if (!slotToUse) {
       slotToUse = 1
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 2; i++) {
         const slotKey = `saveSlot${i}`
         const savedData = localStorage.getItem(slotKey)
         if (!savedData) {

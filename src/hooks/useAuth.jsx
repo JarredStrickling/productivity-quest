@@ -120,7 +120,6 @@ export function AuthProvider({ children }) {
     await signOut(auth);
     localStorage.removeItem('saveSlot1');
     localStorage.removeItem('saveSlot2');
-    localStorage.removeItem('saveSlot3');
     setUserProfile(null);
   }
 

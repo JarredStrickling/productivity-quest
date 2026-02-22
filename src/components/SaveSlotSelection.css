@@ -40,10 +40,10 @@
 
 .slots-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   width: 100%;
-  max-width: 1000px;
+  max-width: 700px;
 }
 
 .save-slot {
@@ -164,6 +164,34 @@
   font-size: 16px;
   font-weight: 600;
   font-style: italic;
+}
+
+.slot-delete-btn {
+  margin-top: 12px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  border: 2px solid #6b3030;
+  background: linear-gradient(145deg, #8b4040, #6b2020);
+  color: #f4e4c1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 0 #4a1515;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  align-self: flex-end;
+  font-family: inherit;
+}
+
+.slot-delete-btn:hover {
+  background: linear-gradient(145deg, #9b5050, #7b3030);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 #4a1515;
+}
+
+.slot-delete-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #4a1515;
 }
 
 .back-btn {

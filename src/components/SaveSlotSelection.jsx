@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import './SaveSlotSelection.css';
 import { CLASS_CONFIG } from '../config/classes';
 
+const MAX_SLOTS = 2;
+
 export default function SaveSlotSelection({ onBack, onSelectSlot }) {
   const [saveSlots, setSaveSlots] = useState([]);
 
-  useEffect(() => {
-    // Load all save slots from localStorage
+  const loadSlots = () => {
     const slots = [];
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= MAX_SLOTS; i++) {
       const slotKey = `saveSlot${i}`;
       const savedData = localStorage.getItem(slotKey);
       if (savedData) {
@@ -22,10 +23,22 @@ export default function SaveSlotSelection({ onBack, onSelectSlot }) {
       }
     }
     setSaveSlots(slots);
+  };
+
+  useEffect(() => {
+    loadSlots();
   }, []);
 
   const handleSlotClick = (slot) => {
     onSelectSlot({ slotId: slot.slotId, data: slot.data });
+  };
+
+  const handleDelete = (e, slot) => {
+    e.stopPropagation();
+    const confirmed = window.confirm(`Delete ${slot.data.username}? This cannot be undone.`);
+    if (!confirmed) return;
+    localStorage.removeItem(`saveSlot${slot.slotId}`);
+    loadSlots();
   };
 
   return (
@@ -65,6 +78,12 @@ export default function SaveSlotSelection({ onBack, onSelectSlot }) {
                       <span className="slot-level">Lv {slot.data.level}</span>
                     </div>
                   </div>
+                  <button
+                    className="slot-delete-btn"
+                    onClick={(e) => handleDelete(e, slot)}
+                  >
+                    Delete
+                  </button>
                 </>
               ) : (
                 <>

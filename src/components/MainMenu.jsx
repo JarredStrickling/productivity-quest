@@ -2,19 +2,30 @@ import { useState } from 'react';
 import './MainMenu.css';
 import SaveSlotSelection from './SaveSlotSelection';
 
+const MAX_SLOTS = 2;
+
+function areSlotsFullFn() {
+  for (let i = 1; i <= MAX_SLOTS; i++) {
+    if (!localStorage.getItem(`saveSlot${i}`)) return false;
+  }
+  return true;
+}
+
 export default function MainMenu({ onNewGame, onLoadGame }) {
   const [showSaveSlots, setShowSaveSlots] = useState(false);
+  const [slotsFull, setSlotsFull] = useState(areSlotsFullFn);
 
   if (showSaveSlots) {
     return (
       <SaveSlotSelection
-        onBack={() => setShowSaveSlots(false)}
+        onBack={() => {
+          setSlotsFull(areSlotsFullFn());
+          setShowSaveSlots(false);
+        }}
         onSelectSlot={(slot) => {
           if (slot.data) {
-            // Load existing save
             onLoadGame(slot);
           } else {
-            // Empty slot selected, start new game in that slot
             onNewGame(slot.slotId);
           }
         }}
@@ -32,9 +43,16 @@ export default function MainMenu({ onNewGame, onLoadGame }) {
         </div>
 
         <div className="menu-buttons">
-          <button className="menu-btn-sprite" onClick={onNewGame}>
+          <button
+            className={`menu-btn-sprite ${slotsFull ? 'menu-btn-disabled' : ''}`}
+            onClick={slotsFull ? undefined : onNewGame}
+            disabled={slotsFull}
+          >
             <img src="/assets/sprites/new-game-button.png" alt="New Game" />
           </button>
+          {slotsFull && (
+            <p className="slots-full-msg">Delete a character to start a new game</p>
+          )}
 
           <button className="menu-btn-sprite" onClick={() => setShowSaveSlots(true)}>
             <img src="/assets/sprites/continue-button.png" alt="Continue" />
