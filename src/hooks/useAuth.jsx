@@ -118,8 +118,8 @@ export function AuthProvider({ children }) {
   // Logout and clear localStorage save slots to prevent data leakage on shared devices.
   async function logout() {
     await signOut(auth);
-    localStorage.removeItem('saveSlot1');
-    localStorage.removeItem('saveSlot2');
+    // Keep localStorage save slots — characters persist across sessions.
+    // Phase 2 will move saves to Firestore.
     setUserProfile(null);
   }
 

@@ -36,6 +36,7 @@ function App() {
   const [authError, setAuthError] = useState(null)
   const [showTransition, setShowTransition] = useState(false)
   const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   // Game UI state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -360,6 +361,7 @@ function App() {
     setShowCharacterPanel(false)
     setIsModalOpen(false)
     setCurrentSaveSlot(null)
+    setShowSettings(false)
 
     // logout() from useAuth signs out and clears localStorage save slots.
     // onAuthStateChanged then fires with null -> currentUser becomes null ->
@@ -432,15 +434,24 @@ function App() {
         />
       )}
 
-      {/* Logout button in top right */}
+      {/* Settings gear in top right */}
       {playerStats.username && !showMainMenu && !showCharacterCreation && gameLoaded && (
-        <button
-          className="logout-button"
-          onClick={handleLogout}
-          aria-label="Log out"
-        >
-          Log Out
-        </button>
+        <div className="settings-container">
+          <button
+            className="settings-button"
+            onClick={() => setShowSettings(prev => !prev)}
+            aria-label="Settings"
+          >
+            &#9881;
+          </button>
+          {showSettings && (
+            <div className="settings-dropdown">
+              <button className="settings-option" onClick={handleLogout}>
+                Log Out
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       <div ref={gameContainerCallback} className="game-canvas" />

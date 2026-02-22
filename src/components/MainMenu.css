@@ -30,9 +30,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   height: 100vh;
   padding: 40px;
+  gap: 20px;
   z-index: 1;
 }
 
@@ -66,7 +67,6 @@
   flex-direction: column;
   gap: 4px;
   width: 400px;
-  margin-bottom: 60px;
 }
 
 .menu-btn-sprite {

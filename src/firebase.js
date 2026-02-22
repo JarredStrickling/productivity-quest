@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { initializeAuth, browserLocalPersistence } from 'firebase/auth';
+import { initializeAuth, browserSessionPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -13,11 +13,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Use initializeAuth with explicit browserLocalPersistence instead of getAuth()
-// to avoid Vite persistence bug (firebase-js-sdk Issue #8626) where
-// onAuthStateChanged silently fails to restore sessions with getAuth in Vite.
+// Use initializeAuth with explicit persistence instead of getAuth()
+// to avoid Vite persistence bug (firebase-js-sdk Issue #8626).
+// browserSessionPersistence = auth clears when tab/browser closes (login required each visit).
 export const auth = initializeAuth(app, {
-  persistence: browserLocalPersistence,
+  persistence: browserSessionPersistence,
 });
 
 export const db = getFirestore(app);
