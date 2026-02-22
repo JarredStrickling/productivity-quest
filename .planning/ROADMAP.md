@@ -32,12 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A logged-in user can tap Log Out from any screen and be returned to the login screen
   4. Firebase Auth error messages are human-readable (not raw error codes like `auth/email-already-in-use`)
   5. The Phaser game instance only initializes after the auth state resolves (no race condition on load)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Firebase project setup and `src/firebase.js` singleton
-- [ ] 01-02: `useAuth` hook and `AuthModal.jsx` (register/login/logout UI)
-- [ ] 01-03: Wire auth gate into App.jsx and resolve Phaser initialization timing
+- [ ] 01-01-PLAN.md — Firebase SDK + singleton + useAuth hook + AuthProvider wiring
+- [ ] 01-02-PLAN.md — SplashScreen + AuthModal UI (register/login/forgot password) with RPG theme
+- [ ] 01-03-PLAN.md — Wire auth gate into App.jsx, fix Phaser init race condition, logout flow
 
 ### Phase 2: Firestore Cloud Saves
 **Goal**: Character save slots are stored in Firestore and accessible from any device the user logs into
