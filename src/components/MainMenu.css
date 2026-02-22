@@ -9,6 +9,7 @@
   justify-content: center;
   z-index: 10000;
   overflow: hidden;
+  background-color: #000;
 }
 
 .menu-background {
@@ -65,7 +66,7 @@
 .menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   width: 400px;
 }
 
@@ -87,6 +88,8 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  margin-top: -15%;
+  margin-bottom: -15%;
 }
 
 .menu-btn-sprite:hover {
