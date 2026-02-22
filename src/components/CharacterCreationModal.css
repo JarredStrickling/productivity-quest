@@ -15,7 +15,7 @@
 .stage-description {
   color: #7a5c3a;
   text-align: center;
-  margin: 0 0 24px 0;
+  margin: 0 0 10px 0;
   font-size: 14px;
   font-style: italic;
 }
@@ -61,70 +61,62 @@
   margin-top: 6px;
 }
 
-/* Class Selection Grid */
-.class-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin: 16px 0;
+/* Class Selection — Compact Rows */
+.class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
 }
 
-.class-card {
+.class-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   border: 2px solid #a08050;
   border-radius: 4px;
-  padding: 16px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: all 0.15s;
   background: rgba(212, 196, 160, 0.25);
-  text-align: center;
 }
 
-.class-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 36, 21, 0.2);
+.class-row:hover {
   background: rgba(212, 196, 160, 0.4);
+  box-shadow: 0 2px 8px rgba(59, 36, 21, 0.2);
 }
 
-.class-card.selected {
+.class-row.selected {
   border-width: 3px;
-  border-color: #6b5030;
   box-shadow: 0 0 12px rgba(107, 80, 48, 0.3);
   background: rgba(212, 196, 160, 0.5);
 }
 
-.class-icon {
-  font-size: 42px;
-  margin-bottom: 8px;
+.class-row-icon {
+  font-size: 28px;
+  flex-shrink: 0;
 }
 
-.class-card h3 {
-  margin: 0 0 6px 0;
-  font-size: 18px;
+.class-row-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.class-description {
-  color: #5c3d24;
-  font-size: 13px;
-  margin: 0 0 12px 0;
-  min-height: 36px;
+.class-row-info h3 {
+  margin: 0 0 2px 0;
+  font-size: 16px;
 }
 
-.stats-preview {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #c4a265;
-}
-
-.stat-item {
+.class-row-stats {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(160, 128, 80, 0.12);
-  padding: 4px 8px;
-  border-radius: 3px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.class-row-stats span {
+  color: #7a5c3a;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .stat-label {
@@ -144,21 +136,17 @@
   background: rgba(212, 196, 160, 0.3);
   border: 2px solid #a08050;
   border-radius: 4px;
-  padding: 20px;
-  margin: 16px 0;
+  padding: 14px;
+  margin: 8px 0;
 }
 
 .confirmation-header {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #c4a265;
-}
-
-.class-icon-large {
-  font-size: 64px;
 }
 
 .confirm-username {
@@ -173,30 +161,30 @@
   font-weight: 600;
 }
 
-.stats-breakdown h3 {
-  color: #3b2415;
-  font-size: 16px;
-  margin: 0 0 12px 0;
+.stats-compact {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
 }
 
 .stat-row {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 10px 14px;
+  padding: 6px 4px;
   background: rgba(160, 128, 80, 0.12);
   border-radius: 4px;
-  margin-bottom: 6px;
 }
 
 .stat-row .stat-label {
-  color: #5c3d24;
-  font-size: 14px;
+  color: #7a5c3a;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .stat-row .stat-value {
   color: #3b2415;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
 }
 
@@ -264,7 +252,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 /* Customize Appearance Stage */
@@ -374,24 +362,20 @@
     font-size: 12px;
   }
 
-  .class-grid {
-    grid-template-columns: 1fr;
-  }
-
   .char-creation-content {
-    padding: 18px;
+    padding: 14px;
   }
 
   .char-creation-content h2 {
     font-size: 20px;
   }
 
-  .class-icon {
-    font-size: 36px;
+  .class-row-icon {
+    font-size: 24px;
   }
 
-  .class-icon-large {
-    font-size: 48px;
+  .class-row-info h3 {
+    font-size: 14px;
   }
 
   .confirmation-header {
@@ -406,18 +390,22 @@
   .confirm-class {
     font-size: 14px;
   }
+
+  .stats-compact {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 @media (max-width: 480px) {
-  .stats-preview {
-    grid-template-columns: 1fr;
-  }
-
   .button-group {
     grid-template-columns: 1fr;
   }
 
   .char-creation-content {
-    padding: 14px;
+    padding: 12px;
+  }
+
+  .stats-compact {
+    grid-template-columns: repeat(3, 1fr);
   }
 }

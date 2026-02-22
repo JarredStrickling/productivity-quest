@@ -119,22 +119,23 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
             <h2>Choose Your Class</h2>
             <p className="stage-description">Select your character's role</p>
 
-            <div className="class-grid">
+            <div className="class-list">
               {Object.entries(CLASS_CONFIG).map(([key, classData]) => (
                 <div
                   key={key}
-                  className={`class-card ${selectedClass === key ? 'selected' : ''}`}
+                  className={`class-row ${selectedClass === key ? 'selected' : ''}`}
                   onClick={() => handleClassSelect(key)}
-                  style={{ borderColor: selectedClass === key ? classData.color : '#475569' }}
+                  style={{ borderColor: selectedClass === key ? classData.color : undefined }}
                 >
-                  <div className="class-icon" style={{ color: classData.color }}>{classData.icon}</div>
-                  <h3 style={{ color: classData.color }}>{classData.name}</h3>
-                  <p className="class-description">{classData.description}</p>
-                  <div className="stats-preview">
-                    <div className="stat-item"><span className="stat-label">HP</span><span className="stat-value">{classData.baseStats.hp}</span></div>
-                    <div className="stat-item"><span className="stat-label">STR</span><span className="stat-value">{classData.baseStats.strength}</span></div>
-                    <div className="stat-item"><span className="stat-label">AGI</span><span className="stat-value">{classData.baseStats.agility}</span></div>
-                    <div className="stat-item"><span className="stat-label">MIND</span><span className="stat-value">{classData.baseStats.mindPower}</span></div>
+                  <div className="class-row-icon" style={{ color: classData.color }}>{classData.icon}</div>
+                  <div className="class-row-info">
+                    <h3 style={{ color: classData.color }}>{classData.name}</h3>
+                    <div className="class-row-stats">
+                      <span>HP {classData.baseStats.hp}</span>
+                      <span>STR {classData.baseStats.strength}</span>
+                      <span>AGI {classData.baseStats.agility}</span>
+                      <span>MIND {classData.baseStats.mindPower}</span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -240,7 +241,7 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
 
             <div className="confirmation-card">
               <div className="confirmation-header">
-                <PaperDollPreview appearance={appearance} size={96} />
+                <PaperDollPreview appearance={appearance} size={192} />
                 <div>
                   <div className="confirm-username">{username}</div>
                   <div className="confirm-class" style={{ color: selectedClassData.color }}>
@@ -249,13 +250,12 @@ export default function CharacterCreationModal({ isOpen, onComplete }) {
                 </div>
               </div>
 
-              <div className="stats-breakdown">
-                <h3>Starting Stats</h3>
-                <div className="stat-row"><span className="stat-label">Health Points</span><span className="stat-value">{selectedClassData.baseStats.hp} HP</span></div>
-                <div className="stat-row"><span className="stat-label">Strength</span><span className="stat-value">{selectedClassData.baseStats.strength}</span></div>
-                <div className="stat-row"><span className="stat-label">Agility</span><span className="stat-value">{selectedClassData.baseStats.agility}</span></div>
-                <div className="stat-row"><span className="stat-label">Mind Power</span><span className="stat-value">{selectedClassData.baseStats.mindPower}</span></div>
-                <div className="stat-row"><span className="stat-label">Mana</span><span className="stat-value">{selectedClassData.baseStats.mindPower * 10}</span></div>
+              <div className="stats-compact">
+                <div className="stat-row"><span className="stat-label">HP</span><span className="stat-value">{selectedClassData.baseStats.hp}</span></div>
+                <div className="stat-row"><span className="stat-label">STR</span><span className="stat-value">{selectedClassData.baseStats.strength}</span></div>
+                <div className="stat-row"><span className="stat-label">AGI</span><span className="stat-value">{selectedClassData.baseStats.agility}</span></div>
+                <div className="stat-row"><span className="stat-label">MIND</span><span className="stat-value">{selectedClassData.baseStats.mindPower}</span></div>
+                <div className="stat-row"><span className="stat-label">MANA</span><span className="stat-value">{selectedClassData.baseStats.mindPower * 10}</span></div>
               </div>
             </div>
 
