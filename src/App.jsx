@@ -5,12 +5,14 @@ import TaskSubmissionModal from './components/TaskSubmissionModal'
 import CharacterCreationModal from './components/CharacterCreationModal'
 import CharacterPanel from './components/CharacterPanel'
 import BattleModal from './components/BattleModal'
-import TitleScreen from './components/TitleScreen'
 import SimpleHUD from './components/SimpleHUD'
 import MainMenu from './components/MainMenu'
 import WeeklyQuestsModal from './components/WeeklyQuestsModal'
 import ArenaModal from './components/ArenaModal'
 import DungeonConfirm from './components/DungeonConfirm'
+import SplashScreen from './components/SplashScreen'
+import AuthModal from './components/AuthModal'
+import { useAuth } from './hooks/useAuth'
 import { getXpForNextLevel, calculateLevelUp } from './config/levelingSystem'
 import { CLASS_DEFAULT_EQUIPMENT } from './config/equipment'
 import { getEquippedAbilitiesForLevel } from './config/abilities'
@@ -20,6 +22,14 @@ function App() {
   const gameRef = useRef(null)
   const gameInstanceRef = useRef(null)
   const handleTaskSubmitRef = useRef(null)
+
+  // Auth state
+  const { currentUser, authResolved, logout } = useAuth()
+  const [authError, setAuthError] = useState(null)
+  const [showTransition, setShowTransition] = useState(false)
+  const [splashMinTimeElapsed, setSplashMinTimeElapsed] = useState(false)
+
+  // Game UI state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showCharacterCreation, setShowCharacterCreation] = useState(false)
   const [showCharacterPanel, setShowCharacterPanel] = useState(false)
@@ -27,7 +37,6 @@ function App() {
   const [showWeeklyQuests, setShowWeeklyQuests] = useState(false)
   const [showDungeonConfirm, setShowDungeonConfirm] = useState(false)
   const [showArena, setShowArena] = useState(false)
-  const [showTitleScreen, setShowTitleScreen] = useState(false)
   const [showMainMenu, setShowMainMenu] = useState(true)
   const [gameLoaded, setGameLoaded] = useState(false)
   const [currentSaveSlot, setCurrentSaveSlot] = useState(null)
@@ -67,15 +76,28 @@ function App() {
     unspentStatPoints: 0
   })
 
+  // Enforce minimum splash screen duration (1.5s) so the logo always shows briefly
   useEffect(() => {
-    // Phaser game configuration - responsive for mobile
+    const timer = setTimeout(() => {
+      setSplashMinTimeElapsed(true)
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Phaser initialization — only after auth resolves AND user is authenticated.
+  // This fixes the race condition where Phaser inited before onAuthStateChanged fired.
+  // gameRef.current is only populated when the game canvas div is rendered (Stage 3),
+  // so this effect safely no-ops during splash/auth stages.
+  useEffect(() => {
+    if (!gameRef.current || !currentUser || gameInstanceRef.current) return
+
     const config = {
       type: Phaser.AUTO,
       width: window.innerWidth,
       height: window.innerHeight,
       parent: gameRef.current,
       backgroundColor: '#000000',
-      pixelArt: true, // Enable pixel-perfect rendering
+      pixelArt: true,
       render: {
         antialias: false,
         roundPixels: true
@@ -94,68 +116,71 @@ function App() {
       }
     }
 
-    // Create game instance
-    if (!gameInstanceRef.current) {
-      const game = new Phaser.Game(config)
-      gameInstanceRef.current = game
+    const game = new Phaser.Game(config)
+    gameInstanceRef.current = game
 
-      // Set up event listeners for game events
-      game.events.on('open-task-modal', () => {
-        setIsModalOpen(true)
-      })
+    game.events.on('open-task-modal', () => {
+      setIsModalOpen(true)
+    })
 
-      game.events.on('close-task-modal', () => {
-        setIsModalOpen(false)
-      })
+    game.events.on('close-task-modal', () => {
+      setIsModalOpen(false)
+    })
 
-      game.events.on('open-battle', () => {
-        setShowBattle(true)
-      })
+    game.events.on('open-battle', () => {
+      setShowBattle(true)
+    })
 
-      game.events.on('open-weekly-quests', () => {
-        setShowWeeklyQuests(true)
-      })
+    game.events.on('open-weekly-quests', () => {
+      setShowWeeklyQuests(true)
+    })
 
-      game.events.on('dungeon-confirm', () => {
-        setShowDungeonConfirm(true)
-      })
+    game.events.on('dungeon-confirm', () => {
+      setShowDungeonConfirm(true)
+    })
 
-      game.events.on('test-xp', () => {
-        handleTaskSubmitRef.current({ xp: 10, tier: 'Test', explanation: 'Test dummy XP', color: '#d97706' })
-      })
+    game.events.on('test-xp', () => {
+      handleTaskSubmitRef.current({ xp: 10, tier: 'Test', explanation: 'Test dummy XP', color: '#d97706' })
+    })
 
-      game.events.on('game-ready', () => {
-        setGameLoaded(true)
-      })
+    game.events.on('game-ready', () => {
+      setGameLoaded(true)
+    })
+
+    // No cleanup here — Phaser is destroyed when currentUser becomes null (see logout effect)
+  }, [currentUser])
+
+  // Destroy Phaser instance when user logs out
+  useEffect(() => {
+    if (!currentUser && gameInstanceRef.current) {
+      gameInstanceRef.current.destroy(true)
+      gameInstanceRef.current = null
+      setGameLoaded(false)
     }
+  }, [currentUser])
 
-    // Cleanup on unmount
-    return () => {
-      if (gameInstanceRef.current) {
-        gameInstanceRef.current.destroy(true)
-        gameInstanceRef.current = null
-      }
-    }
-  }, [])
+  // Called by AuthModal on successful register or login
+  const handleAuthSuccess = () => {
+    setShowTransition(true)
+    setTimeout(() => {
+      setShowTransition(false)
+    }, 1500)
+  }
 
   const handleTaskSubmit = (result) => {
-    // Calculate level ups using new leveling system
     const { newLevel, remainingXp, xpToNextLevel } = calculateLevelUp(
       playerStats.level,
       playerStats.xp,
       result.xp
     );
 
-    // Award 2 stat points per level gained
     const levelsGained = newLevel - playerStats.level
     const pointsAwarded = levelsGained * 2
 
-    // Auto-equip newly unlocked abilities
     const updatedAbilities = levelsGained > 0
       ? getEquippedAbilitiesForLevel(playerStats.characterClass, newLevel)
       : playerStats.equippedAbilities
 
-    // Preserve all existing stats and only update level/xp/points
     const newStats = {
       ...playerStats,
       level: newLevel,
@@ -167,7 +192,6 @@ function App() {
 
     setPlayerStats(newStats)
 
-    // Notify the game about XP gain
     if (gameInstanceRef.current) {
       gameInstanceRef.current.events.emit('xp-gained', {
         ...result,
@@ -175,7 +199,6 @@ function App() {
       })
     }
 
-    // Save to current save slot
     const slotKey = `saveSlot${currentSaveSlot || 1}`
     localStorage.setItem(slotKey, JSON.stringify(newStats))
   }
@@ -194,10 +217,9 @@ function App() {
 
     if (statKey === 'hp') {
       newStats.stats.maxHp += 50
-      newStats.stats.hp += 50 // Also heal the added HP
+      newStats.stats.hp += 50
     } else {
       newStats.stats[statKey] += 1
-      // Recalculate mana if mind power changed
       if (statKey === 'mindPower') {
         newStats.stats.maxMana = newStats.stats.mindPower * 10
         newStats.stats.mana = newStats.stats.maxMana
@@ -206,13 +228,11 @@ function App() {
 
     setPlayerStats(newStats)
 
-    // Save immediately
     const slotKey = `saveSlot${currentSaveSlot || 1}`
     localStorage.setItem(slotKey, JSON.stringify(newStats))
   }
 
   const handleNewGame = (slotId = null) => {
-    // Use provided slot ID or find first empty slot
     let slotToUse = slotId
     if (!slotToUse) {
       slotToUse = 1
@@ -274,7 +294,7 @@ function App() {
     const newStats = {
       username,
       characterClass,
-      appearance, // Paper doll customization choices
+      appearance,
       level: 1,
       xp: 0,
       xpToNextLevel: getXpForNextLevel(1),
@@ -299,7 +319,6 @@ function App() {
 
     setPlayerStats(newStats)
 
-    // Save to the current save slot
     const slotKey = `saveSlot${currentSaveSlot || 1}`
     localStorage.setItem(slotKey, JSON.stringify(newStats))
 
@@ -310,11 +329,40 @@ function App() {
     }
   }
 
+  // Logout handler — confirm dialog, then call useAuth logout, reset game state
+  const handleLogout = async () => {
+    const confirmed = window.confirm('Are you sure you want to log out?')
+    if (!confirmed) return
+
+    // Reset all game state
+    setPlayerStats({
+      username: '',
+      characterClass: '',
+      level: 1,
+      xp: 0,
+      xpToNextLevel: 10,
+      stats: { hp: 0, maxHp: 0, mana: 0, maxMana: 0, strength: 0, agility: 0, mindPower: 0 },
+      inventory: [],
+      equipment: { weapon: null, offHand: null, armor: null },
+      equippedAbilities: { slot1: null, slot2: null, slot3: null, slot4: null },
+      unspentStatPoints: 0
+    })
+    setShowMainMenu(true)
+    setShowCharacterCreation(false)
+    setShowCharacterPanel(false)
+    setIsModalOpen(false)
+    setCurrentSaveSlot(null)
+
+    // logout() from useAuth signs out and clears localStorage save slots.
+    // onAuthStateChanged then fires with null -> currentUser becomes null ->
+    // the Phaser destroy effect runs -> splash screen renders.
+    await logout()
+  }
+
   // Migrate old save data to new slot system on first load
   useEffect(() => {
     const oldSaveData = localStorage.getItem('playerStats')
     if (oldSaveData && !localStorage.getItem('saveSlot1')) {
-      // Migrate old save to slot 1
       try {
         const parsed = JSON.parse(oldSaveData)
         if (parsed.username && parsed.characterClass) {
@@ -335,54 +383,55 @@ function App() {
     }
   }, [playerStats])
 
+  // --- Auth gate rendering ---
+
+  // Stage 1: Splash screen — show while auth is resolving OR during post-login transition
+  // Also enforce minimum 1.5s splash display so the logo always shows briefly
+  const showSplash = !authResolved || !splashMinTimeElapsed || showTransition
+  if (showSplash) {
+    return (
+      <SplashScreen
+        showError={!!authError}
+        errorMessage={authError}
+        onRetry={() => window.location.reload()}
+      />
+    )
+  }
+
+  // Stage 2: Auth modal — auth resolved, no user
+  if (!currentUser) {
+    return (
+      <AuthModal
+        isOpen={true}
+        onAuthSuccess={handleAuthSuccess}
+      />
+    )
+  }
+
+  // Stage 3: Full game UI — auth resolved and user is authenticated
   return (
     <div className="app-container">
       <div className="game-header">
-        <h1>⚔️ Productivity Quest</h1>
-        <p>A 2D MMO RPG where real-life achievements power your adventure!</p>
+        <h1>Scrolls of Doom</h1>
+        <p>A 2D RPG where real-life achievements power your adventure!</p>
       </div>
 
       {/* Simple HUD in top left */}
-      {playerStats.username && !showTitleScreen && !showMainMenu && !showCharacterCreation && gameLoaded && (
+      {playerStats.username && !showMainMenu && !showCharacterCreation && gameLoaded && (
         <SimpleHUD
           playerStats={playerStats}
           onClick={() => setShowCharacterPanel(true)}
         />
       )}
 
-      {/* Home button in top right */}
-      {playerStats.username && !showTitleScreen && !showMainMenu && !showCharacterCreation && gameLoaded && (
+      {/* Logout button in top right */}
+      {playerStats.username && !showMainMenu && !showCharacterCreation && gameLoaded && (
         <button
-          className="home-button"
-          onClick={() => {
-            setShowMainMenu(true)
-            setPlayerStats({
-              username: '',
-              characterClass: '',
-              level: 1,
-              xp: 0,
-              xpToNextLevel: 10,
-              stats: {
-                hp: 0,
-                maxHp: 0,
-                mana: 0,
-                maxMana: 0,
-                strength: 0,
-                agility: 0,
-                mindPower: 0
-              },
-              inventory: [],
-              equipment: {
-                weapon: null,
-                offHand: null,
-                armor: null
-              },
-              equippedAbilities: { slot1: null, slot2: null, slot3: null, slot4: null }
-            })
-          }}
-          aria-label="Return to main menu"
+          className="logout-button"
+          onClick={handleLogout}
+          aria-label="Log out"
         >
-          🏠
+          Log Out
         </button>
       )}
 
@@ -390,7 +439,7 @@ function App() {
 
       <div className="game-info">
         <p>
-          💡 <strong>How to play:</strong> Drag to move. Tap the Task Master NPC to submit tasks and earn XP!
+          <strong>How to play:</strong> Drag to move. Tap the Task Master NPC to submit tasks and earn XP!
         </p>
       </div>
 
@@ -443,15 +492,7 @@ function App() {
         playerStats={playerStats}
       />
 
-      {/* Title Screen - shows on first load */}
-      {showTitleScreen && (
-        <TitleScreen onComplete={() => {
-          setShowTitleScreen(false)
-          setShowMainMenu(true)
-        }} />
-      )}
-
-      {/* Main Menu - shows after title screen */}
+      {/* Main Menu — shows after auth when user first logs in or loads a save */}
       {showMainMenu && (
         <MainMenu
           onNewGame={handleNewGame}
