@@ -52,6 +52,9 @@ Recent decisions affecting current work:
 - [Phase 01-02]: AuthModal imports useAuth from '../hooks/useAuth' without extension — Vite resolves .jsx automatically
 - [Phase 01-02]: SplashScreen is purely presentational with no auth dependency — parent controls visibility via auth state
 - [Phase 01-02]: Login view shows username only (no email) — matches username-first auth from 01-01
+- [Phase 01-03]: Auth gate uses early-return pattern (Splash->AuthModal->Game) for clean stage boundaries — no game DOM rendered during auth stages
+- [Phase 01-03]: Phaser useEffect depends on [currentUser] not [] — init only after auth resolves with authenticated user, destroying on logout
+- [Phase 01-03]: splashMinTimeElapsed (1.5s timeout) ensures minimum splash display for both fresh load and auto-login returning users
 
 ### Pending Todos
 

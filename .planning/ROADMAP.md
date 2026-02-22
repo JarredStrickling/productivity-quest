@@ -12,7 +12,7 @@ This milestone upgrades a working brownfield productivity RPG from localStorage-
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Firebase Auth** - Users can create accounts and log in with username/password
+- [x] **Phase 1: Firebase Auth** - Users can create accounts and log in with username/password (completed 2026-02-22)
 - [ ] **Phase 2: Firestore Cloud Saves** - Character saves live in the cloud, accessible from any device
 - [ ] **Phase 3: Combat Consolidation** - BattleModal and ArenaModal merged into a single reusable system
 - [ ] **Phase 4: Status Effects** - Shield and stun mechanics added to combat
@@ -145,7 +145,7 @@ Note: Phase 3 (Combat Consolidation) has no Firebase dependency and can begin in
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Firebase Auth | 2/3 | In Progress|  |
+| 1. Firebase Auth | 3/3 | Complete   | 2026-02-22 |
 | 2. Firestore Cloud Saves | 0/3 | Not started | - |
 | 3. Combat Consolidation | 0/3 | Not started | - |
 | 4. Status Effects | 0/3 | Not started | - |
