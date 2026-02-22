@@ -332,6 +332,7 @@ function App() {
 
       if (gameInstanceRef.current) {
         gameInstanceRef.current.events.emit('update-stats', data)
+        gameInstanceRef.current.events.emit('resume-game')
       }
     }
   }
@@ -376,6 +377,7 @@ function App() {
 
     if (gameInstanceRef.current) {
       gameInstanceRef.current.events.emit('update-stats', newStats)
+      gameInstanceRef.current.events.emit('resume-game')
     }
   }
 

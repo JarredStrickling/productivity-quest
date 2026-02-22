@@ -210,6 +210,13 @@ export default class MainScene extends Phaser.Scene {
       this.isModalOpen = false;
     });
 
+    // Reset all input state when entering gameplay (fixes stuck input after screen transitions)
+    this.game.events.on('resume-game', () => {
+      this.isModalOpen = false;
+      this.isDragging = false;
+      this.moveVector = { x: 0, y: 0 };
+    });
+
     // Prepare background music (will start on first user interaction due to browser autoplay policy)
     try {
       this.townMusic = this.sound.add('townTheme', {
