@@ -81,29 +81,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ACCT-01 | TBD | Pending |
-| ACCT-02 | TBD | Pending |
-| ACCT-03 | TBD | Pending |
-| ACCT-04 | TBD | Pending |
-| ACCT-05 | TBD | Pending |
-| CMBT-01 | TBD | Pending |
-| CMBT-02 | TBD | Pending |
-| CMBT-03 | TBD | Pending |
-| CMBT-04 | TBD | Pending |
-| CMBT-05 | TBD | Pending |
-| CMBT-06 | TBD | Pending |
-| CMBT-07 | TBD | Pending |
-| CMBT-08 | TBD | Pending |
-| CMBT-09 | TBD | Pending |
-| XPVR-01 | TBD | Pending |
-| XPVR-02 | TBD | Pending |
-| XPVR-03 | TBD | Pending |
+| ACCT-01 | Phase 1 | Pending |
+| ACCT-02 | Phase 1 | Pending |
+| ACCT-03 | Phase 1 | Pending |
+| ACCT-04 | Phase 2 | Pending |
+| ACCT-05 | Phase 2 | Pending |
+| CMBT-01 | Phase 3 | Pending |
+| CMBT-02 | Phase 4 | Pending |
+| CMBT-03 | Phase 4 | Pending |
+| CMBT-04 | Phase 5 | Pending |
+| CMBT-05 | Phase 5 | Pending |
+| CMBT-06 | Phase 5 | Pending |
+| CMBT-07 | Phase 5 | Pending |
+| CMBT-08 | Phase 6 | Pending |
+| CMBT-09 | Phase 6 | Pending |
+| XPVR-01 | Phase 7 | Pending |
+| XPVR-02 | Phase 7 | Pending |
+| XPVR-03 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after initial definition*
+*Last updated: 2026-02-22 after roadmap creation — all 17 requirements mapped*
