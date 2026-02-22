@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Firebase SDK + singleton + useAuth hook + AuthProvider wiring
+- [x] 01-01-PLAN.md — Firebase SDK + singleton + useAuth hook + AuthProvider wiring
 - [ ] 01-02-PLAN.md — SplashScreen + AuthModal UI (register/login/forgot password) with RPG theme
 - [ ] 01-03-PLAN.md — Wire auth gate into App.jsx, fix Phaser init race condition, logout flow
 
@@ -145,7 +145,7 @@ Note: Phase 3 (Combat Consolidation) has no Firebase dependency and can begin in
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Firebase Auth | 0/3 | Not started | - |
+| 1. Firebase Auth | 1/3 | In progress | - |
 | 2. Firestore Cloud Saves | 0/3 | Not started | - |
 | 3. Combat Consolidation | 0/3 | Not started | - |
 | 4. Status Effects | 0/3 | Not started | - |

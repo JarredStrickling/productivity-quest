@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 1 of 7 (Firebase Auth)
-Plan: 0 of 3 in current phase
-Status: Planned — ready to execute
-Last activity: 2026-02-22 — Phase 1 planned (3 plans, 3 waves, verification passed)
+Plan: 1 of 3 in current phase
+Status: In progress — Plan 01-01 complete
+Last activity: 2026-02-22 — Plan 01-01 complete (Firebase SDK singleton + useAuth hook)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 5%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 3 min
+- Total execution time: 0.05 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-firebase-auth | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: none yet
+- Last 5 plans: 3 min (01-01)
 - Trend: -
 
 *Updated after each plan completion*
@@ -46,6 +46,9 @@ Recent decisions affecting current work:
 - Username/password auth only — no social login for v1
 - Consolidate battle modals before adding new mechanics — prevents 2x work
 - Keep AI verification but simplify proof requirements
+- [01-01] Used initializeAuth + browserLocalPersistence instead of getAuth() to fix Vite session-restore bug (firebase-js-sdk #8626)
+- [01-01] useAuth hook uses .jsx extension (not .js) — Vite requires .jsx for JSX syntax
+- [01-01] Username stored lowercased under /usernames/{usernameLower} for O(1) lookup; login resolves username -> email -> signIn
 
 ### Pending Todos
 
@@ -60,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 1 planned — 3 plans in 3 waves, verification passed
-Resume file: .planning/phases/01-firebase-auth/
+Stopped at: Completed 01-01-PLAN.md (Firebase Auth Foundation)
+Resume file: .planning/phases/01-firebase-auth/01-02-PLAN.md
