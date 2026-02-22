@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Phaser from 'phaser'
 import MainScene from './scenes/MainScene'
 import TaskSubmissionModal from './components/TaskSubmissionModal'
@@ -22,6 +22,14 @@ function App() {
   const gameRef = useRef(null)
   const gameInstanceRef = useRef(null)
   const handleTaskSubmitRef = useRef(null)
+  const [gameContainerReady, setGameContainerReady] = useState(false)
+
+  // Callback ref — triggers state update when the game div mounts/unmounts,
+  // so the Phaser init effect can re-fire when the div becomes available.
+  const gameContainerCallback = useCallback((node) => {
+    gameRef.current = node
+    setGameContainerReady(!!node)
+  }, [])
 
   // Auth state
   const { currentUser, authResolved, logout } = useAuth()
@@ -148,7 +156,7 @@ function App() {
     })
 
     // No cleanup here — Phaser is destroyed when currentUser becomes null (see logout effect)
-  }, [currentUser])
+  }, [currentUser, gameContainerReady])
 
   // Destroy Phaser instance when user logs out
   useEffect(() => {
@@ -435,7 +443,7 @@ function App() {
         </button>
       )}
 
-      <div ref={gameRef} className="game-canvas" />
+      <div ref={gameContainerCallback} className="game-canvas" />
 
       <div className="game-info">
         <p>
