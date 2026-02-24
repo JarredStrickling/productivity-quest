@@ -10,25 +10,25 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 7 (Firestore Cloud Saves)
-Plan: 2 of 5 in current phase
-Status: In progress — Plans 02-01 and 02-02 complete
-Last activity: 2026-02-22 — Plan 02-01 complete (Firestore Data Layer: saveManager + security rules)
+Plan: 3 of 5 in current phase
+Status: In progress — Plans 02-01, 02-02, and 02-03 complete
+Last activity: 2026-02-23 — Plan 02-03 complete (Cloud Save Integration: SaveSlotSelection + MainMenu + App.jsx rewired to Firestore)
 
-Progress: [███░░░░░░░] 20%
+Progress: [████░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 3 min
-- Total execution time: 0.20 hours
+- Total plans completed: 5
+- Average duration: 6 min
+- Total execution time: 0.62 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-firebase-auth | 2 | 5 min | 2.5 min |
-| 02-firestore-cloud-saves | 2 | 7 min | 3.5 min |
+| 02-firestore-cloud-saves | 3 | 32 min | 10.7 min |
 
 **Recent Trend:**
 - Last 5 plans: 3 min (01-01), 2 min (01-02), 2 min (02-02), 5 min (02-01)
@@ -64,6 +64,11 @@ Recent decisions affecting current work:
 - [02-02]: deviceId generated via crypto.randomUUID() at module load — stable for tab lifetime, unique per tab
 - [02-02]: Heartbeat stored in useRef (not useState) to avoid re-renders on interval ticks
 - [02-02]: useConnection initializes isOnline from navigator.onLine to avoid false offline flash on mount
+- [02-03]: saveSlots state owned by App.jsx and passed as prop — avoids duplicate Firestore reads in child components
+- [02-03]: MainMenu derives slotsFull from saveSlots prop (not localStorage) — zero localStorage reads in UI layer
+- [02-03]: Firestore security rules patched post-checkpoint: public reads on /usernames/ for login resolution, XP reset allowed on level-up
+- [02-03]: Phaser input state reset on game entry — prevents stuck controls after save slot navigation
+- [02-03]: Remember username stored in localStorage (not save data) — no cloud save concern
 
 ### Pending Todos
 
@@ -77,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 02-01-PLAN.md (Firestore Data Layer: saveManager + security rules)
-Resume file: .planning/phases/02-firestore-cloud-saves/02-03-PLAN.md
+Last session: 2026-02-23
+Stopped at: Completed 02-03-PLAN.md (Cloud Save Integration: full Firestore wiring complete)
+Resume file: .planning/phases/02-firestore-cloud-saves/02-04-PLAN.md
